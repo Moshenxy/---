@@ -124,7 +124,8 @@ const selectPlan = (plan: Plan) => {
   margin-top: auto;
 }
 
-.details-button, .select-button {
+.details-button,
+.select-button {
   padding: 0.8rem 1.5rem;
   font-size: 1rem;
   border-radius: 4px;

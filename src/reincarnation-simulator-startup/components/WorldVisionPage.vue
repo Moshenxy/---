@@ -10,7 +10,8 @@
         <h4>{{ category }}</h4>
         <ul>
           <li v-for="item in items" :key="item.id">
-            <strong contenteditable="true" @blur="e => updateItem(item, 'name', e)">{{ item.name }}</strong>:
+            <strong contenteditable="true" @blur="e => updateItem(item, 'name', e)">{{ item.name }}</strong
+            >:
             <span contenteditable="true" @blur="e => updateItem(item, 'desc', e)">{{ item.desc }}</span>
           </li>
         </ul>

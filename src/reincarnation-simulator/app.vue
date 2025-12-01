@@ -67,11 +67,7 @@
           <div class="input-area-with-buttons">
             <EnhancedInputBox @submit-action="handleSubmit" @toggle-action-panel="toggleActionPanel" />
           </div>
-          <InputHistoryPopup
-            v-if="isHistoryVisible"
-            @close="toggleHistory"
-            @select-entry="selectHistoryEntry"
-          />
+          <InputHistoryPopup v-if="isHistoryVisible" @close="toggleHistory" @select-entry="selectHistoryEntry" />
           <div v-if="isQueueVisible" class="command-queue-popup">
             <div v-if="commandCount > 0" class="command-list">
               <div v-for="(cmd, index) in commands" :key="index" class="command-item">
@@ -146,7 +142,7 @@ export default defineComponent({
     const npcModal = computed(() => npcModalService.state);
     const isWebFullscreen = computed(() => uiState.isWebFullscreen);
     const inputModal = computed(() => inputModalState);
-    
+
     const isActionPanelVisible = ref(false);
     const isHistoryVisible = ref(false);
     const isQueueVisible = ref(false);
@@ -250,7 +246,7 @@ export default defineComponent({
     const toggleActionPanel = () => {
       isActionPanelVisible.value = !isActionPanelVisible.value;
     };
-    
+
     const updateCommands = () => {
       commands.value = commandService.getCommands();
     };

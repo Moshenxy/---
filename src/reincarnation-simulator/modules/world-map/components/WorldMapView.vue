@@ -195,28 +195,32 @@ watch(
       if (rootCopy.id === 'WORLD_ORIGIN') {
         const mainNode = rootCopy.children[0];
         if (mainNode) {
-            mainNode.x = width / 2;
-            mainNode.y = height / 2;
-            coordinateService.calculateRelativePositions(mainNode, rootCopy.children.slice(1));
+          mainNode.x = width / 2;
+          mainNode.y = height / 2;
+          coordinateService.calculateRelativePositions(mainNode, rootCopy.children.slice(1));
         }
         nodesToRender = rootCopy.children;
-        links = rootCopy.children.slice(1).map((child: MapNode) => ({ source: mainNode, target: child })) as d3.SimulationLinkDatum<MapNode>[];
+        links = rootCopy.children
+          .slice(1)
+          .map((child: MapNode) => ({ source: mainNode, target: child })) as d3.SimulationLinkDatum<MapNode>[];
       } else {
         rootCopy.x = width / 2;
         rootCopy.y = height / 2;
         coordinateService.calculateRelativePositions(rootCopy, rootCopy.children);
         nodesToRender = [rootCopy, ...rootCopy.children];
-        links = rootCopy.children.map((child: MapNode) => ({ source: rootCopy, target: child })) as d3.SimulationLinkDatum<MapNode>[];
+        links = rootCopy.children.map((child: MapNode) => ({
+          source: rootCopy,
+          target: child,
+        })) as d3.SimulationLinkDatum<MapNode>[];
       }
-      
+
       const transform = d3.zoomIdentity;
       layoutNodes.value = nodesToRender.filter(n => n.id !== 'WORLD_ORIGIN');
       layoutLinks.value = links;
-      
+
       nextTick(() => {
         renderD3(layoutNodes.value, layoutLinks.value, transform);
       });
-
     } else {
       layoutNodes.value = [];
       layoutLinks.value = [];
@@ -237,7 +241,8 @@ onMounted(async () => {
   if (store.worldState) {
     const avatarId = store.worldState.模拟器?.模拟?.当前化身ID?.[0];
     const userLocation = store.worldState.角色?.[store.userId]?.当前位置?.[0] || null;
-    const avatarLocation = (avatarId && store.worldState.角色?.[avatarId]) ? store.worldState.角色[avatarId].当前位置?.[0] || null : null;
+    const avatarLocation =
+      avatarId && store.worldState.角色?.[avatarId] ? store.worldState.角色[avatarId].当前位置?.[0] || null : null;
     mapActions.setPlayerLocations({ user: userLocation, avatar: avatarLocation });
   }
 
@@ -299,7 +304,11 @@ function renderD3(nodes: MapNode[], links: d3.SimulationLinkDatum<MapNode>[], tr
   const g = zoomContainer.merge(zoomContainerEnter);
 
   // 渲染星星 (只在enter时执行一次)
-  zoomContainerEnter.append('g').selectAll('circle.star').data(stars.value).join('circle')
+  zoomContainerEnter
+    .append('g')
+    .selectAll('circle.star')
+    .data(stars.value)
+    .join('circle')
     .attr('class', 'star')
     .attr('cx', d => d.x)
     .attr('cy', d => d.y)
@@ -307,11 +316,17 @@ function renderD3(nodes: MapNode[], links: d3.SimulationLinkDatum<MapNode>[], tr
     .attr('fill', 'white')
     .attr('opacity', d => d.o);
 
-  const zoom = d3.zoom<SVGSVGElement, unknown>().scaleExtent([0.01, 10]).on('zoom', event => {
-    g.attr('transform', event.transform);
-  });
+  const zoom = d3
+    .zoom<SVGSVGElement, unknown>()
+    .scaleExtent([0.01, 10])
+    .on('zoom', event => {
+      g.attr('transform', event.transform);
+    });
   svg.call(zoom as any).on('dblclick.zoom', null);
-  svg.transition().duration(750).call(zoom.transform as any, transform);
+  svg
+    .transition()
+    .duration(750)
+    .call(zoom.transform as any, transform);
 
   // --- 增量渲染 ---
   const t = d3.transition().duration(750);
@@ -319,89 +334,114 @@ function renderD3(nodes: MapNode[], links: d3.SimulationLinkDatum<MapNode>[], tr
   // 轨道线
   const visualCenterNode = nodes.find(n => n.id === currentRootId.value) || nodes[0];
   if (visualCenterNode) {
-    const distances = nodes.filter(n => n.id !== visualCenterNode.id).map(n => {
-      const dx = (n.x ?? 0) - (visualCenterNode.x ?? 0);
-      const dy = (n.y ?? 0) - (visualCenterNode.y ?? 0);
-      return Math.sqrt(dx * dx + dy * dy);
-    }).filter(d => d > 0);
+    const distances = nodes
+      .filter(n => n.id !== visualCenterNode.id)
+      .map(n => {
+        const dx = (n.x ?? 0) - (visualCenterNode.x ?? 0);
+        const dy = (n.y ?? 0) - (visualCenterNode.y ?? 0);
+        return Math.sqrt(dx * dx + dy * dy);
+      })
+      .filter(d => d > 0);
 
-    g.selectAll('circle.orbit-line').data(distances)
+    g.selectAll('circle.orbit-line')
+      .data(distances)
       .join(
-        enter => enter.append('circle').attr('class', 'orbit-line')
+        enter =>
+          enter
+            .append('circle')
+            .attr('class', 'orbit-line')
             .attr('cx', visualCenterNode.x ?? 0)
             .attr('cy', visualCenterNode.y ?? 0)
             .attr('r', 0)
             .attr('fill', 'none')
             .attr('stroke', 'rgba(255, 255, 255, 0.1)')
             .call(enter => enter.transition(t).attr('r', d => d)),
-        update => update.call(update => update.transition(t)
-            .attr('cx', visualCenterNode.x ?? 0)
-            .attr('cy', visualCenterNode.y ?? 0)
-            .attr('r', d => d)),
-        exit => exit.call(exit => exit.transition(t).attr('r', 0).remove())
+        update =>
+          update.call(update =>
+            update
+              .transition(t)
+              .attr('cx', visualCenterNode.x ?? 0)
+              .attr('cy', visualCenterNode.y ?? 0)
+              .attr('r', d => d),
+          ),
+        exit => exit.call(exit => exit.transition(t).attr('r', 0).remove()),
       );
   }
 
   // 连线
-  g.selectAll('line.link').data(links, (d: any) => `${d.source.id}-${d.target.id}`)
+  g.selectAll('line.link')
+    .data(links, (d: any) => `${d.source.id}-${d.target.id}`)
     .join(
-      enter => enter.append('line').attr('class', 'link')
-          .attr('stroke', '#999').attr('stroke-opacity', 0)
+      enter =>
+        enter
+          .append('line')
+          .attr('class', 'link')
+          .attr('stroke', '#999')
+          .attr('stroke-opacity', 0)
           .attr('x1', d => (d.source as MapNode).x || 0)
           .attr('y1', d => (d.source as MapNode).y || 0)
           .attr('x2', d => (d.target as MapNode).x || 0)
           .attr('y2', d => (d.target as MapNode).y || 0)
           .call(enter => enter.transition(t).attr('stroke-opacity', 0.4)),
-      update => update.call(update => update.transition(t)
-          .attr('x1', d => (d.source as MapNode).x || 0)
-          .attr('y1', d => (d.source as MapNode).y || 0)
-          .attr('x2', d => (d.target as MapNode).x || 0)
-          .attr('y2', d => (d.target as MapNode).y || 0)),
-      exit => exit.call(exit => exit.transition(t).attr('stroke-opacity', 0).remove())
+      update =>
+        update.call(update =>
+          update
+            .transition(t)
+            .attr('x1', d => (d.source as MapNode).x || 0)
+            .attr('y1', d => (d.source as MapNode).y || 0)
+            .attr('x2', d => (d.target as MapNode).x || 0)
+            .attr('y2', d => (d.target as MapNode).y || 0),
+        ),
+      exit => exit.call(exit => exit.transition(t).attr('stroke-opacity', 0).remove()),
     );
 
   // 节点
   const nodeGroups = g.selectAll<SVGGElement, MapNode>('g.node-group').data(nodes, d => d.id);
 
-  const nodeEnter = nodeGroups.enter().append('g')
+  const nodeEnter = nodeGroups
+    .enter()
+    .append('g')
     .attr('class', 'node-group')
     .classed('player-location', d => d.id === mapState.userLocationId)
     .classed('avatar-location', d => d.id === mapState.avatarLocationId)
     .attr('transform', (d: MapNode) => `translate(${d.x || 0},${d.y || 0})`)
     .attr('opacity', 0);
 
-  nodeEnter.append('circle')
+  nodeEnter
+    .append('circle')
     .attr('r', d => d.radius)
     .attr('fill', d => colorService.getColor(d.type))
     .attr('stroke', d => d3.color(colorService.getColor(d.type))?.brighter(1.5).toString() ?? '#fff')
     .attr('stroke-width', 2);
 
-  nodeEnter.append('text')
+  nodeEnter
+    .append('text')
     .text(d => d.name)
     .attr('text-anchor', 'middle')
     .attr('dy', d => d.radius + 15)
     .attr('fill', 'white')
     .style('font-size', '12px');
-    
-  nodeGroups.merge(nodeEnter)
-    .on('click', function (event: MouseEvent, d: MapNode) {
-        const existingTimeout = clickTimers.get(d.id);
 
-        if (existingTimeout) {
-            clearTimeout(existingTimeout);
-            clickTimers.delete(d.id);
+  nodeGroups
+    .merge(nodeEnter)
+    .on('click', function (event: MouseEvent, d: MapNode) {
+      const existingTimeout = clickTimers.get(d.id);
+
+      if (existingTimeout) {
+        clearTimeout(existingTimeout);
+        clickTimers.delete(d.id);
+        mapActions.selectNode(d);
+      } else {
+        const newTimeout = window.setTimeout(() => {
+          if (d.childCount > 0) {
+            mapActions.navigateToNode(d);
+          } else {
             mapActions.selectNode(d);
-        } else {
-            const newTimeout = window.setTimeout(() => {
-                if (d.childCount > 0) {
-                    mapActions.navigateToNode(d);
-                } else {
-                    mapActions.selectNode(d);
-                }
-                clickTimers.delete(d.id);
-            }, 250);
-            clickTimers.set(d.id, newTimeout);
-        }
+          }
+          clickTimers.delete(d.id);
+        }, 250);
+        clickTimers.set(d.id, newTimeout);
+      }
     })
     .transition(t)
     .attr('transform', (d: MapNode) => `translate(${d.x || 0},${d.y || 0})`)

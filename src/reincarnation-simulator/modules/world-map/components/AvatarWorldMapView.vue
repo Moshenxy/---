@@ -243,7 +243,8 @@ onMounted(async () => {
   if (store.worldState) {
     const avatarId = store.worldState.模拟器?.模拟?.当前化身ID?.[0];
     const userLocation = store.worldState.角色?.[store.userId]?.当前位置?.[0] || null;
-    const avatarLocation = (avatarId && store.worldState.角色?.[avatarId]) ? store.worldState.角色[avatarId].当前位置?.[0] || null : null;
+    const avatarLocation =
+      avatarId && store.worldState.角色?.[avatarId] ? store.worldState.角色[avatarId].当前位置?.[0] || null : null;
     mapActions.setPlayerLocations({ user: userLocation, avatar: avatarLocation });
   }
 

@@ -38,7 +38,7 @@ class ColorService {
     // 在实际应用中，可以考虑使用更大的颜色方案或更复杂的生成逻辑。
     const hash = this.simpleHash(type);
     const color = this.colorScale(String(hash % 10));
-    
+
     this.colorCache.set(type, color);
     return color;
   }

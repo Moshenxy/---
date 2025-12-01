@@ -31,7 +31,7 @@
           </button>
         </div>
       </section>
-      
+
       <template v-if="activeEpoch">
         <!-- 纪元规则 -->
         <section class="world-section">
@@ -67,10 +67,12 @@
           <div class="subsection">
             <h4 class="subsection-title">专长与流派</h4>
             <div class="tags-container">
-              <span v-for="school in activeEpoch.力量体系.专长与流派" :key="school.流派名称" class="tag">{{ school.流派名称 }}</span>
+              <span v-for="school in activeEpoch.力量体系.专长与流派" :key="school.流派名称" class="tag">{{
+                school.流派名称
+              }}</span>
             </div>
           </div>
-          
+
           <div class="subsection">
             <h4 class="subsection-title">境界定义</h4>
             <div class="ladder-container">
@@ -84,12 +86,9 @@
           </div>
         </section>
       </template>
-
     </div>
   </div>
-  <div v-else class="panel-wrapper loading-state">
-    加载世界信息中...
-  </div>
+  <div v-else class="panel-wrapper loading-state">加载世界信息中...</div>
 </template>
 
 <script setup lang="ts">
@@ -112,11 +111,15 @@ const availableEpochs = computed(() => {
 
 const selectedEpochId = ref<string | null>(null);
 
-watch(world, (newWorld) => {
-  if (newWorld) {
-    selectedEpochId.value = newWorld.元规则.当前纪元ID || (availableEpochs.value[0]?.纪元ID || null);
-  }
-}, { immediate: true });
+watch(
+  world,
+  newWorld => {
+    if (newWorld) {
+      selectedEpochId.value = newWorld.元规则.当前纪元ID || availableEpochs.value[0]?.纪元ID || null;
+    }
+  },
+  { immediate: true },
+);
 
 const activeEpoch = computed<Epoch | null>(() => {
   if (!world.value || !selectedEpochId.value) return null;
@@ -304,13 +307,13 @@ const 境界定义Array = computed(() => {
     cursor: pointer;
     transition: all 0.3s ease;
   }
-  
+
   .epoch-tab.active {
     color: #82d8d8;
     border-color: #11e9e1;
     background-color: rgba(17, 233, 225, 0.2);
   }
-  
+
   .epoch-tab:hover:not(.active) {
     background-color: rgba(62, 71, 112, 0.3);
   }

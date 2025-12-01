@@ -156,7 +156,7 @@ async function fetchCoreData() {
       }
 
       store.character = get(store.worldState, ['角色', store.userId]) || null;
- 
+
       // After updating the state, compare with the old state for notifications
       checkForChangesAndNotify(oldState, store.worldState);
 

@@ -127,7 +127,8 @@
       margin-bottom: $spacing-xs;
       font-family: $font-family-main;
     }
-    p, pre {
+    p,
+    pre {
       background-color: rgba($color-black-void, 0.4);
       padding: $spacing-sm;
       border-radius: $border-radius-sm;

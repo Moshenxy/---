@@ -9,9 +9,7 @@
         <div class="avatar group-avatar">{{ group.avatarName }}</div>
         <div class="group-name">{{ group.name }}</div>
       </div>
-      <div v-if="groupList.length === 0" class="no-groups">
-        你还没有加入任何群聊
-      </div>
+      <div v-if="groupList.length === 0" class="no-groups">你还没有加入任何群聊</div>
     </div>
   </div>
 </template>
@@ -71,7 +69,7 @@ const groupList = computed(() => {
   background: white;
   border-bottom: 1px solid #e5e7eb;
   cursor: pointer;
-  
+
   &:hover {
     background-color: #f9fafb;
   }

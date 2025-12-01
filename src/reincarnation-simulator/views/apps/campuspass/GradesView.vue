@@ -33,10 +33,9 @@ import { get } from 'lodash';
 const subjects = computed(() => getters.subjects.value);
 
 const overallRank = computed(() => {
-    const rank = get(getters.character.value, '学业.综合排名[0]');
-    return rank ?? 'N/A';
+  const rank = get(getters.character.value, '学业.综合排名[0]');
+  return rank ?? 'N/A';
 });
-
 </script>
 
 <style lang="scss" scoped>
@@ -113,10 +112,10 @@ const overallRank = computed(() => {
         font-size: 14px;
         font-weight: 500;
         color: #1f2937;
-        
+
         &.score {
-            font-weight: 600;
-            color: #0d6efd;
+          font-weight: 600;
+          color: #0d6efd;
         }
       }
     }

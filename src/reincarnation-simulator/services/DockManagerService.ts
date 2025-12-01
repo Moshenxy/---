@@ -210,7 +210,7 @@ class DockManagerService {
     if (!this.dockManager) return;
     // Create a copy of the keys to avoid issues with modifying the map while iterating
     const panelIds = Array.from(this.panelMap.keys());
-    panelIds.forEach((panelId) => {
+    panelIds.forEach(panelId => {
       const dialog = this.panelMap.get(panelId);
       if (dialog && dialog.panel) {
         const panel = dialog.panel as PanelContainer;

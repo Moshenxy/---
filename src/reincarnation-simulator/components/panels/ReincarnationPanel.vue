@@ -3,11 +3,17 @@
     <div class="tabs">
       <button :class="{ active: activeTab === 'worldSelection' }" @click="activeTab = 'worldSelection'">
         待选择世界
-        <span :style="{ color: cooldownService.isCoolingDown.value ? '#ffb74d' : (isSimulationRunning ? '#e57373' : '#81c784') }">
+        <span
+          :style="{
+            color: cooldownService.isCoolingDown.value ? '#ffb74d' : isSimulationRunning ? '#e57373' : '#81c784',
+          }"
+        >
           {{
             cooldownService.isCoolingDown.value
-            ? `（冷却中: ${cooldownService.remainingTime.value}）`
-            : (isSimulationRunning ? '（轮回中）' : '（轮回待命）')
+              ? `（冷却中: ${cooldownService.remainingTime.value}）`
+              : isSimulationRunning
+                ? '（轮回中）'
+                : '（轮回待命）'
           }}
         </span>
       </button>
@@ -18,7 +24,9 @@
       >
         可选化身
       </button>
-      <button :class="{ active: activeTab === 'settlementView' }" @click="activeTab = 'settlementView'">宿命抉择</button>
+      <button :class="{ active: activeTab === 'settlementView' }" @click="activeTab = 'settlementView'">
+        宿命抉择
+      </button>
       <button :class="{ active: activeTab === 'log' }" @click="activeTab = 'log'">本世历程</button>
       <button :class="{ active: activeTab === 'ripples' }" @click="activeTab = 'ripples'">往世涟漪</button>
       <button
@@ -125,7 +133,7 @@ watch(
         transform: scaleX(1);
       }
     }
-    
+
     &:disabled {
       color: rgba($color-grey-stone, 0.4);
       cursor: not-allowed;

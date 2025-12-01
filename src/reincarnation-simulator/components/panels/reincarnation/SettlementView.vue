@@ -46,13 +46,11 @@ const confirmChoice = async () => {
 
   // Robustly find the main character by looking for the '灵魂本源' property
   const characters = get(store.worldState, '角色', {});
-  const mainCharacter = Object.values(characters).find(
-    (char: any) => char && char.hasOwnProperty('灵魂本源')
-  );
+  const mainCharacter = Object.values(characters).find((char: any) => char && char.hasOwnProperty('灵魂本源'));
 
   if (!mainCharacter) {
-    toastr.error("无法确定玩家本体，操作失败。");
-    console.error("Could not find the main character in the world state.");
+    toastr.error('无法确定玩家本体，操作失败。');
+    console.error('Could not find the main character in the world state.');
     return;
   }
 

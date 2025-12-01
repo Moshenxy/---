@@ -3,7 +3,9 @@
     <div class="diary-tabs">
       <button :class="{ active: activeTab === 'diary' }" @click="activeTab = 'diary'">日记</button>
       <button :class="{ active: activeTab === 'daily-summary' }" @click="activeTab = 'daily-summary'">每日总结</button>
-      <button :class="{ active: activeTab === 'monthly-summary' }" @click="activeTab = 'monthly-summary'">每月总结</button>
+      <button :class="{ active: activeTab === 'monthly-summary' }" @click="activeTab = 'monthly-summary'">
+        每月总结
+      </button>
     </div>
 
     <div class="diary-content">
@@ -14,7 +16,7 @@
       <div v-if="activeTab === 'daily-summary'" class="summary-wrapper">
         <SummaryPanel summaryType="small" />
       </div>
-      
+
       <div v-if="activeTab === 'monthly-summary'" class="summary-wrapper">
         <SummaryPanel summaryType="large" />
       </div>

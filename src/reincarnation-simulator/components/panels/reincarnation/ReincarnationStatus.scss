@@ -1,0 +1,31 @@
+@use '../../../styles/theme/variables' as *;
+
+.simulation-status {
+  font-size: $font-size-sm;
+  padding: $spacing-xs $spacing-sm;
+  border-radius: $border-radius-sm;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  color: $color-green-jade; // Default "待命" color
+  background-color: rgba($color-green-jade, 0.1);
+  border: 1px solid rgba($color-green-jade, 0.3);
+
+  &.is-running {
+    color: $color-red-cinnabar; // "轮回中" color
+    background-color: rgba($color-red-cinnabar, 0.1);
+    border-color: rgba($color-red-cinnabar, 0.3);
+    animation: pulse 2s infinite;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba($color-red-cinnabar, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 7px rgba($color-red-cinnabar, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba($color-red-cinnabar, 0);
+  }
+}

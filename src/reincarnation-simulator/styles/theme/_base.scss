@@ -1,0 +1,178 @@
+// [Theme] Reincarnation Simulator - Visual Recast
+// Phase 1: Style Foundation
+// File: _base.scss
+// Desc: Defines global base styles for the application.
+
+@use 'variables' as *;
+@use 'mixins' as *;
+
+// ==========================================================================
+// 1. Font Face (Import artistic fonts)
+// ==========================================================================
+// Using a public CDN for demonstration. For production, fonts should be hosted locally.
+
+// ==========================================================================
+// 2. Global Resets & Base Styles
+// ==========================================================================
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-family: 'Noto Serif SC', serif;
+  font-size: $font-size-base;
+  line-height: $line-height-base;
+  color: $color-black-void;
+}
+
+body {
+  min-height: 100vh;
+  overflow: hidden; // Prevent body scroll
+}
+
+// ==========================================================================
+// 3. Typography Defaults
+// ==========================================================================
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: $font-family-title;
+  color: $color-gold-liu;
+  font-weight: normal;
+  margin-bottom: $spacing-md;
+}
+
+h1 {
+  font-size: $font-size-h1;
+}
+h2 {
+  font-size: $font-size-h2;
+}
+h3 {
+  font-size: $font-size-h3;
+}
+
+a {
+  color: $color-cyan-tian;
+  text-decoration: none;
+  transition: color 0.3s ease;
+
+  &:hover {
+    color: lighten($color-cyan-tian, 15%);
+    text-decoration: underline;
+  }
+}
+
+// ==========================================================================
+// 4. Form Elements Defaults
+// ==========================================================================
+
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
+  font-size: inherit;
+  background-color: rgba($color-black-void, 0.5);
+  border: 1px solid rgba($color-gold-liu, 0.3);
+  color: $color-white-moon;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $border-radius-md;
+  transition: all 0.3s ease;
+
+  &:focus {
+    outline: none;
+    border-color: $color-gold-liu;
+    box-shadow: 0 0 5px rgba($color-gold-liu, 0.5);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+button {
+  cursor: pointer;
+  background-color: rgba($color-cyan-tian, 0.2);
+  border-color: $color-cyan-tian;
+
+  &:hover {
+    background-color: rgba($color-cyan-tian, 0.4);
+    border-color: lighten($color-cyan-tian, 10%);
+  }
+
+  &.primary {
+    background-color: rgba($color-gold-liu, 0.8);
+    border-color: $color-gold-liu;
+    color: $color-black-void;
+    font-weight: bold;
+
+    &:hover {
+      background-color: $color-gold-liu;
+      box-shadow: 0 0 8px rgba($color-gold-liu, 0.7);
+    }
+  }
+}
+
+// ==========================================================================
+// 5. Global Custom Scrollbar
+// ==========================================================================
+
+// Apply to all scrollable elements by default
+// Components can override if needed
+* {
+  @include custom-scrollbar();
+}
+
+// ==========================================================================
+// 6. Third-party Library Overrides (Toastr)
+// ==========================================================================
+
+#toast-container > .toast {
+  @include frosted-glass(rgba($color-gold-liu, 0.8), 5px);
+  border: 1px solid $color-gold-liu;
+  color: $color-black-void;
+  text-shadow: none;
+  font-family: $font-family-main;
+  font-weight: bold;
+  border-radius: $border-radius-md;
+  box-shadow: 0 5px 20px rgba($color-gold-liu, 0.5);
+  opacity: 0.9;
+
+  .toast-title {
+    font-family: $font-family-title;
+    font-weight: bold;
+  }
+
+  .toast-message {
+    font-weight: normal;
+  }
+
+  &.toast-info {
+    background-color: rgba($color-cyan-tian, 0.8);
+    border-color: $color-cyan-tian;
+    color: white;
+  }
+
+  &.toast-error {
+    background-color: rgba($color-red-chi, 0.8);
+    border-color: $color-red-chi;
+    color: white;
+  }
+
+  &.toast-success {
+    background-color: rgba(92, 184, 92, 0.8);
+    border-color: #5cb85c;
+    color: white;
+  }
+}

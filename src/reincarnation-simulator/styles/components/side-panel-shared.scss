@@ -1,0 +1,121 @@
+@use '../theme/variables' as *;
+@use '../theme/mixins' as *;
+
+.side-panel-container {
+  @include frosted-glass(rgba($color-charcoal-glass, 0.3), 5px);
+  padding: $spacing-md 0;
+  height: 100%;
+  overflow-y: auto;
+  @include custom-scrollbar($color-gold-liu, transparent);
+
+  &.left {
+    border-right: 1px solid rgba($color-gold-liu, 0.2);
+  }
+
+  &.right {
+    border-left: 1px solid rgba($color-gold-liu, 0.2);
+  }
+
+  .mobile-view & {
+    background-color: #1a1a2e !important;
+  }
+}
+
+.navigation-menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-lg;
+}
+
+.nav-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.section-header {
+  @include flex-center;
+  flex-direction: column;
+  gap: $spacing-xs;
+  cursor: pointer;
+  width: 100%;
+  padding: $spacing-sm 0;
+  transition: background-color 0.3s ease;
+
+  .icon {
+    @include flex-center;
+    font-family: $font-family-title;
+    font-size: 1.5rem;
+    color: $color-gold-pale;
+    border: 1px solid rgba($color-gold-pale, 0.5);
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    transition: all 0.3s ease;
+  }
+
+  .title {
+    font-size: $font-size-small;
+    color: $color-grey-stone;
+  }
+
+  &:hover .icon {
+    color: $color-gold-liu;
+    border-color: $color-gold-liu;
+    transform: scale(1.1);
+    text-shadow: 0 0 5px $color-gold-liu;
+  }
+}
+
+.sub-menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-md;
+  margin-top: $spacing-md;
+  width: 100%;
+
+  button {
+    @include flex-center;
+    flex-direction: column;
+    gap: 2px;
+    width: 100%;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: $color-grey-stone;
+    transition: color 0.3s ease;
+    padding: $spacing-sm 0;
+
+    .icon {
+      font-family: $font-family-title;
+      font-size: 1.2rem;
+    }
+    .text {
+      font-size: 10px;
+    }
+
+    &:hover {
+      color: $color-white-moon;
+      .icon {
+        text-shadow: 0 0 8px $color-cyan-tian;
+        color: $color-cyan-tian;
+      }
+    }
+
+    &:disabled {
+      color: rgba($color-grey-stone, 0.4);
+      cursor: not-allowed;
+
+      &:hover {
+        color: rgba($color-grey-stone, 0.4);
+        .icon {
+          text-shadow: none;
+          color: inherit;
+        }
+      }
+    }
+  }
+}

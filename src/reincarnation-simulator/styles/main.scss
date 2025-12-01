@@ -1,0 +1,86 @@
+// [Theme] Reincarnation Simulator - Visual Recast
+// File: main.scss
+// Desc: Main stylesheet entry point. Imports all theme and component styles
+//       in the correct order of precedence.
+
+// ==========================================================================
+// 1. New Theme Foundation
+//    - Imports variables, mixins, and base styles.
+// ==========================================================================
+@use './theme/variables' as *;
+@use './theme/mixins' as *;
+@use './theme/base';
+
+// ==========================================================================
+// 2. Dock Manager Theme
+//    - Applies the "Guixu Dao Mirror" theme to dock-spawn-ts panels.
+// ==========================================================================
+@use './theme/dock-theme'; // Corrected from _dock-theme.scss
+
+// ==========================================================================
+// 3. Legacy Styles
+//    - Contains styles from the old theme for compatibility.
+//    - These are overridden by the new theme where selectors match.
+// ==========================================================================
+@import './theme/legacy'; // Corrected from _legacy.scss
+
+// ==========================================================================
+// 4. Component-Specific Styles
+//    - Import styles for individual components or apps as needed.
+// ==========================================================================
+@import './apps/mall.scss';
+@import './apps/character-annals.scss';
+@import './components/EnhancedInputBox.scss';
+@import './components/InputHistoryPopup';
+
+@import './components/world-detail-modal';
+@import './components/settlement-view';
+
+// ==========================================================================
+// 5. Mobile View Overrides
+//    - Adapts the layout for mobile devices when .mobile-view is active.
+// ==========================================================================
+@import './mobile';
+
+// Text parsing styles
+.text-dialogue {
+  color: $color-gold-pale;
+}
+// Enhanced Input Box Layout Overrides
+.enhanced-input-box-container {
+  .input-wrapper {
+    display: flex;
+    align-items: stretch;
+    gap: $spacing-sm;
+  }
+
+  .button-group {
+    display: flex;
+    gap: $spacing-sm;
+  }
+
+  .side-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+
+    .action-button {
+      flex-grow: 1; // Allows buttons to fill the column height
+    }
+  }
+
+}
+
+.text-psychology {
+  color: $color-purple-mystery;
+  font-style: italic;
+}
+
+.text-scenery {
+  color: $color-cyan-tian;
+}
+
+.text-system-highlight {
+  color: $color-gold-liu;
+  font-weight: bold;
+}

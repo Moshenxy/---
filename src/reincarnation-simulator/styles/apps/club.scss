@@ -1,0 +1,100 @@
+.club-center-app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: #f0f2f5;
+
+  .app-header {
+    padding: 12px 15px;
+    background-color: #fff;
+    border-bottom: 1px solid #dee2e6;
+    text-align: center;
+    flex-shrink: 0;
+
+    h1 {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+  }
+
+  .app-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 15px;
+
+    .loading {
+      padding: 20px;
+      text-align: center;
+      color: #6c757d;
+    }
+
+    .club-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+
+      .club-item {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+
+        .club-item-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 12px 15px;
+          background-color: #f8f9fa;
+          border-bottom: 1px solid #e9ecef;
+
+          .club-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+          }
+
+          .join-btn {
+            background-color: #0d6efd;
+            color: #fff;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.2s;
+
+            &:hover {
+              background-color: #0b5ed7;
+            }
+          }
+        }
+
+        .club-item-body {
+          padding: 15px;
+
+          .club-description {
+            font-size: 0.9rem;
+            color: #495057;
+            margin: 0 0 15px 0;
+            line-height: 1.6;
+          }
+
+          .club-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 20px;
+            font-size: 0.8rem;
+            color: #6c757d;
+
+            span {
+              strong {
+                font-weight: 500;
+                color: #495057;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

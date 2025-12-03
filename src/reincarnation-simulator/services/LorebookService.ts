@@ -120,7 +120,7 @@ async function loadAndParseWorldData(worldName = '主世界'): Promise<Epoch | n
       console.warn(`[LorebookService] 未能读取到名为 "${worldName}" 的世界书条目内容。`);
       return null;
     }
-    
+
     const worldData = parseWorldLoreForMap(content) as WorldDefinition | null;
 
     if (worldData && worldData.历史纪元 && worldData.元规则) {
@@ -135,7 +135,7 @@ async function loadAndParseWorldData(worldName = '主世界'): Promise<Epoch | n
         return firstPlayableEpoch;
       }
     }
-    
+
     console.warn(`[LorebookService] 在 "${worldName}" 的世界数据中未能找到激活的纪元信息。`);
     return null;
   } catch (error) {

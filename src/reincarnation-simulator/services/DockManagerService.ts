@@ -90,7 +90,7 @@ class DockManagerService {
     }
 
     this.goldenLayout.addComponent(componentName, { title, props }, panelId);
-    
+
     // Manually save layout after adding a component
     if (this.goldenLayout) {
       const config = this.goldenLayout.saveLayout();

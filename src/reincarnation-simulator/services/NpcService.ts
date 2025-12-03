@@ -14,10 +14,9 @@ const allNpcs = computed(() => {
   const worldState = store.worldState;
   if (!worldState?.角色) return [];
 
-  const userAndAvatarIds = [
-    worldState.角色[store.userId]?.真名?.[0],
-    worldState.模拟器?.模拟.当前化身ID?.[0]
-  ].filter(Boolean);
+  const userAndAvatarIds = [worldState.角色[store.userId]?.真名?.[0], worldState.模拟器?.模拟.当前化身ID?.[0]].filter(
+    Boolean,
+  );
 
   const characters = Object.values(worldState.角色) as Character[];
   return characters.filter((char: Character) => {
@@ -56,15 +55,15 @@ async function initializeWorldAndLocationData(): Promise<{ id: string; name: str
         // 缓存地点信息 - V8.0 纪元中心化适配
         const currentEpochId = parsed?.元规则?.当前纪元ID;
         if (currentEpochId && parsed?.历史纪元?.[currentEpochId]) {
-            const activeEpoch = parsed.历史纪元[currentEpochId];
-            const spatialEntities = activeEpoch?.内容?.空间实体;
-            if (Array.isArray(spatialEntities)) {
-                for (const entity of spatialEntities) {
-                    if (entity.ID && entity.名称) {
-                        locationNameCache.set(entity.ID, entity.名称);
-                    }
-                }
+          const activeEpoch = parsed.历史纪元[currentEpochId];
+          const spatialEntities = activeEpoch?.内容?.空间实体;
+          if (Array.isArray(spatialEntities)) {
+            for (const entity of spatialEntities) {
+              if (entity.ID && entity.名称) {
+                locationNameCache.set(entity.ID, entity.名称);
+              }
             }
+          }
         }
 
         if (id && name) {
@@ -101,15 +100,15 @@ function getNpcNameById(id: string): string {
 }
 
 function getNpcId(npc: Character): string | null {
-    const worldState = store.worldState;
-    if (!worldState?.角色) return null;
+  const worldState = store.worldState;
+  if (!worldState?.角色) return null;
 
-    for (const id in worldState.角色) {
-        if (worldState.角色[id] === npc) {
-            return id;
-        }
+  for (const id in worldState.角色) {
+    if (worldState.角色[id] === npc) {
+      return id;
     }
-    return null;
+  }
+  return null;
 }
 
 export const npcService = {

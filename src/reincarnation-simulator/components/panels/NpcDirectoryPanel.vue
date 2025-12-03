@@ -1,14 +1,19 @@
 <template>
   <div class="npc-directory-panel">
     <button class="toggle-world-list" @click="isWorldListVisible = !isWorldListVisible">世界</button>
-    
+
     <!-- World List (Overlay) -->
     <div v-if="isWorldListVisible" class="world-list-overlay" @click.self="isWorldListVisible = false">
       <div class="world-list-column">
         <h4>世界列表</h4>
-        <input type="text" v-model="worldSearchTerm" placeholder="搜索世界..." class="search-input">
+        <input type="text" v-model="worldSearchTerm" placeholder="搜索世界..." class="search-input" />
         <ul>
-          <li v-for="world in filteredWorlds" :key="world.id" :class="{ active: selectedWorldId === world.id }" @click="selectWorld(world.id)">
+          <li
+            v-for="world in filteredWorlds"
+            :key="world.id"
+            :class="{ active: selectedWorldId === world.id }"
+            @click="selectWorld(world.id)"
+          >
             {{ world.name }}
           </li>
         </ul>
@@ -18,9 +23,14 @@
     <!-- NPC List -->
     <div class="npc-list-column">
       <h4>NPC列表</h4>
-      <input type="text" v-model="npcSearchTerm" placeholder="搜索NPC..." class="search-input">
+      <input type="text" v-model="npcSearchTerm" placeholder="搜索NPC..." class="search-input" />
       <ul v-if="filteredNpcs.length > 0" class="npc-list">
-        <li v-for="npc in filteredNpcs" :key="npc.姓名" :class="{ active: selectedNpc === npc }" @click="selectNpc(npc)">
+        <li
+          v-for="npc in filteredNpcs"
+          :key="npc.姓名"
+          :class="{ active: selectedNpc === npc }"
+          @click="selectNpc(npc)"
+        >
           <div class="npc-info">
             <span class="npc-name">{{ npc.姓名 }}</span>
             <span class="npc-location">{{ (npc as any).locationName }}</span>
@@ -49,7 +59,10 @@ import type { Character } from '../../types';
 import NpcDetailDisplay from '../common/NpcDetailDisplay.vue';
 import FollowButton from '../common/FollowButton.vue';
 
-interface WorldInfo { id: string; name: string; }
+interface WorldInfo {
+  id: string;
+  name: string;
+}
 
 const worlds = ref<WorldInfo[]>([]);
 const selectedWorldId = ref<string | null>(null);
@@ -117,57 +130,86 @@ watch(selectedWorldId, () => {
   color: $color-white-moon;
 }
 .search-input {
-    width: 100%;
-    padding: $spacing-sm;
-    margin-bottom: $spacing-md;
-    background-color: rgba($color-black-void, 0.5);
-    border: 1px solid $color-grey-stone;
-    color: $color-white-moon;
-    border-radius: $border-radius-sm;
+  width: 100%;
+  padding: $spacing-sm;
+  margin-bottom: $spacing-md;
+  background-color: rgba($color-black-void, 0.5);
+  border: 1px solid $color-grey-stone;
+  color: $color-white-moon;
+  border-radius: $border-radius-sm;
 }
 .world-list-overlay {
-  position: absolute; top: 0; left: 0; bottom: 0;
-  width: 250px; background-color: rgba(10, 15, 30, 0.85);
-  backdrop-filter: blur(8px); z-index: 10;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 250px;
+  background-color: rgba(10, 15, 30, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 10;
   border-right: 1px solid rgba($color-gold-liu, 0.3);
   padding: $spacing-md;
 }
-.world-list-column ul, .npc-list {
-  list-style: none; padding: 0; margin: 0;
+.world-list-column ul,
+.npc-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
   li {
-    padding: $spacing-sm $spacing-md; cursor: pointer;
+    padding: $spacing-sm $spacing-md;
+    cursor: pointer;
     border-radius: $border-radius-sm;
     transition: background-color 0.2s ease;
-    display: flex; justify-content: space-between; align-items: center;
-    &:hover { background-color: rgba($color-cyan-tian, 0.1); }
-    &.active { background-color: $color-cyan-tian; color: $color-black-void; font-weight: bold; }
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    &:hover {
+      background-color: rgba($color-cyan-tian, 0.1);
+    }
+    &.active {
+      background-color: $color-cyan-tian;
+      color: $color-black-void;
+      font-weight: bold;
+    }
   }
 }
 .toggle-world-list {
-    position: absolute; top: 12px; left: 12px; z-index: 20;
-    background: rgba($color-black-void, 0.7);
-    border: 1px solid $color-gold-liu; color: $color-gold-liu;
-    padding: 5px 10px; border-radius: 5px; cursor: pointer;
-    font-family: $font-family-title;
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 20;
+  background: rgba($color-black-void, 0.7);
+  border: 1px solid $color-gold-liu;
+  color: $color-gold-liu;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: $font-family-title;
 }
 [class*='-column'] {
   padding: $spacing-md;
   overflow-y: auto;
   border-right: 1px solid rgba($color-gold-liu, 0.15);
-  &:last-child { border-right: none; }
+  &:last-child {
+    border-right: none;
+  }
   h4 {
-    font-family: $font-family-title; color: $color-gold-pale;
-    text-align: center; margin-top: 0; margin-bottom: $spacing-lg;
-    padding-bottom: $spacing-md; border-bottom: 1px solid rgba($color-gold-liu, 0.3);
+    font-family: $font-family-title;
+    color: $color-gold-pale;
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: $spacing-lg;
+    padding-bottom: $spacing-md;
+    border-bottom: 1px solid rgba($color-gold-liu, 0.3);
   }
 }
 .npc-info {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 .npc-location {
-    font-size: $font-size-small;
-    color: $color-grey-stone;
-    margin-top: 4px;
+  font-size: $font-size-small;
+  color: $color-grey-stone;
+  margin-top: 4px;
 }
 </style>

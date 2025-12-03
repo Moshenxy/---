@@ -1,4 +1,6 @@
 import './core/vue-loader';
+import 'golden-layout/dist/css/goldenlayout-base.css';
+import 'golden-layout/dist/css/themes/goldenlayout-dark-theme.css';
 import './styles/main.scss';
 import { saveLoadService } from './services/saveLoadService';
 import { commandService } from './services/CommandService';

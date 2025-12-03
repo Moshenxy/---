@@ -20,12 +20,7 @@
                     <path :id="`arc-path-${item.ID || index}`" d="M 12,52 a 38,38 0 1,1 76,0" fill="none" />
                   </defs>
                   <text>
-                    <textPath
-                      class="arc-text"
-                      :xlink:href="`#arc-path-${item.ID || index}`"
-                      startOffset="50%"
-                      text-anchor="middle"
-                    >
+                    <textPath class="arc-text" :xlink:href="`#arc-path-${item.ID || index}`" startOffset="50%" text-anchor="middle">
                       {{ item.名称 }}
                     </textPath>
                   </text>
@@ -36,9 +31,9 @@
               </div>
             </template>
           </div>
-          <div v-if="allItemsWithSeparators.length === 0" class="empty-grid">
-            <p>空空如也</p>
-          </div>
+            <div v-if="allItemsWithSeparators.length === 0" class="empty-grid">
+              <p>空空如也</p>
+            </div>
         </div>
       </div>
 
@@ -54,19 +49,15 @@
           <p class="detail-desc">{{ selectedItem.描述 }}</p>
           <div v-if="selectedItem.effects" class="detail-effects">
             <h5>效果:</h5>
-            <ul
-              v-if="
-                selectedItem.effects.attributes_bonus && Object.keys(selectedItem.effects.attributes_bonus).length > 0
-              "
-            >
-              <li v-for="(value, key) in selectedItem.effects.attributes_bonus" :key="key">{{ key }} +{{ value }}</li>
+            <ul v-if="selectedItem.effects.attributes_bonus && Object.keys(selectedItem.effects.attributes_bonus).length > 0">
+              <li v-for="(value, key) in selectedItem.effects.attributes_bonus" :key="key">
+                {{ key }} +{{ value }}
+              </li>
             </ul>
-            <ul
-              v-if="
-                selectedItem.effects.percentage_bonus && Object.keys(selectedItem.effects.percentage_bonus).length > 0
-              "
-            >
-              <li v-for="(value, key) in selectedItem.effects.percentage_bonus" :key="key">{{ key }} {{ value }}</li>
+            <ul v-if="selectedItem.effects.percentage_bonus && Object.keys(selectedItem.effects.percentage_bonus).length > 0">
+              <li v-for="(value, key) in selectedItem.effects.percentage_bonus" :key="key">
+                {{ key }} {{ value }}
+              </li>
             </ul>
           </div>
         </div>
@@ -97,11 +88,11 @@ const closeDetail = () => {
 const allItemsWithSeparators = computed(() => {
   const result: any[] = [];
   const items = playerInventory.value;
-
+  
   if (!items) return [];
 
   const sortedItems = [...items].sort((a, b) => {
-    const typeOrder: Record<string, number> = { 消耗品: 1, 奇物: 2, 材料: 3, 羁绊: 4 };
+    const typeOrder: Record<string, number> = { '消耗品': 1, '奇物': 2, '材料': 3, '羁绊': 4 };
     return typeOrder[a.类型] - typeOrder[b.类型];
   });
 

@@ -3,9 +3,7 @@
     <TopStatusBar />
     <div class="main-layout">
       <MainView />
-      <div class="interactive-overlay">
-        <DockManager />
-      </div>
+      <DockManager />
     </div>
 
     <!-- Radial Menu Modal -->
@@ -98,9 +96,9 @@ import NpcListModal from './components/modals/NpcListModal.vue';
 import TopStatusBar from './components/TopStatusBar.vue';
 import WorldTimeDisplay from './components/WorldTimeDisplay.vue';
 import MainView from './MainView.vue';
+import { commandService } from './services/CommandService';
 import { confirmationService } from './services/ConfirmationService';
 import { detailModalService } from './services/DetailModalService';
-import { commandService } from './services/CommandService';
 import { dockManagerService } from './services/DockManagerService';
 import { inputModalActions, inputModalState } from './services/InputModalService';
 import { npcModalService } from './services/NpcModalService';
@@ -352,19 +350,6 @@ export default defineComponent({
   & > * {
     grid-column: 1 / -1;
     grid-row: 1 / -1;
-  }
-}
-
-.interactive-overlay {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  pointer-events: none;
-
-  & > * {
-    pointer-events: auto;
   }
 }
 

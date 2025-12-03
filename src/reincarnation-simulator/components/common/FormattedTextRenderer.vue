@@ -41,20 +41,16 @@ const segments = computed((): TextSegment[] => {
       parsedSegments.push({ text: preMatchText, class: '' });
     }
 
-    if (match[1]) {
-      // 【【...】】
+    if (match[1]) { // 【【...】】
       parsedSegments.push({ text: matchedText.slice(2, -2), class: 'text-system-highlight' });
-    } else if (match[2]) {
-      // 【...】
+    } else if (match[2]) { // 【...】
       parsedSegments.push({ text: matchedText.slice(1, -1), class: 'text-scenery' });
-    } else if (match[3]) {
-      // 「...」
+    } else if (match[3]) { // 「...」
       parsedSegments.push({ text: matchedText.slice(1, -1), class: 'text-dialogue' });
-    } else if (match[4]) {
-      // *...*
+    } else if (match[4]) { // *...*
       parsedSegments.push({ text: matchedText.slice(1, -1), class: 'text-psychology' });
     }
-
+    
     remainingText = remainingText.substring(match.index + matchedText.length);
     regex.lastIndex = 0; // Reset regex index
   }

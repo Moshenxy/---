@@ -18,21 +18,20 @@
 
       <!-- 纪元切换 -->
       <section class="world-section epoch-selection">
-        <h3 class="section-title">历史纪元</h3>
-        <div class="tabs-container">
-          <button
-            v-for="epoch in availableEpochs"
-            :key="epoch.纪元ID"
-            class="epoch-tab"
-            :class="{ active: selectedEpochId === epoch.纪元ID }"
-            @click="selectedEpochId = epoch.纪元ID"
-          >
-            {{ epoch.纪元名称 }}
+        <h3 class="section-title">内容详情</h3>
+        <div class="tabs-container main-tabs">
+          <button class="epoch-tab" :class="{ active: activeTab === 'details' }" @click="activeTab = 'details'">
+            纪元详情
+          </button>
+          <button class="epoch-tab" :class="{ active: activeTab === 'summary' }" @click="activeTab = 'summary'">
+            世界摘要
           </button>
         </div>
       </section>
 
-      <template v-if="activeEpoch">
+      <div v-if="activeTab === 'summary'" class="summary-content" v-html="worldSummary"></div>
+
+      <template v-if="activeTab === 'details' && activeEpoch">
         <!-- 纪元规则 -->
         <section class="world-section">
           <div class="epoch-header">
@@ -92,13 +91,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
-import { mainWorld, avatarWorld } from '../../store/getters';
-import type { World, Epoch } from '../../types';
+import { computed, onMounted, ref, watch } from 'vue';
+import { lorebookService } from '../../services/LorebookService';
+import { avatarWorld, mainWorld } from '../../store/getters';
+import type { Epoch, World } from '../../types';
 
 const props = defineProps<{
   worldType: 'mainWorld' | 'avatarWorld';
 }>();
+
+const activeTab = ref('details');
+const worldSummary = ref('加载摘要中...');
 
 const world = computed<World | null>(() => {
   return props.worldType === 'mainWorld' ? mainWorld.value : avatarWorld.value;
@@ -110,6 +113,11 @@ const availableEpochs = computed(() => {
 });
 
 const selectedEpochId = ref<string | null>(null);
+
+onMounted(async () => {
+  const entry = await lorebookService.findEntryByComment('主世界摘要');
+  worldSummary.value = entry ? entry.content : '未能找到主世界摘要。';
+});
 
 watch(
   world,

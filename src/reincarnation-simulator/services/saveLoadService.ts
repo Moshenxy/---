@@ -119,19 +119,15 @@ class SaveLoadService {
       const existingEntry = allEntries.find((e: any) => e.comment === comment);
 
       if (existingEntry) {
-        await TavernHelper.setLorebookEntries(LOREBOOK_NAME, [
-          { uid: existingEntry.uid, content: JSON.stringify(saveData, null, 2) },
-        ]);
+        await TavernHelper.setLorebookEntries(LOREBOOK_NAME, [{ uid: existingEntry.uid, content: JSON.stringify(saveData, null, 2) }]);
       } else {
-        await TavernHelper.createLorebookEntries(LOREBOOK_NAME, [
-          {
-            comment: comment,
-            content: JSON.stringify(saveData, null, 2),
-            keys: [comment],
-            position: 'after_character_definition',
-            order: 200,
-          },
-        ]);
+        await TavernHelper.createLorebookEntries(LOREBOOK_NAME, [{
+          comment: comment,
+          content: JSON.stringify(saveData, null, 2),
+          keys: [comment],
+          position: 'after_character_definition',
+          order: 200,
+        }]);
       }
 
       await this.loadAllSaveSlots();
@@ -246,20 +242,16 @@ class SaveLoadService {
       const existingEntry = allEntries.find((e: any) => e.comment === comment);
 
       if (existingEntry) {
-        await TavernHelper.setLorebookEntries(LOREBOOK_NAME, [
-          { uid: existingEntry.uid, content: JSON.stringify(saveData, null, 2) },
-        ]);
+        await TavernHelper.setLorebookEntries(LOREBOOK_NAME, [{ uid: existingEntry.uid, content: JSON.stringify(saveData, null, 2) }]);
       } else {
-        await TavernHelper.createLorebookEntries(LOREBOOK_NAME, [
-          {
-            comment: comment,
-            content: JSON.stringify(saveData, null, 2),
-            keys: [comment],
-            position: 'after_character_definition',
-            order: 200,
-            enabled: false, // 默认禁用
-          },
-        ]);
+        await TavernHelper.createLorebookEntries(LOREBOOK_NAME, [{
+          comment: comment,
+          content: JSON.stringify(saveData, null, 2),
+          keys: [comment],
+          position: 'after_character_definition',
+          order: 200,
+          enabled: false, // 默认禁用
+        }]);
       }
 
       await this.loadAllSaveSlots();

@@ -54,7 +54,7 @@ export const modalService = {
   },
 
   get worldType() {
-    return computed(() => state.view?.world ?? '');
+      return computed(() => state.view?.world ?? '');
   },
 
   show(world: string, panel: string) {
@@ -66,7 +66,7 @@ export const modalService = {
     state.isVisible = false;
     // A small delay to allow for fade-out animations if added later
     setTimeout(() => {
-      state.view = null;
+        state.view = null;
     }, 300);
   },
 };

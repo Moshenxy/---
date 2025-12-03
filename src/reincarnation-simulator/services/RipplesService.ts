@@ -30,6 +30,7 @@ function parseBlock(block: string): { [key: string]: string } {
   return data;
 }
 
+
 class RipplesService {
   public ripples = reactive<Ripple[]>([]);
 
@@ -66,6 +67,7 @@ class RipplesService {
       // 按世数排序并更新响应式数组
       this.ripples.splice(0, this.ripples.length, ...parsedRipples.sort((a, b) => a.id - b.id));
       console.log(`[RipplesService] Loaded ${this.ripples.length} ripples.`);
+
     } catch (error) {
       console.error('[RipplesService] Error loading ripples:', error);
       this.ripples.splice(0, this.ripples.length); // 出错时清空

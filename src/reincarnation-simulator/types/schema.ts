@@ -43,13 +43,13 @@ const DatabaseItemSchema = z.object({
 });
 
 const ActiveSkillSchema = z.object({
-  ID: nonEmptyString,
-  名称: nonEmptyString,
-  描述: z.string(),
-  关联技艺: z.string(),
-  类型: z.string(),
-  基础效果: z.string(),
-  效果等级公式: z.string(),
+    ID: nonEmptyString,
+    名称: nonEmptyString,
+    描述: z.string(),
+    关联技艺: z.string(),
+    类型: z.string(),
+    基础效果: z.string(),
+    效果等级公式: z.string(),
 });
 
 const ArtisanSkillSchema = z.object({
@@ -60,13 +60,16 @@ const ArtisanSkillSchema = z.object({
   等级上限: z.coerce.number().prefault(0),
   效果描述: z.string().optional(),
   效果等级公式: z.string().optional(),
-  等级体系: z.array(
-    z.object({
-      等级: z.coerce.number().prefault(0),
-      称号: z.string(),
-      升级所需经验: z.coerce.number().prefault(0),
-    }),
-  ),
+  等级体系: z
+    .object({ $meta: MetaSchema.optional() })
+    .catchall(
+      z.object({
+        等级: z.coerce.number().prefault(0),
+        称号: z.string(),
+        升级所需经验: z.coerce.number().prefault(0),
+      }),
+    )
+    .prefault({}),
 });
 
 const RelationLayerSchema = z.object({
@@ -117,8 +120,8 @@ const RelationLayerSchema = z.object({
 
 const GoalSchema = z.object({
   名称: z.string(),
-  动机: z.string(),
-  状态: z.string(),
+  动机: z.string().optional().prefault(''),
+  状态: z.string().optional().prefault('进行中'),
 });
 
 const CharacterSchema = z
@@ -154,8 +157,8 @@ const CharacterSchema = z
         秘密: z.record(z.string(), z.object({ 内容: z.string(), 揭露条件: z.string() })).optional(),
         短期记忆: z.record(z.string(), z.any()).optional(),
         驱动力: z.object({
-          长期目标: z.record(z.string(), GoalSchema).optional(),
-          短期目标: z.record(z.string(), GoalSchema).optional(),
+          长期目标: z.object({ $meta: MetaSchema.optional() }).catchall(GoalSchema).prefault({}),
+          短期目标: z.object({ $meta: MetaSchema.optional() }).catchall(GoalSchema).prefault({}),
           决策倾向: z.object({
             常规: z.string(),
             优势时: z.string(),

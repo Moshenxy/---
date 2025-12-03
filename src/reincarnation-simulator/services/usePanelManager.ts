@@ -8,10 +8,10 @@ import AvatarTasksPanel from '../components/panels/avatar/AvatarTasksPanel.vue';
 import CharacterPanel from '../components/panels/CharacterPanel.vue';
 import ImprintsPanel from '../components/panels/ImprintsPanel.vue';
 import InventoryPanel from '../components/panels/InventoryPanel.vue';
-import SkillsPanel from '../components/panels/SkillsPanel.vue';
 import NpcDirectoryPanel from '../components/panels/NpcDirectoryPanel.vue';
 import ReincarnationPanel from '../components/panels/ReincarnationPanel.vue';
 import RippleDetailPanel from '../components/panels/RippleDetailPanel.vue';
+import SkillsPanel from '../components/panels/SkillsPanel.vue';
 import SystemPanel from '../components/panels/SystemPanel.vue';
 import WorldDetailsPanel from '../components/panels/WorldDetailsPanel.vue';
 import AvatarWorldMapView from '../modules/world-map/components/AvatarWorldMapView.vue';
@@ -26,7 +26,7 @@ interface PanelInfo {
 
 type PanelRegistry = Record<string, Record<string, PanelInfo>>;
 
-const panelRegistry: PanelRegistry = {
+export const panelRegistry: PanelRegistry = {
   mainWorld: {
     character: { component: CharacterPanel, title: '角色本体' },
     inventory: { component: InventoryPanel, title: '本体背包' },
@@ -65,8 +65,13 @@ export function usePanelManager() {
     const panelInfo = panelRegistry[world]?.[panel];
     if (panelInfo) {
       const panelId = `${world}-${panel}-${props.rippleId || ''}`;
+      const componentName = `${world}-${panel}`;
+
+      // Ensure the component is registered before trying to open it
+      dockManagerService.registerComponent(componentName, panelInfo.component);
+
       const finalProps = { worldType: world, ...props };
-      dockManagerService.openPanel(panelId, panelInfo.title, panelInfo.component, finalProps);
+      dockManagerService.openPanel(panelId, panelInfo.title, componentName, finalProps);
     }
   };
 

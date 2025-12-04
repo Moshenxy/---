@@ -194,6 +194,7 @@ export async function startReincarnation() {
 
     const userInput = `
     ### 角色设定
+    - **性别**: ${selections.gender}
     - **年龄**: ${selections.age}
     - **天命身份**: ${formatSingleItem(identity)}
     - **天赋异禀**: ${formatItemList(selectedTalents)}

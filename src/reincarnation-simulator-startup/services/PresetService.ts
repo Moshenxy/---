@@ -7,8 +7,8 @@ const PRESET_STORAGE_KEY = 'reincarnation_presets_v2'; // 使用新键以避免�
 // --- 类型定义 ---
 type GameDataItem = { id: string; name: string; desc: string; cost: number; [key: string]: any };
 export type CustomDataPayload = { [key in keyof typeof GAME_DATA]?: GameDataItem[] };
- 
- export interface Preset {
+
+export interface Preset {
   name: string;
   selections: typeof store.selections;
   potentialPoints: typeof store.potentialPoints;
@@ -76,7 +76,7 @@ async function injectCustomData(customData: CustomDataPayload | undefined): Prom
       const existingIds = new Set((GAME_DATA[type] as GameDataItem[]).map(i => i.id));
       itemsToInject.forEach(item => {
         if (!existingIds.has(item.id)) {
-          const promise = new Promise<void>((resolve) => {
+          const promise = new Promise<void>(resolve => {
             // 直接传递完整的 item 对象
             addCustomItem(type, item);
             injected = true;
@@ -95,7 +95,6 @@ async function injectCustomData(customData: CustomDataPayload | undefined): Prom
     }
   }
 }
-
 
 // --- 核心服务函数 ---
 
@@ -149,12 +148,11 @@ export async function loadPreset(preset: Preset) {
 
     // 2. 在下一个DOM更新周期应用选择，确保选项已渲染
     await nextTick();
-    
+
     Object.assign(store.selections, JSON.parse(JSON.stringify(preset.selections)));
     Object.assign(store.potentialPoints, JSON.parse(JSON.stringify(preset.potentialPoints)));
-    
-    toastr.success(`方案 "${preset.name}" 已加载！`);
 
+    toastr.success(`方案 "${preset.name}" 已加载！`);
   } catch (error) {
     console.error('加载方案失败:', error);
     toastr.error('加载方案失败。');
@@ -196,10 +194,10 @@ export function exportPreset(preset: Preset) {
 export function importPreset(file: File): Promise<void> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = event => {
       try {
         const importedPreset = JSON.parse(event.target?.result as string) as Preset;
-        
+
         if (!importedPreset.name || !importedPreset.selections || !importedPreset.potentialPoints) {
           throw new Error('无效的方案文件格式。');
         }
@@ -207,13 +205,13 @@ export function importPreset(file: File): Promise<void> {
         // 注入自定义数据并保存
         injectCustomData(importedPreset.customData);
         savePreset(importedPreset.name); // 使用 savePreset 来添加或覆盖
-        
+
         // 确保导入的数据完全覆盖
         const presets = getPresets();
         const targetPreset = presets.find(p => p.name === importedPreset.name);
         if (targetPreset) {
-            Object.assign(targetPreset, importedPreset);
-            localStorage.setItem(PRESET_STORAGE_KEY, JSON.stringify(presets));
+          Object.assign(targetPreset, importedPreset);
+          localStorage.setItem(PRESET_STORAGE_KEY, JSON.stringify(presets));
         }
 
         toastr.success(`方案 "${importedPreset.name}" 已成功导入并保存！`);
@@ -225,7 +223,7 @@ export function importPreset(file: File): Promise<void> {
         reject(error);
       }
     };
-    reader.onerror = (error) => {
+    reader.onerror = error => {
       toastr.error('读取文件失败。');
       reject(error);
     };

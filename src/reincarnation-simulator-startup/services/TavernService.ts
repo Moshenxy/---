@@ -241,9 +241,10 @@ export async function startReincarnation() {
   4.  **变量生成规则 (JSON Patch)**:
       *   **【世界变量强制】**: 你生成的所有与世界相关的变量 (路径以 \`/世界/\` 开头) **必须**严格基于下方传入的“主世界设定”内容。**禁止**重新创造世界或添加“主世界设定”中不存在的纪元、规则或力量体系。
       *   **【生成顺序】**: 严格按照以下顺序生成：1.数据库模板 -> 2.角色创建 -> 3.因果之网。
+      *   **【数据库物品强制】**: 在 \`/数据库/\` 下创建物品模板时，路径**必须**根据物品的类型指向 \`/数据库/消耗品\`、\`/数据库/奇物\` 或 \`/数据库/材料\`。**绝对禁止**使用 \`/数据库/物品\` 这一不存在的路径。
       *   **【角色创建】**: 必须为“{{user}}”和至少一个初始NPC创建变量。
       *   **【因果之网强制】**: 在为两个角色（例如A和B）建立初次关系时，**必须**先以独立的 \`add\` 指令为其创建空的 \`{}\` 主目录（例如 \`{"op":"add", "path":"/因果之网/A", "value":{}}\`），**然后**才能添加具体的关系数据（例如 \`{"op":"add", "path":"/因果之网/A/B", "value":{...}}\`）。此为天道之序，不可逆乱。
-      *   **【真实性强制】**: NPC必须被视为一个真实存在的个体进行创造，包含完整且逻辑自洽的\`天赋\`、\`背包\`、\`过去经历\`、\`心流\`、\`技艺\`（包括技艺对应的\`技能\`）、\`驱动力\`、\`秘密\`等所有内容，**注意有数据库的必须提前在数据库建立数据**。其\`本世宿命\`必须为空对象\`{}\`。
+      *   **【真实性强制】**: NPC必须被视为一个真实存在的个体进行创造，包含完整且逻辑自洽的\`性别\`、\`相貌\`、\`着装\`、\`天赋\`、\`背包\`、\`过去经历\`、\`心流\`、\`技艺\`、\`技能\`、\`驱动力\`、\`秘密\`等所有内容，**注意有数据库的必须提前在数据库建立数据**。其\`本世宿命\`必须为空对象\`{}\`。
       *   **【生日强制】**: 必须根据“天命道标”中\`user\`的年龄，结合当前纪元的初始时间，为其倒推出一个合理的\`出生日期\`。
       *   **【世界属性强制】**: 必须基于“主世界设定”中的\`力量体系.属性模板\`和角色的初始等级，为\`user\`和所有\`npc\`生成符合其身份和设定的初始\`世界专属属性\`。
       *   **【模板参考】**: 严格参考以下JSON Patch模板，**必须一字不差地完整填充所有填充所有必需的键和值，禁止修改结构，特别是可拓展列表，必须包含$meta。世界变量中，特别是\`历史纪元\`下的所有内容，包括\`境界定义\`下每一个境界必须全部定义**：
@@ -303,7 +304,9 @@ export async function startReincarnation() {
                        "身份": { "$meta": { "extensible": true }, "id_01": "/* 玩家身份 */" },
                        "所属世界": "${store.mainWorldId}",
                        "当前位置": "/* 初始位置ID */",
-                       "外观描述": "...",
+                       "性别": "...",
+                       "相貌": "...",
+                       "着装": "...",
                        "背景": { "过去经历": { "$meta": { "extensible": true }, "event_1": { "事件": "...", "影响": "..." } } },
                        "技艺": { "$meta": { "extensible": true } },
                        "天赋": { "$meta": { "extensible": true }, "talent_id_1": true },
@@ -324,7 +327,9 @@ export async function startReincarnation() {
                        "身份": { "$meta": { "extensible": true } },
                        "所属世界": "${store.mainWorldId}",
                        "当前位置": "...",
-                       "外观描述": "...",
+                       "性别": "...",
+                       "相貌": "...",
+                       "着装": "...",
                        "背景": {
                          "过去经历": { "$meta": { "extensible": true, "description": "塑造该NPC的关键人生经历" } },
                          "性格特质": { "$meta": { "extensible": true, "description": "【核心标签库】角色的性格与内在准则。" } }
@@ -351,7 +356,7 @@ export async function startReincarnation() {
                      }
                    },
                    // 【因果之网正确示例】第一步: 创建主目录
-                   { "op": "add", "path": "/因果之网/主体ID", "value": {} },
+                   { "op": "add", "path": "/因果之网/主体ID", "value": { "$meta": { "extensible": true } } },
                    // 【因果之网正确示例】第二步: 添加关系
                    { "op": "add", "path": "/因果之网/主体ID/客体ID", "value": { "认知层": {"可靠度": 50, "能力评价": 50, "威胁度": 0}, "情感层": {"亲近感": 0, "仰慕度": 0}, "利益层": {"资源价值": 0, "合作潜力": 50, "利益冲突": 0}, "社会层": {"名义关系": { "$meta": { "extensible": true } }, "阶级差异": 0, "阵营立场": "中立"}, "因果标签": { "$meta": { "extensible": true } } } }
                  ]
@@ -379,7 +384,23 @@ export async function startReincarnation() {
 
     if (!aiResponse) throw new Error('天衍未能回应你的创世指令。');
 
+    const updateScriptMatch = aiResponse.match(/<UpdateVariable>([\s\S]*?)<\/UpdateVariable>/i);
+    const updateScript = updateScriptMatch ? updateScriptMatch[1].trim() : null;
+
+    // 使用当前消息层的数据作为旧变量，以修复开局变量不更新的BUG
+    const inputData = { old_variables: messageZero.data ?? {} };
+    if (updateScript) {
+      // mag_invoke_mvu 会修改 inputData 对象，并添加 new_variables 属性
+      await eventEmit('mag_invoke_mvu', updateScript, inputData);
+    }
+
+    // 更新消息对象
     messageZero.message = aiResponse;
+    // @ts-ignore - 如果mvu执行成功，则更新数据
+    if (inputData.new_variables) {
+      // @ts-ignore
+      messageZero.data = inputData.new_variables;
+    }
     await TavernHelper.setChatMessages([messageZero], { refresh: 'all' });
 
     toastr.success('轮回已开启！请关闭此窗口，刷新酒馆界面以开始你的故事。');

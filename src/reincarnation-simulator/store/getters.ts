@@ -112,12 +112,8 @@ export const playerSkills = computed(() => {
         (l: any) => typeof l === 'object' && l !== null && '等级' in l,
       );
 
-      const currentLevelInfo = levelSystem.find((l: any) => l.等级 === artData.等级) as
-        | { 升级所需经验: number; 称号: string }
-        | undefined;
-      const nextLevelInfo = levelSystem.find((l: any) => l.等级 === artData.等级 + 1) as
-        | { 升级所需经验: number }
-        | undefined;
+      const currentLevelInfo = levelSystem.find((l: any) => l.等级 === artData.等级) as { 升级所需经验: number; 称号: string } | undefined;
+      const nextLevelInfo = levelSystem.find((l: any) => l.等级 === artData.等级 + 1) as { 升级所需经验: number } | undefined;
 
       // Find associated active skills
       const associatedSkills = [];
@@ -136,7 +132,7 @@ export const playerSkills = computed(() => {
         description: artTemplate.描述,
         level: artData.等级,
         exp: artData.经验值,
-        expToNextLevel: nextLevelInfo ? nextLevelInfo.升级所需经验 : currentLevelInfo?.升级所需经验 || 'MAX',
+        expToNextLevel: nextLevelInfo ? nextLevelInfo.升级所需经验 : (currentLevelInfo?.升级所需经验 || 'MAX'),
         title: currentLevelInfo ? currentLevelInfo.称号 : '',
         associatedSkills,
       });
@@ -449,7 +445,7 @@ export const worldSandboxData = computed(() => {
       // 确保world对象不是一个空的模板
       const epochId = get(world, '元规则.当前纪元ID');
       if (!epochId) continue;
-
+      
       const activeEpoch = get(world, `历史纪元.${epochId}`);
       if (!activeEpoch || !activeEpoch.规则) continue;
 

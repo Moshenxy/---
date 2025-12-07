@@ -43,13 +43,13 @@ const DatabaseItemSchema = z.object({
 });
 
 const ActiveSkillSchema = z.object({
-  ID: nonEmptyString,
-  名称: nonEmptyString,
-  描述: z.string(),
-  关联技艺: z.string(),
-  类型: z.string(),
-  基础效果: z.string(),
-  效果等级公式: z.string(),
+    ID: nonEmptyString,
+    名称: nonEmptyString,
+    描述: z.string(),
+    关联技艺: z.string(),
+    类型: z.string(),
+    基础效果: z.string(),
+    效果等级公式: z.string(),
 });
 
 const ArtisanSkillSchema = z.object({
@@ -140,7 +140,9 @@ const CharacterSchema = z
     身份: z.record(z.string(), z.string()).optional(),
     所属世界: z.string(),
     当前位置: z.string(),
-    外观描述: z.string(),
+    性别: z.string(),
+    相貌: z.string(),
+    着装: z.string(),
     背景: z.object({
       过去经历: z.record(z.string(), z.object({ 事件: z.string(), 影响: z.string() })).optional(),
       性格特质: z.record(z.string(), z.string()).optional(),
@@ -160,10 +162,10 @@ const CharacterSchema = z
           长期目标: z.object({ $meta: MetaSchema.optional() }).catchall(GoalSchema).prefault({}),
           短期目标: z.object({ $meta: MetaSchema.optional() }).catchall(GoalSchema).prefault({}),
           决策倾向: z.object({
-            常规: z.string(),
-            优势时: z.string(),
-            险境时: z.string(),
-            面对利益时: z.string(),
+            常规: z.string().default(''),
+            优势时: z.string().default(''),
+            险境时: z.string().default(''),
+            面对利益时: z.string().default(''),
           }),
         }),
       })
@@ -244,7 +246,9 @@ const WorldEpochSchema = z.object({
         }),
       核心法则: z
         .object({ $meta: MetaSchema.optional() })
-        .catchall(z.object({ 名称: z.string(), 描述: z.string(), 体现: z.string() }))
+        .catchall(
+          z.object({ 名称: z.string(), 描述: z.string(), 体现: z.string().optional().prefault('') }),
+        )
         .prefault({}),
       权柄: z
         .object({ $meta: MetaSchema.optional() })

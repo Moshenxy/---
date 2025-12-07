@@ -1,18 +1,60 @@
 <template>
   <div class="action-panel">
-    <button class="action-button" @click="$emit('open-main-menu')">主</button>
-    <button class="action-button" @click="$emit('open-avatar-menu')">化</button>
-    <button class="action-button" @click="$emit('toggle-history')">历史</button>
-    <button class="action-button" @click="$emit('toggle-commands')">指令 ({{ commandCount }})</button>
+    <div class="button-row">
+      <button
+        v-for="option in mainOptions"
+        :key="option.id"
+        class="action-button"
+        :disabled="option.disabled && option.disabled()"
+        @click="option.action"
+      >
+        {{ option.text }}
+      </button>
+    </div>
+    <div class="button-row">
+      <button
+        v-for="option in avatarOptions"
+        :key="option.id"
+        class="action-button"
+        :disabled="option.disabled && option.disabled()"
+        @click="option.action"
+      >
+        {{ option.text }}
+      </button>
+    </div>
+    <div class="button-row">
+      <button
+        v-for="option in commonOptions"
+        :key="option.id"
+        class="action-button"
+        :disabled="option.disabled && option.disabled()"
+        @click="option.action"
+      >
+        {{ option.text }}
+      </button>
+      <button class="action-button" @click="$emit('toggle-history')">历史</button>
+      <button class="action-button" @click="$emit('toggle-commands')">指令 ({{ commandCount }})</button>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
+interface MenuOption {
+  id: string;
+  icon: string;
+  text: string;
+  action: () => void;
+  disabled?: () => boolean;
+}
+
 defineProps<{
   commandCount: number;
+  mainOptions: MenuOption[];
+  avatarOptions: MenuOption[];
+  commonOptions: MenuOption[];
 }>();
 
-defineEmits(['open-main-menu', 'open-avatar-menu', 'toggle-history', 'toggle-commands']);
+defineEmits(['toggle-history', 'toggle-commands']);
 </script>
 
 <style lang="scss" scoped>
@@ -21,13 +63,20 @@ defineEmits(['open-main-menu', 'open-avatar-menu', 'toggle-history', 'toggle-com
 
 .action-panel {
   display: flex;
-  gap: $spacing-md;
-  padding: $spacing-sm $spacing-md;
+  flex-direction: column;
+  gap: $spacing-sm;
+  padding: $spacing-md;
   background-color: rgba($color-black-void, 0.7);
   border-radius: $border-radius-md;
   border: 1px solid rgba($color-gold-liu, 0.3);
   @include frosted-glass(rgba($color-indigo-deep, 0.8), 12px);
   box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.button-row {
+  display: flex;
+  justify-content: center;
+  gap: $spacing-md;
 }
 
 .action-button {

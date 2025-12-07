@@ -2,6 +2,7 @@ import { reactive, readonly } from 'vue';
 import { confirmationService } from '../services/ConfirmationService';
 import { detailModalService } from '../services/DetailModalService';
 import { dockManagerService } from '../services/DockManagerService';
+import { eventBus } from '../services/EventBus';
 import { fullscreenService } from '../services/fullscreenService';
 import { inputModalActions } from '../services/InputModalService';
 import { npcModalService } from '../services/NpcModalService';
@@ -48,13 +49,16 @@ const actions = {
    * 切换网页全屏模式
    */
   toggleWebFullscreen(): void {
-    if (state.isWebFullscreen) {
-      fullscreenService.exitWeb();
-      state.isWebFullscreen = false;
-    } else {
+    const newFullscreenState = !state.isWebFullscreen;
+    state.isWebFullscreen = newFullscreenState;
+
+    if (newFullscreenState) {
       fullscreenService.enterWeb();
-      state.isWebFullscreen = true;
+    } else {
+      fullscreenService.exitWeb();
     }
+    // Notify the layout service about the change
+    eventBus.emit('fullscreenChanged', newFullscreenState);
   },
 
   /**

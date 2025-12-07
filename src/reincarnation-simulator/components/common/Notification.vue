@@ -1,6 +1,6 @@
 <template>
   <transition name="notification-fade">
-    <div :class="['notification', `notification--${notification.type}`]">
+    <div :class="['notification', `notification--${notification.type}`]" @click="hideNotification">
       <div class="notification__content">
         <h4 class="notification__title">{{ notification.title }}</h4>
         <p class="notification__message">{{ notification.message }}</p>
@@ -13,9 +13,15 @@
 <script setup lang="ts">
 import type { Notification } from '../../services/NotificationService';
 
-defineProps<{
-  notification: Notification;
+import { notificationService } from '../../services/NotificationService';
+
+const props = defineProps<{
+ notification: Notification;
 }>();
+
+const hideNotification = () => {
+ notificationService.hide(props.notification.id);
+};
 </script>
 
 <style lang="scss">

@@ -13,12 +13,13 @@ export type ExtensibleObject<T> = {
   $meta?: { extensible: true; description?: string };
 };
 
+
 // --- 核心数据实体接口 ---
 
 export interface RelationshipVector {
-  认知层: { 可靠度: number; 能力评价: number; 威胁度: number };
-  情感层: { 亲近感: number; 仰慕度: number };
-  利益层: { 资源价值: number; 合作潜力: number; 利益冲突: number };
+  认知层: { 可靠度: number; 能力评价: number; 威胁度: number; };
+  情感层: { 亲近感: number; 仰慕度: number; };
+  利益层: { 资源价值: number; 合作潜力: number; 利益冲突: number; };
   社会层: {
     名义关系: ExtensibleObject<string>;
     阶级差异: number;
@@ -50,7 +51,10 @@ export interface Character {
   身份: ExtensibleObject<string>;
   所属世界: string;
   当前位置: string;
-  外观描述: string;
+  性别?: string;
+  相貌?: string;
+  着装?: string;
+  外观描述?: string;
 
   背景: {
     过去经历: ExtensibleObject<{ 事件: string; 描述?: string; 影响?: string }>;
@@ -58,14 +62,14 @@ export interface Character {
   };
 
   心流: {
-    情绪状态: { 喜悦: number; 悲伤: number; 愤怒: number; 恐惧: number };
+    情绪状态: { 喜悦: number; 悲伤: number; 愤怒: number; 恐惧: number; };
     核心需求: string;
     秘密: ExtensibleObject<{ 内容: string; 揭露条件: string }>;
     短期记忆: ExtensibleObject<any>;
     驱动力: {
       长期目标: ExtensibleObject<{ 名称: string; 动机: string; 状态: string }>;
       短期目标: ExtensibleObject<{ 名称: string; 动机: string; 状态: string }>;
-      决策倾向: { 常规: string; 优势时: string; 险境时: string; 面对利益时: string };
+      决策倾向: { 常规: string; 优势时: string; 险境时: string; 面对利益时: string; };
     };
     生活模式: {
       核心活动: ExtensibleObject<{ 基础意愿: number }>;
@@ -78,8 +82,8 @@ export interface Character {
 
   技艺?: { [skillId: string]: { 等级: number; 经验值: number } };
 
-  基础潜力: { 精: number; 气: number; 神: number; 运: number };
-  战斗参数: { 权能: number; 根基: number; 机变: number; 破法: number; 御法: number };
+  基础潜力: { 精: number; 气: number; 神: number; 运: number; };
+  战斗参数: { 权能: number; 根基: number; 机变: number; 破法: number; 御法: number; };
 
   当前状态: ExtensibleObject<any>;
   背包: { [itemId: string]: number };
@@ -96,9 +100,10 @@ export interface World {
   历史纪元: {
     // 这里 Epoch 使用 any 是因为变量文件中的 Epoch 结构与世界书解析出的 Epoch 结构不同（缺少`内容`字段）
     // 为了避免循环依赖和过度复杂的类型体操，此处做简化处理。
-    [epochId: string]: any;
+    [epochId: string]: any; 
   };
 }
+
 
 // --- 状态管理相关接口 ---
 

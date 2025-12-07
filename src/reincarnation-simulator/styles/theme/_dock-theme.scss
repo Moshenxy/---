@@ -116,6 +116,7 @@
   background-color: transparent;
   color: $color-grey-stone;
   border-right: 1px solid rgba($color-gold-liu, 0.2);
+  padding: $spacing-md;
   transition: all 0.3s ease;
 
   &:hover {

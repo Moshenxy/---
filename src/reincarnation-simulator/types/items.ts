@@ -20,6 +20,7 @@ export interface BaseItem {
   能级: number;
   描述: string;
   effects?: Effects;
+ 数量?: number;
 }
 
 /**

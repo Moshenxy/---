@@ -10,29 +10,27 @@
     </div>
     <div class="detail-item full-width">
       <strong class="detail-key">世界专属属性</strong>
-      <AttributeGrid :attributes="npc.世界专属属性" />
+      <ObjectRenderer :data="npc.世界专属属性" />
     </div>
     <div class="detail-item full-width">
       <strong class="detail-key">天赋</strong>
       <div class="detail-value">
         <div v-if="talents.length > 0" class="tags-container">
-          <span v-for="talent in talents" :key="talent.ID" class="tag talent-tag" v-tooltip="talent.描述">{{
-            talent.名称
-          }}</span>
+          <span v-for="talent in talents" :key="talent.ID" class="tag talent-tag" @click="showTalentDetail(talent)">{{ talent.名称 }}</span>
         </div>
         <div v-else class="placeholder">无</div>
       </div>
     </div>
     <div class="detail-item full-width">
       <strong class="detail-key">技艺</strong>
-      <div v-if="skills.length > 0" class="skills-list">
-        <div v-for="skill in skills" :key="skill.id" class="skill-item">
-          <div class="skill-header">
-            <h3>{{ skill.name }}</h3>
-            <div class="skill-level">等级 {{ skill.level }} ({{ skill.title }})</div>
-          </div>
+        <div v-if="skills.length > 0" class="skills-list">
+            <div v-for="skill in skills" :key="skill.id" class="skill-item" @click="showArtDetail(skill)">
+                <div class="skill-header">
+                    <h3>{{ skill.name }}</h3>
+                    <div class="skill-level">等级 {{ skill.level }} ({{ skill.title }})</div>
+                </div>
+            </div>
         </div>
-      </div>
       <div v-else class="placeholder">无</div>
     </div>
   </div>
@@ -43,7 +41,11 @@ import { computed } from 'vue';
 import { get } from 'lodash';
 import { Character } from '../../../types';
 import { store } from '../../../store';
+import { detailModalService } from '../../../services/DetailModalService';
+import ArtDetail from './ArtDetail.vue';
+import TalentDetail from './TalentDetail.vue';
 import AttributeGrid from '../AttributeGrid.vue';
+import ObjectRenderer from '../ObjectRenderer.vue';
 
 const props = defineProps<{ npc: Character }>();
 
@@ -76,7 +78,8 @@ const skills = computed(() => {
     const artTemplate = artDb[artId];
 
     if (artTemplate && artTemplate.等级体系) {
-      const currentLevelInfo = artTemplate.等级体系.find((l: any) => l.等级 === artData.等级);
+      const levelKey = `level_${artData.等级}`;
+      const currentLevelInfo = artTemplate.等级体系[levelKey];
       skillsList.push({
         id: artId,
         name: artTemplate.名称,
@@ -87,6 +90,18 @@ const skills = computed(() => {
   }
   return skillsList;
 });
+
+const showTalentDetail = (talent: any) => {
+  detailModalService.show(talent.名称, TalentDetail, { talent });
+};
+
+const showArtDetail = (art: any) => {
+  const artTemplate = (store.worldState?.数据库?.技艺 as Record<string, any>)?.[art.id];
+  if (artTemplate) {
+    detailModalService.show(art.name, ArtDetail, { art: artTemplate });
+  }
+};
+
 </script>
 
 <style lang="scss" scoped>
@@ -147,13 +162,19 @@ const skills = computed(() => {
   background: rgba($color-black-void, 0.4);
   border-radius: $border-radius-sm;
   padding: $spacing-sm $spacing-md;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background: rgba($color-cyan-tian, 0.1);
+  }
 }
 
 .skill-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-
+  
   h3 {
     margin: 0;
     font-size: $font-size-base;

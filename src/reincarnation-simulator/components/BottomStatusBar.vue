@@ -2,12 +2,7 @@
   <div class="bottom-status">
     <div id="status-effects-wrapper" class="status-effects-wrapper">
       <template v-if="statusEffects.length > 0 && statusEffects[0] !== '$__META_EXTENSIBLE__$'">
-        <div
-          v-for="(effect, index) in statusEffects"
-          :key="index"
-          class="status-effect"
-          :title="typeof effect === 'object' ? effect.description : ''"
-        >
+        <div v-for="(effect, index) in statusEffects" :key="index" class="status-effect" :title="typeof effect === 'object' ? effect.description : ''">
           <div class="effect-icon"></div>
           <span>{{ typeof effect === 'object' ? effect.name : effect }}</span>
         </div>

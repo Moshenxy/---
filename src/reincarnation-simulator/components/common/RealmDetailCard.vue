@@ -62,15 +62,14 @@ defineProps({
       opacity: 0.7;
     }
 
-    span,
-    ul {
+    span, ul {
       font-size: 14px;
       color: $color-white-moon;
       line-height: 1.6;
     }
-
+    
     ul {
-      padding-left: 20px;
+        padding-left: 20px;
     }
 
     &.full-width {

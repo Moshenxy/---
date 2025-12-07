@@ -43,15 +43,15 @@
             <button @click="loadGame(slot)" :disabled="!slot.data" class="action-btn load-btn">读取</button>
           </div>
         </div>
-        <div class="auto-save-toggle">
-          <label>
-            <input type="checkbox" v-model="isAutoSaveEnabled" @change="toggleAutoSave" />
-            开启自动存档
-          </label>
-        </div>
+      </div>
+      <div class="auto-save-toggle">
+        <label>
+          <input type="checkbox" v-model="isAutoSaveEnabled" @change="toggleAutoSave">
+          开启自动存档
+        </label>
       </div>
     </div>
-    <input type="file" ref="fileInput" @change="handleFileImport" style="display: none" accept=".json" />
+    <input type="file" ref="fileInput" @change="handleFileImport" style="display: none" accept=".json">
   </div>
 </template>
 
@@ -110,7 +110,7 @@ export default defineComponent({
       if (target.files && target.files[0]) {
         const file = target.files[0];
         const reader = new FileReader();
-        reader.onload = async e => {
+        reader.onload = async (e) => {
           try {
             const content = e.target?.result as string;
             await saveLoadService.importSave(content);
@@ -298,7 +298,7 @@ export default defineComponent({
 .auto-save-toggle {
   margin-top: $spacing-md;
   color: $color-white-moon;
-
+  
   label {
     display: flex;
     align-items: center;

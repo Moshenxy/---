@@ -244,15 +244,11 @@ const adjustSpeed = (delta: number) => {
   }
 };
 
-watch(
-  speedLevel,
-  newLevel => {
+watch(speedLevel, (newLevel) => {
     if (starMapService) {
       starMapService.setSpeedMultiplier(speedLevels[newLevel]);
     }
-  },
-  { immediate: true },
-);
+}, { immediate: true });
 </script>
 
 <style lang="scss" scoped>

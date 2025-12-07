@@ -23,7 +23,12 @@
           <div class="world-attributes-section">
             <h5 class="section-title">世界专属</h5>
             <ul v-if="worldAttributes.length > 0" class="attributes-list">
-              <li v-for="attr in worldAttributes" :key="attr.key" class="attribute-item" v-tooltip="attr.description">
+              <li
+                v-for="attr in worldAttributes"
+                :key="attr.key"
+                class="attribute-item"
+                v-tooltip="attr.description"
+              >
                 <span class="label">{{ attr.key }}</span>
                 <span class="value">{{ formatAttributeValue(attr.value) }}</span>
               </li>
@@ -82,6 +87,7 @@ const formatAttributeValue = (attrValue: any): string => {
 
   return String(getDisplayValue(attrValue));
 };
+
 
 const character = computed(() => store.character);
 const soulOrigin = computed(() => getDisplayValue(character.value?.灵魂本源, 0));

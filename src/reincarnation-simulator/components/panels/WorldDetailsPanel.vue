@@ -63,20 +63,12 @@
           <h3 class="section-title">力量体系</h3>
           <p class="system-overview">{{ activeEpoch.力量体系.体系概述 }}</p>
 
-          <div class="subsection">
-            <h4 class="subsection-title">专长与流派</h4>
-            <div class="tags-container">
-              <span v-for="school in activeEpoch.力量体系.专长与流派" :key="school.流派名称" class="tag">{{
-                school.流派名称
-              }}</span>
-            </div>
-          </div>
 
           <div class="subsection">
             <h4 class="subsection-title">境界定义</h4>
             <div class="ladder-container">
               <ul class="境界-ladder">
-                <li v-for="level in 境界定义Array" :key="level.名称" class="ladder-step" v-tooltip="level.描述">
+                <li v-for="level in 境界定义Array" :key="level.名称" class="ladder-step" @click="showRealmDetails(level)">
                   <span class="level-energy">能级 {{ level.能级 }}</span>
                   <span class="level-name">{{ level.名称 }}</span>
                 </li>
@@ -93,8 +85,10 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 import { lorebookService } from '../../services/LorebookService';
+import { detailModalService } from '../../services/DetailModalService';
 import { avatarWorld, mainWorld } from '../../store/getters';
 import type { Epoch, World } from '../../types';
+import RealmDetailCard from '../common/RealmDetailCard.vue';
 
 const props = defineProps<{
   worldType: 'mainWorld' | 'avatarWorld';
@@ -115,8 +109,16 @@ const availableEpochs = computed(() => {
 const selectedEpochId = ref<string | null>(null);
 
 onMounted(async () => {
-  const entry = await lorebookService.findEntryByComment('主世界摘要');
-  worldSummary.value = entry ? entry.content : '未能找到主世界摘要。';
+  const entry = await lorebookService.readFromLorebook('主世界摘要');
+  if (entry) {
+    // 将分隔符替换为HTML换行，并确保每个条目都是一个独立的段落
+    worldSummary.value = entry
+      .split('\n\n---\n\n')
+      .map(block => `<p>${block.replace(/\n/g, '<br>')}</p>`)
+      .join('');
+  } else {
+    worldSummary.value = '未能找到主世界摘要。';
+  }
 });
 
 watch(
@@ -142,6 +144,11 @@ const 境界定义Array = computed(() => {
     .map(key => (definitions as any)[key])
     .sort((a, b) => a.能级 - b.能级);
 });
+
+const showRealmDetails = (realm: any) => {
+ if (!realm) return;
+ detailModalService.show(realm.名称, RealmDetailCard, { realm });
+};
 </script>
 
 <style lang="scss" scoped>
@@ -334,5 +341,16 @@ const 境界定义Array = computed(() => {
   height: 100%;
   font-family: 'Noto Serif SC', serif;
   color: #f0e6d2;
+}
+.summary-content {
+  padding: 16px;
+  line-height: 1.7;
+  white-space: normal; /* 确保长文本能正常换行 */
+}
+:deep(.summary-content p) {
+  margin-bottom: 1.5em; /* 增加段落间距 */
+}
+:deep(.summary-content p:last-child) {
+  margin-bottom: 0;
 }
 </style>

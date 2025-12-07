@@ -29,7 +29,7 @@ import WorldTimeDisplay from './WorldTimeDisplay.vue';
 const isBrowserFullscreen = computed(() => uiState.isBrowserFullscreen);
 const { openPanel } = usePanelManager();
 
-import { inputModalActions } from '../services/InputModalService';
+import { inputModalActions, inputModalState } from '../services/InputModalService';
 
 const toggleFullscreen = () => {
   uiActions.toggleBrowserFullscreen();
@@ -41,7 +41,11 @@ const openSaveLoadPanel = () => {
 };
 
 const openInputModal = () => {
-  inputModalActions.show();
+  if (inputModalState.isVisible) {
+    inputModalActions.hide();
+  } else {
+    inputModalActions.show();
+  }
 };
 
 const fullscreenTitle = computed(() => {
@@ -64,7 +68,7 @@ const fullscreenIcon = computed(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 $spacing-md;
+  padding: $spacing-sm $spacing-md;
   position: relative;
   z-index: 100;
 

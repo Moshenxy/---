@@ -53,11 +53,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { npcService } from '../../services/NpcService';
 import type { Character } from '../../types';
-import NpcDetailDisplay from '../common/NpcDetailDisplay.vue';
 import FollowButton from '../common/FollowButton.vue';
+import NpcDetailDisplay from '../common/NpcDetailDisplay.vue';
 
 interface WorldInfo {
   id: string;

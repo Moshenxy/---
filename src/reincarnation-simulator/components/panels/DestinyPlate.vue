@@ -61,14 +61,7 @@
                 cx="50"
                 cy="50"
                 r="45"
-                :style="{
-                  'stroke-dashoffset':
-                    283 *
-                    (1 -
-                      (typeof attr.value === 'number' && typeof attr.max === 'number' && attr.max > 0
-                        ? attr.value / attr.max
-                        : 0)),
-                }"
+                :style="{ 'stroke-dashoffset': 283 * (1 - (typeof attr.value === 'number' && typeof attr.max === 'number' && attr.max > 0 ? attr.value / attr.max : 0)) }"
               />
             </svg>
             <div class="orbit-label" @mouseenter="setCenterContent(attr)" @mouseleave="resetCenterContent">
@@ -213,10 +206,7 @@ const orbitalNodes = computed(() => {
           description = `${key}: ${value} / ${max}`;
         } else if ('value' in attrValue) {
           value = getDisplayValue((attrValue as any).value, '-');
-        } else if (
-          valueKeys.length > 0 &&
-          valueKeys.every(k => typeof (attrValue as any)[k] === 'object' && (attrValue as any)[k]?.名称)
-        ) {
+        } else if (valueKeys.length > 0 && valueKeys.every(k => typeof (attrValue as any)[k] === 'object' && (attrValue as any)[k]?.名称)) {
           value = valueKeys.map(k => (attrValue as any)[k].名称).join('、');
         } else if (valueKeys.length > 0) {
           value = '...';

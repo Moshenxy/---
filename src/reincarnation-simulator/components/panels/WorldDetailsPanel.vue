@@ -63,12 +63,16 @@
           <h3 class="section-title">力量体系</h3>
           <p class="system-overview">{{ activeEpoch.力量体系.体系概述 }}</p>
 
-
           <div class="subsection">
             <h4 class="subsection-title">境界定义</h4>
             <div class="ladder-container">
               <ul class="境界-ladder">
-                <li v-for="level in 境界定义Array" :key="level.名称" class="ladder-step" @click="showRealmDetails(level)">
+                <li
+                  v-for="level in 境界定义Array"
+                  :key="level.名称"
+                  class="ladder-step"
+                  @click="showRealmDetails(level)"
+                >
                   <span class="level-energy">能级 {{ level.能级 }}</span>
                   <span class="level-name">{{ level.名称 }}</span>
                 </li>
@@ -146,8 +150,8 @@ const 境界定义Array = computed(() => {
 });
 
 const showRealmDetails = (realm: any) => {
- if (!realm) return;
- detailModalService.show(realm.名称, RealmDetailCard, { realm });
+  if (!realm) return;
+  detailModalService.show(realm.名称, RealmDetailCard, { realm });
 };
 </script>
 

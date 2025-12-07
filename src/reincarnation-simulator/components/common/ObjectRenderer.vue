@@ -15,7 +15,6 @@ const props = defineProps<{
   isNested?: boolean;
 }>();
 
-
 const filteredData = computed(() => {
   if (!props.data) return {};
   const { $meta, ...rest } = props.data;

@@ -16,21 +16,23 @@
       <strong class="detail-key">天赋</strong>
       <div class="detail-value">
         <div v-if="talents.length > 0" class="tags-container">
-          <span v-for="talent in talents" :key="talent.ID" class="tag talent-tag" @click="showTalentDetail(talent)">{{ talent.名称 }}</span>
+          <span v-for="talent in talents" :key="talent.ID" class="tag talent-tag" @click="showTalentDetail(talent)">{{
+            talent.名称
+          }}</span>
         </div>
         <div v-else class="placeholder">无</div>
       </div>
     </div>
     <div class="detail-item full-width">
       <strong class="detail-key">技艺</strong>
-        <div v-if="skills.length > 0" class="skills-list">
-            <div v-for="skill in skills" :key="skill.id" class="skill-item" @click="showArtDetail(skill)">
-                <div class="skill-header">
-                    <h3>{{ skill.name }}</h3>
-                    <div class="skill-level">等级 {{ skill.level }} ({{ skill.title }})</div>
-                </div>
-            </div>
+      <div v-if="skills.length > 0" class="skills-list">
+        <div v-for="skill in skills" :key="skill.id" class="skill-item" @click="showArtDetail(skill)">
+          <div class="skill-header">
+            <h3>{{ skill.name }}</h3>
+            <div class="skill-level">等级 {{ skill.level }} ({{ skill.title }})</div>
+          </div>
         </div>
+      </div>
       <div v-else class="placeholder">无</div>
     </div>
   </div>
@@ -101,7 +103,6 @@ const showArtDetail = (art: any) => {
     detailModalService.show(art.name, ArtDetail, { art: artTemplate });
   }
 };
-
 </script>
 
 <style lang="scss" scoped>
@@ -174,7 +175,7 @@ const showArtDetail = (art: any) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  
+
   h3 {
     margin: 0;
     font-size: $font-size-base;

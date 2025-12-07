@@ -2,38 +2,54 @@
   <div class="detail-tab-content grid-layout">
     <div class="detail-item">
       <strong class="detail-key">姓名:</strong>
-      <div class="detail-value"><p>{{ npc.姓名 }}</p></div>
+      <div class="detail-value">
+        <p>{{ npc.姓名 }}</p>
+      </div>
     </div>
     <div class="detail-item">
       <strong class="detail-key">生日:</strong>
-      <div class="detail-value"><p>{{ formattedBirthDate }} ({{ age }})</p></div>
+      <div class="detail-value">
+        <p>{{ formattedBirthDate }} ({{ age }})</p>
+      </div>
     </div>
     <div class="detail-item">
       <strong class="detail-key">身份:</strong>
       <div class="detail-value">
-        <span v-for="item in Object.values(npc.身份 || {}).filter(v => typeof v === 'string')" class="tag">{{ item }}</span>
+        <span v-for="item in Object.values(npc.身份 || {}).filter(v => typeof v === 'string')" class="tag">{{
+          item
+        }}</span>
       </div>
     </div>
     <div class="detail-item">
       <strong class="detail-key">性别:</strong>
-      <div class="detail-value"><p>{{ npc.性别 }}</p></div>
+      <div class="detail-value">
+        <p>{{ npc.性别 }}</p>
+      </div>
     </div>
     <div class="detail-item">
       <strong class="detail-key">相貌:</strong>
-      <div class="detail-value"><p>{{ npc.相貌 }}</p></div>
+      <div class="detail-value">
+        <p>{{ npc.相貌 }}</p>
+      </div>
     </div>
     <div class="detail-item">
       <strong class="detail-key">着装:</strong>
-      <div class="detail-value"><p>{{ npc.着装 }}</p></div>
+      <div class="detail-value">
+        <p>{{ npc.着装 }}</p>
+      </div>
     </div>
     <div class="detail-item">
       <strong class="detail-key">核心需求:</strong>
-      <div class="detail-value"><p>{{ npc.心流?.核心需求 }}</p></div>
+      <div class="detail-value">
+        <p>{{ npc.心流?.核心需求 }}</p>
+      </div>
     </div>
     <div class="detail-item">
       <strong class="detail-key">性格特质:</strong>
       <div class="detail-value">
-        <span v-for="item in Object.values(npc.背景?.性格特质 || {}).filter(v => typeof v === 'string')" class="tag">{{ item }}</span>
+        <span v-for="item in Object.values(npc.背景?.性格特质 || {}).filter(v => typeof v === 'string')" class="tag">{{
+          item
+        }}</span>
       </div>
     </div>
     <div class="detail-item">
@@ -48,7 +64,10 @@
       <strong class="detail-key">过去经历:</strong>
       <div class="detail-value">
         <ul class="history-list">
-          <li v-for="(event, index) in Object.values(npc.背景?.过去经历 || {}).filter(v => typeof v === 'object')" :key="index">
+          <li
+            v-for="(event, index) in Object.values(npc.背景?.过去经历 || {}).filter(v => typeof v === 'object')"
+            :key="index"
+          >
             <strong>{{ event.事件 }}</strong>
             <p v-if="event.描述">{{ event.描述 }}</p>
             <p v-if="event.影响" class="influence-text">{{ event.影响 }}</p>
@@ -76,7 +95,6 @@ const formattedBirthDate = computed(() => {
   if (!bd) return '未知';
   return `${bd.年}年${bd.月}月${bd.日}日`;
 });
-
 </script>
 
 <style lang="scss" scoped>

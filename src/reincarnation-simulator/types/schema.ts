@@ -43,13 +43,13 @@ const DatabaseItemSchema = z.object({
 });
 
 const ActiveSkillSchema = z.object({
-    ID: nonEmptyString,
-    名称: nonEmptyString,
-    描述: z.string(),
-    关联技艺: z.string(),
-    类型: z.string(),
-    基础效果: z.string(),
-    效果等级公式: z.string(),
+  ID: nonEmptyString,
+  名称: nonEmptyString,
+  描述: z.string(),
+  关联技艺: z.string(),
+  类型: z.string(),
+  基础效果: z.string(),
+  效果等级公式: z.string(),
 });
 
 const ArtisanSkillSchema = z.object({
@@ -246,9 +246,7 @@ const WorldEpochSchema = z.object({
         }),
       核心法则: z
         .object({ $meta: MetaSchema.optional() })
-        .catchall(
-          z.object({ 名称: z.string(), 描述: z.string(), 体现: z.string().optional().prefault('') }),
-        )
+        .catchall(z.object({ 名称: z.string(), 描述: z.string(), 体现: z.string().optional().prefault('') }))
         .prefault({}),
       权柄: z
         .object({ $meta: MetaSchema.optional() })

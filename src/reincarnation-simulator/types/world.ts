@@ -37,14 +37,13 @@ export interface Epoch {
   力量体系: PowerSystem;
 }
 
-
 // --- Epoch Sub-Interfaces ---
 
 export interface WorldRules {
   世界能级: number;
   时间流速: string;
   空间稳定性: number;
-  生命位格: { 基准值: number; 描述: string; };
+  生命位格: { 基准值: number; 描述: string };
   核心法则: CoreLaw[];
   权柄: any[]; // Simplified
   演化逻辑: any; // Simplified
@@ -81,7 +80,6 @@ export interface PowerSystem {
   基础潜力计算规则: any;
   境界定义: RealmDefinition[];
 }
-
 
 // --- Shared & Detailed Interfaces ---
 

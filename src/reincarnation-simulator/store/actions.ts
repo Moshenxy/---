@@ -25,75 +25,75 @@ let isLogHistoryLoaded = false; // Flag to ensure history is loaded only once
 function checkForChangesAndNotify(oldState: any, newState: any) {
   if (!oldState || !newState) return;
 
- // 1. 新 NPC 创建
- const oldNpcIds = Object.keys(get(oldState, '角色', {})).filter(id => id.startsWith('npc_'));
- const newNpcIds = Object.keys(get(newState, '角色', {})).filter(id => id.startsWith('npc_'));
- for (const npcId of newNpcIds) {
-   if (!oldNpcIds.includes(npcId)) {
-     const npcName = get(newState, `角色.${npcId}.姓名[0]`, npcId);
-     notificationService.info('新角色登场', `你遇到了 ${npcName}。`);
-   }
- }
-
- // 2. Inventory Change Notification
- const oldInventory = get(oldState, `角色.${store.userId}.背包`, {});
- const newInventory = get(newState, `角色.${store.userId}.背包`, {});
- const allItemIds = new Set([...Object.keys(oldInventory), ...Object.keys(newInventory)].filter(id => id !== '$meta'));
-
- for (const itemId of allItemIds) {
-   const oldQty = oldInventory[itemId] || 0;
-   const newQty = newInventory[itemId] || 0;
-   const diff = newQty - oldQty;
-   if (diff !== 0) {
-     const itemName = store.getItemNameById(itemId) || itemId;
-     const action = diff > 0 ? '获得' : '失去';
-     notificationService.success('物品变更', `${action} ${itemName} x${Math.abs(diff)}`);
-   }
- }
-
-// 3. User Attribute Change Notification
-const oldUser = get(oldState, `角色.${store.userId}`, {});
-const newUser = get(newState, `角色.${store.userId}`, {});
-
-const compareAndNotify = (path: string, name: string) => {
-  const oldVal = get(oldUser, path);
-  const newVal = get(newUser, path);
-
-  if (JSON.stringify(oldVal) !== JSON.stringify(newVal)) {
-    if (typeof newVal === 'object' && newVal !== null) {
-      // For objects, find what changed
-      for (const key in newVal) {
-        if (get(oldVal, key) !== get(newVal, key)) {
-          notificationService.info('属性变化', `${name} - ${key} 变更为 ${get(newVal, key)}`);
-        }
-      }
-    } else {
-       notificationService.info('属性变化', `${name} 变更为 ${newVal}`);
+  // 1. 新 NPC 创建
+  const oldNpcIds = Object.keys(get(oldState, '角色', {})).filter(id => id.startsWith('npc_'));
+  const newNpcIds = Object.keys(get(newState, '角色', {})).filter(id => id.startsWith('npc_'));
+  for (const npcId of newNpcIds) {
+    if (!oldNpcIds.includes(npcId)) {
+      const npcName = get(newState, `角色.${npcId}.姓名[0]`, npcId);
+      notificationService.info('新角色登场', `你遇到了 ${npcName}。`);
     }
   }
-};
 
-compareAndNotify('灵魂本源', '灵魂本源');
-compareAndNotify('道心', '道心');
-compareAndNotify('基础潜力', '基础潜力');
-compareAndNotify('战斗参数', '战斗参数');
-compareAndNotify('世界专属属性', '世界专属属性');
- 
- // 4. 世界大事
- const oldWorlds = get(oldState, '世界', {});
- const newWorlds = get(newState, '世界', {});
- for (const worldId in newWorlds) {
-     const oldEpochs = get(oldWorlds, `${worldId}.历史纪元`, {});
-     const newEpochs = get(newWorlds, `${worldId}.历史纪元`, {});
-     for (const epochId in newEpochs) {
-         const oldEvents = get(oldEpochs, `${epochId}.世界大事`, {});
-         const newEvents = get(newEpochs, `${epochId}.世界大事`, {});
-         const newEventKeys = Object.keys(newEvents).filter(key => !oldEvents[key]);
-         for (const key of newEventKeys) {
-             notificationService.warn('世界大事', newEvents[key].事件);
-         }
-     }
- }
+  // 2. Inventory Change Notification
+  const oldInventory = get(oldState, `角色.${store.userId}.背包`, {});
+  const newInventory = get(newState, `角色.${store.userId}.背包`, {});
+  const allItemIds = new Set([...Object.keys(oldInventory), ...Object.keys(newInventory)].filter(id => id !== '$meta'));
+
+  for (const itemId of allItemIds) {
+    const oldQty = oldInventory[itemId] || 0;
+    const newQty = newInventory[itemId] || 0;
+    const diff = newQty - oldQty;
+    if (diff !== 0) {
+      const itemName = store.getItemNameById(itemId) || itemId;
+      const action = diff > 0 ? '获得' : '失去';
+      notificationService.success('物品变更', `${action} ${itemName} x${Math.abs(diff)}`);
+    }
+  }
+
+  // 3. User Attribute Change Notification
+  const oldUser = get(oldState, `角色.${store.userId}`, {});
+  const newUser = get(newState, `角色.${store.userId}`, {});
+
+  const compareAndNotify = (path: string, name: string) => {
+    const oldVal = get(oldUser, path);
+    const newVal = get(newUser, path);
+
+    if (JSON.stringify(oldVal) !== JSON.stringify(newVal)) {
+      if (typeof newVal === 'object' && newVal !== null) {
+        // For objects, find what changed
+        for (const key in newVal) {
+          if (get(oldVal, key) !== get(newVal, key)) {
+            notificationService.info('属性变化', `${name} - ${key} 变更为 ${get(newVal, key)}`);
+          }
+        }
+      } else {
+        notificationService.info('属性变化', `${name} 变更为 ${newVal}`);
+      }
+    }
+  };
+
+  compareAndNotify('灵魂本源', '灵魂本源');
+  compareAndNotify('道心', '道心');
+  compareAndNotify('基础潜力', '基础潜力');
+  compareAndNotify('战斗参数', '战斗参数');
+  compareAndNotify('世界专属属性', '世界专属属性');
+
+  // 4. 世界大事
+  const oldWorlds = get(oldState, '世界', {});
+  const newWorlds = get(newState, '世界', {});
+  for (const worldId in newWorlds) {
+    const oldEpochs = get(oldWorlds, `${worldId}.历史纪元`, {});
+    const newEpochs = get(newWorlds, `${worldId}.历史纪元`, {});
+    for (const epochId in newEpochs) {
+      const oldEvents = get(oldEpochs, `${epochId}.世界大事`, {});
+      const newEvents = get(newEpochs, `${epochId}.世界大事`, {});
+      const newEventKeys = Object.keys(newEvents).filter(key => !oldEvents[key]);
+      for (const key of newEventKeys) {
+        notificationService.warn('世界大事', newEvents[key].事件);
+      }
+    }
+  }
 }
 
 async function loadWorldLogFromLorebook() {
@@ -185,7 +185,7 @@ async function fetchCoreData() {
       }
 
       store.character = get(store.worldState, ['角色', store.userId]) || null;
- 
+
       // After updating the state, compare with the old state for notifications
       checkForChangesAndNotify(oldState, store.worldState);
 
@@ -238,7 +238,7 @@ async function fetchCoreData() {
           const world = Object.values(get(store.worldState, '世界', {})).find(
             (w: any) => get(w, '元规则.定位') === targetWorldLocation,
           );
-          
+
           let timestamp = new Date().toLocaleString('zh-CN', { hour12: false });
           if (world) {
             const currentEpochId = get(world, '元规则.当前纪元ID');
@@ -728,7 +728,9 @@ async function handleAction(actionText: string) {
 
     // 1. 构建包含动态引导指令的最终 Prompt
     const activeCharId = isSimulationRunning.value ? store.worldState?.模拟器.模拟.当前化身ID : store.userId;
-    const coreEntities = activeCharId ? contextService.identifyCoreEntities(actionText, activeCharId, store.worldState) : [];
+    const coreEntities = activeCharId
+      ? contextService.identifyCoreEntities(actionText, activeCharId, store.worldState)
+      : [];
     const guidingInstruction = contextService.buildGuidingInstruction(coreEntities, store.worldState);
     const finalPrompt = `${guidingInstruction}\n\n${actionText}`;
 

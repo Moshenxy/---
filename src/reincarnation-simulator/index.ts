@@ -21,5 +21,4 @@ initializeServices().then(() => {
   console.log('All services initialized.');
 });
 
-
 console.log('Reincarnation Simulator UI loaded.');

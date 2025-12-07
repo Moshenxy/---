@@ -19,7 +19,7 @@ export function usePanelManager() {
 
       const finalProps = { worldType: world, ...props };
       dockManagerService.openPanel(panelId, panelInfo.title, componentName, finalProps);
-      
+
       eventBus.emit('panelOpened', { world, panel, props, panelId });
     }
   };

@@ -44,10 +44,12 @@ export function parseCoursePool(text: string | null): CourseInfo[] {
  * @returns A formatted string representing the schedule.
  */
 export function formatScheduleToText(schedule: ScheduledCourse[], playerClass: string): string {
-    const header = `# ${playerClass} - 本周课程表\n# 自动生成于: ${new Date().toISOString()}\n# 格式: 班级ID|课程名称|教师|上课日|节次(数组)|教室ID\n`;
-    const body = schedule.map(course => {
-        // 确保节次是标准的JSON数组格式字符串
-        return `${playerClass}|${course.课程名称}|${course.教师}|${course.上课日}|[${course.节次.join(',')}]|${course.教室ID}`;
-    }).join('\n');
-    return header + '\n' + body;
+  const header = `# ${playerClass} - 本周课程表\n# 自动生成于: ${new Date().toISOString()}\n# 格式: 班级ID|课程名称|教师|上课日|节次(数组)|教室ID\n`;
+  const body = schedule
+    .map(course => {
+      // 确保节次是标准的JSON数组格式字符串
+      return `${playerClass}|${course.课程名称}|${course.教师}|${course.上课日}|[${course.节次.join(',')}]|${course.教室ID}`;
+    })
+    .join('\n');
+  return header + '\n' + body;
 }

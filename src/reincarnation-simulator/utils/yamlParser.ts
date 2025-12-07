@@ -88,7 +88,7 @@ export function parseSimpleYaml(text: string): any {
             parent[key] = newObj;
             stack.push({ obj: newObj, indent });
           }
-          
+
           /**
            * 尝试将一个字符串解析为 { key: "value", ... } 格式的对象。
            * @param str - 要解析的字符串。

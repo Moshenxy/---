@@ -111,7 +111,7 @@ async function appendToEntry(entryName: string, newContent: string, separator = 
 }
 
 import { parseWorldLoreForMap } from '../modules/world-map/services/WorldMapParser';
-import type { WorldDefinition, Epoch } from '../types/world';
+import type { Epoch, WorldDefinition } from '../types/world';
 
 async function loadAndParseWorldData(worldName = '主世界'): Promise<Epoch | null> {
   try {

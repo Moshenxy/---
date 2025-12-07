@@ -1,61 +1,58 @@
-import { GoldenLayout, LayoutConfig } from 'golden-layout';
+import { ComponentContainer, GoldenLayout, LayoutConfig } from 'golden-layout';
 import { Component, defineComponent, h, render } from 'vue';
+import MainView from '../MainView.vue';
+import { panelRegistry } from './panelRegistry';
+import { eventBus } from './EventBus';
 
 class DockManagerService {
   private goldenLayout: GoldenLayout | null = null;
   private hostElement: HTMLElement | null = null;
   private componentMap: Map<string, Component> = new Map();
   public onAction: ((action: string) => void) | null = null;
-  private readonly LAYOUT_STORAGE_KEY = 'reincarnation-simulator-golden-layout-config-v2';
-
   initialize(hostElement: HTMLElement) {
     if (this.goldenLayout || !hostElement) return;
 
     this.hostElement = hostElement;
     this.goldenLayout = new GoldenLayout(this.hostElement);
 
-    this.goldenLayout.on('stateChanged', () => {
-      if (this.goldenLayout) {
-        const config = this.goldenLayout.saveLayout();
-        localStorage.setItem(this.LAYOUT_STORAGE_KEY, JSON.stringify(config));
+    // Pre-register all possible panel components
+    this.registerComponent('main-view', MainView);
+    for (const world in panelRegistry) {
+      for (const panel in panelRegistry[world]) {
+        const componentName = `${world}-${panel}`.toLowerCase();
+        const panelInfo = panelRegistry[world][panel];
+        this.registerComponent(componentName, panelInfo.component);
       }
-    });
+    }
+
 
     window.addEventListener('resize', () => this.updateLayout());
 
-    // Periodically save the layout
-    setInterval(() => {
-      if (this.goldenLayout) {
-        const config = this.goldenLayout.saveLayout();
-        localStorage.setItem(this.LAYOUT_STORAGE_KEY, JSON.stringify(config));
-      }
-    }, 2000);
+    // Layout loading is now handled by LayoutService restoring panels
+    // this.loadSavedLayout();
   }
 
+  public loadLayout(config: LayoutConfig) {
+    if (!this.goldenLayout) return;
+    try {
+      this.goldenLayout.loadLayout(config);
+    } catch (e) {
+      console.error('Failed to load layout:', e);
+      // Attempt to load default as a fallback
+      try {
+        this.goldenLayout.loadLayout(this.getDefaultLayout());
+      } catch (e2) {
+        console.error('Failed to load default layout on fallback:', e2);
+      }
+    }
+  }
+
+  // This method is no longer needed as LayoutService handles restoration logic.
+  // We keep the method stub in case it's called elsewhere, but it does nothing.
   loadSavedLayout() {
     if (!this.goldenLayout) return;
-
-    const savedLayout = localStorage.getItem(this.LAYOUT_STORAGE_KEY);
-    if (savedLayout) {
-      try {
-        const config = JSON.parse(savedLayout);
-        if (config && typeof config === 'object' && ('root' in config || 'content' in config)) {
-          this.goldenLayout.loadLayout(config);
-        } else {
-          throw new Error('Invalid layout format');
-        }
-      } catch (e) {
-        console.error('Failed to load or validate saved layout, falling back to default:', e);
-        localStorage.removeItem(this.LAYOUT_STORAGE_KEY);
-        try {
-          this.goldenLayout.loadLayout(this.getDefaultLayout());
-        } catch (e2) {
-          console.error('Failed to load default layout:', e2);
-        }
-      }
-    } else {
-      this.goldenLayout.loadLayout(this.getDefaultLayout());
-    }
+    // Load a minimal default layout, LayoutService will populate it.
+    this.goldenLayout.loadLayout(this.getDefaultLayout());
   }
 
   registerComponent(componentName: string, component: Component) {
@@ -64,16 +61,25 @@ class DockManagerService {
     }
     this.componentMap.set(componentName, component);
 
-    this.goldenLayout?.registerComponent(componentName, (container, componentState) => {
+    this.goldenLayout?.registerComponent(componentName, (container: ComponentContainer, componentState: any) => {
       const vueComponent = defineComponent({
-        setup: () => () => h(component, (componentState as any)?.props || {}),
+        setup: () => () => h(component, componentState?.props || {}),
       });
       const vnode = h(vueComponent);
       render(vnode, container.getElement() as HTMLElement);
+
       // Directly set the title from the component state
       if ((componentState as any)?.title) {
         container.setTitle((componentState as any).title);
       }
+      
+      // Add a destroy listener to notify LayoutService
+      (container as any).on('destroy', () => {
+        const panelId = (componentState as any)?.panelId;
+        if (panelId) {
+          eventBus.emit('panelClosed', panelId);
+        }
+      });
     });
   }
 
@@ -89,13 +95,7 @@ class DockManagerService {
       return;
     }
 
-    this.goldenLayout.addComponent(componentName, { title, props }, panelId);
-
-    // Manually save layout after adding a component
-    if (this.goldenLayout) {
-      const config = this.goldenLayout.saveLayout();
-      localStorage.setItem(this.LAYOUT_STORAGE_KEY, JSON.stringify(config));
-    }
+    this.goldenLayout.addComponent(componentName, { title, props, panelId }, panelId);
   }
 
   updateLayout() {
@@ -106,7 +106,17 @@ class DockManagerService {
 
   closeAllPanels() {
     if (!this.goldenLayout?.rootItem) return;
-    this.goldenLayout.rootItem.contentItems.forEach((item: any) => item.remove());
+
+    // Create a copy of the array to avoid issues while iterating and removing
+    const closableItems = this.goldenLayout.rootItem.contentItems.filter((item: any) => item.isClosable);
+
+    closableItems.forEach((item: any) => {
+      try {
+        item.remove();
+      } catch (e) {
+        console.error('Failed to remove panel item:', item, e);
+      }
+    });
   }
 
   destroy() {
@@ -116,6 +126,13 @@ class DockManagerService {
     }
     this.componentMap.clear();
     window.removeEventListener('resize', () => {});
+  }
+
+  unpinAllPanels() {
+    if (!this.goldenLayout) return;
+    // 重置为默认布局可以实现取消所有面板的固定状态
+    this.goldenLayout.loadLayout(this.getDefaultLayout());
+    // 也可以遍历所有 item 并设置 isPinned = false，但这更复杂
   }
 
   private getDefaultLayout(): LayoutConfig {
@@ -128,6 +145,23 @@ class DockManagerService {
             componentType: 'main-view',
             title: '主视图',
             isClosable: false,
+          },
+        ],
+      },
+    };
+  }
+
+  public getFullscreenLayout(): LayoutConfig {
+    return {
+      root: {
+        type: 'row',
+        content: [
+          {
+            type: 'component',
+            componentType: 'main-view',
+            title: '主视图',
+            isClosable: false,
+            width: 100,
           },
         ],
       },

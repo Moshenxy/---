@@ -5,7 +5,7 @@ import { parseSimpleYaml } from '../utils/yamlParser';
 import { lorebookService } from './LorebookService';
 
 // 全局缓存地点ID到名称的映射
-const locationNameCache = reactive(new Map<string, string>());
+const locationCache = reactive(new Map<string, { name: string; parentId: string | null }>());
 
 /**
  * 从全局状态中过滤出非玩家、非化身的角色作为NPC
@@ -53,14 +53,15 @@ async function initializeWorldAndLocationData(): Promise<{ id: string; name: str
         const name = parsed?.基础信息?.名称;
 
         // 缓存地点信息 - V8.0 纪元中心化适配
-        const currentEpochId = parsed?.元规则?.当前纪元ID;
-        if (currentEpochId && parsed?.历史纪元?.[currentEpochId]) {
-          const activeEpoch = parsed.历史纪元[currentEpochId];
-          const spatialEntities = activeEpoch?.内容?.空间实体;
-          if (Array.isArray(spatialEntities)) {
-            for (const entity of spatialEntities) {
-              if (entity.ID && entity.名称) {
-                locationNameCache.set(entity.ID, entity.名称);
+        if (parsed?.历史纪元) {
+          for (const epochId in parsed.历史纪元) {
+            const epoch = parsed.历史纪元[epochId];
+            const spatialEntities = epoch?.内容?.空间实体;
+            if (Array.isArray(spatialEntities)) {
+              for (const entity of spatialEntities) {
+                if (entity.ID && entity.名称) {
+                  locationCache.set(entity.ID, { name: entity.名称, parentId: entity.所属?.ID || null });
+                }
               }
             }
           }
@@ -88,7 +89,14 @@ async function initializeWorldAndLocationData(): Promise<{ id: string; name: str
 }
 
 function getLocationName(id: string): string {
-  return locationNameCache.get(id) || id;
+  return locationCache.get(id)?.name || id;
+}
+
+function getParentLocationName(id: string): string {
+  const parentId = locationCache.get(id)?.parentId;
+  if (!parentId) return '未知';
+  if (parentId === 'WORLD_ORIGIN') return '世界本身';
+  return locationCache.get(parentId)?.name || '未知';
 }
 
 function getNpcNameById(id: string): string {
@@ -111,6 +119,16 @@ function getNpcId(npc: Character): string | null {
   return null;
 }
 
+function cacheLocationData(spatialEntities: any[]) {
+  if (Array.isArray(spatialEntities)) {
+    for (const entity of spatialEntities) {
+      if (entity.ID && entity.名称) {
+        locationCache.set(entity.ID, { name: entity.名称, parentId: entity.所属?.ID || null });
+      }
+    }
+  }
+}
+
 export const npcService = {
   getNpcsByWorld,
   allNpcs,
@@ -118,4 +136,7 @@ export const npcService = {
   getLocationName,
   getNpcNameById,
   getNpcId,
+  locationCache,
+  getParentLocationName,
+  cacheLocationData,
 };

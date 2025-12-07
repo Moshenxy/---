@@ -2,13 +2,7 @@
   <div class="guixu-root-container" :class="{ 'web-fullscreen': isWebFullscreen }">
     <TopStatusBar />
     <div class="main-layout">
-      <MainView />
       <DockManager />
-    </div>
-
-    <!-- Radial Menu Modal -->
-    <div v-if="radialMenu.isVisible" class="modal-overlay" @click.self="closeRadialMenu">
-      <RadialMenu :options="radialMenu.options" @close="closeRadialMenu" />
     </div>
 
     <!-- Global Confirmation Modal -->
@@ -51,14 +45,15 @@
     </div>
 
     <!-- Global Input Modal -->
-    <div v-if="inputModal.isVisible" class="modal-overlay input-modal-overlay" @click.self="inputModalActions.hide()">
+    <div v-if="inputModal.isVisible" class="modal-overlay input-modal-overlay">
       <div class="modal-content input-modal-content">
         <div class="input-area-container">
           <ActionPanel
             v-if="isActionPanelVisible"
             :command-count="commandCount"
-            @open-main-menu="openRadialMenu('left')"
-            @open-avatar-menu="openRadialMenu('right')"
+            :main-options="menuOptions.main"
+            :avatar-options="menuOptions.avatar"
+            :common-options="menuOptions.common"
             @toggle-history="toggleHistory"
             @toggle-commands="toggleCommandQueue"
           />
@@ -66,14 +61,26 @@
             <EnhancedInputBox @submit-action="handleSubmit" @toggle-action-panel="toggleActionPanel" />
           </div>
           <InputHistoryPopup v-if="isHistoryVisible" @close="toggleHistory" @select-entry="selectHistoryEntry" />
-          <div v-if="isQueueVisible" class="command-queue-popup">
-            <div v-if="commandCount > 0" class="command-list">
-              <div v-for="(cmd, index) in commands" :key="index" class="command-item">
-                {{ cmd }}
-              </div>
+          <div
+            v-if="isQueueVisible"
+            class="command-queue-popup"
+            style="background-color: #0a0f1e; border: 1px solid #d4af37;"
+          >
+            <div class="popup-header">
+              <h3>指令队列</h3>
+              <button class="close-popup-button" @click="toggleCommandQueue">×</button>
             </div>
-            <div v-else class="empty-queue">暂无待执行指令。</div>
-            <button class="clear-button" @click="clearCommands" v-if="commandCount > 0">清空指令</button>
+            <div class="popup-body">
+              <div v-if="commandCount > 0" class="command-list">
+                <div v-for="(cmd, index) in commands" :key="index" class="command-item">
+                  {{ cmd }}
+                </div>
+              </div>
+              <div v-else class="empty-queue">暂无待执行指令。</div>
+            </div>
+            <div class="popup-footer" v-if="commandCount > 0">
+              <button class="clear-button" @click="clearCommands">清空所有指令</button>
+            </div>
           </div>
         </div>
       </div>
@@ -83,30 +90,30 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted, reactive, ref } from 'vue';
+import { computed, defineComponent, onMounted, ref } from 'vue';
 import ActionPanel from './components/common/ActionPanel.vue';
 import EnhancedInputBox from './components/common/EnhancedInputBox.vue';
 import InputHistoryPopup from './components/common/InputHistoryPopup.vue';
 import NotificationContainer from './components/common/NotificationContainer.vue';
-import RadialMenu from './components/controls/RadialMenu.vue';
 import SideMenuButton from './components/controls/SideMenuButton.vue';
 import DockManager from './components/DockManager.vue';
 import LoadingIndicator from './components/LoadingIndicator.vue';
 import NpcListModal from './components/modals/NpcListModal.vue';
 import TopStatusBar from './components/TopStatusBar.vue';
 import WorldTimeDisplay from './components/WorldTimeDisplay.vue';
-import MainView from './MainView.vue';
 import { commandService } from './services/CommandService';
 import { confirmationService } from './services/ConfirmationService';
 import { detailModalService } from './services/DetailModalService';
 import { dockManagerService } from './services/DockManagerService';
+import { eventBus } from './services/EventBus';
 import { inputModalActions, inputModalState } from './services/InputModalService';
+import { layoutService, PanelState } from './services/LayoutService';
 import { npcModalService } from './services/NpcModalService';
 import { saveLoadService } from './services/saveLoadService';
 import { usePanelManager } from './services/usePanelManager';
 import { actions, store } from './store';
 import { isSimulationRunning } from './store/getters';
-import { uiActions, uiState } from './store/ui';
+import { uiState } from './store/ui';
 
 interface MenuOption {
   id: string;
@@ -122,12 +129,10 @@ export default defineComponent({
     DockManager,
     EnhancedInputBox,
     LoadingIndicator,
-    MainView,
     NpcListModal,
     TopStatusBar,
     WorldTimeDisplay,
     SideMenuButton,
-    RadialMenu,
     NotificationContainer,
     ActionPanel,
     InputHistoryPopup,
@@ -147,81 +152,63 @@ export default defineComponent({
     const commands = ref<string[]>([]);
     const commandCount = computed(() => commands.value.length);
 
-    const radialMenu = reactive({
-      isVisible: false,
-      options: [] as MenuOption[],
-    });
-
-    const menuOptions: { left: MenuOption[]; right: MenuOption[] } = {
-      left: [
+    const menuOptions: { main: MenuOption[]; avatar: MenuOption[]; common: MenuOption[] } = {
+      main: [
         { id: 'character', icon: '人', text: '本体', action: () => openPanel('mainWorld', 'character') },
         { id: 'inventory', icon: '物', text: '背包', action: () => openPanel('mainWorld', 'inventory') },
         { id: 'skills', icon: '技', text: '技艺', action: () => openPanel('mainWorld', 'skills') },
-        { id: 'imprints', icon: '印', text: '烙印', action: () => openPanel('mainWorld', 'imprints') },
         { id: 'worldDetails', icon: '世', text: '详情', action: () => openPanel('mainWorld', 'worldDetails') },
         { id: 'sandbox', icon: '盘', text: '沙盘', action: () => openPanel('mainWorld', 'sandbox') },
-        { id: 'reincarnation', icon: '轮', text: '轮回', action: () => openPanel('reincarnation', 'main') },
-        { id: 'unpin', icon: '固', text: '取消', action: () => uiActions.unpinAllPanels() },
       ],
-      right: [
+      avatar: [
         {
-          id: 'character',
+          id: 'avatar-character',
           icon: '身',
           text: '化身',
           action: () => openPanel('avatarWorld', 'character'),
           disabled: () => !isSimulationRunning.value,
         },
         {
-          id: 'inventory',
+          id: 'avatar-inventory',
           icon: '囊',
           text: '背包',
           action: () => openPanel('avatarWorld', 'inventory'),
           disabled: () => !isSimulationRunning.value,
         },
         {
-          id: 'tasks',
+          id: 'avatar-tasks',
           icon: '命',
           text: '任务',
           action: () => openPanel('avatarWorld', 'tasks'),
           disabled: () => !isSimulationRunning.value,
         },
         {
-          id: 'worldDetails',
+          id: 'avatar-worldDetails',
           icon: '界',
           text: '详情',
           action: () => openPanel('avatarWorld', 'worldDetails'),
           disabled: () => !isSimulationRunning.value,
         },
         {
-          id: 'sandbox',
+          id: 'avatar-sandbox',
           icon: '盘',
           text: '沙盘',
           action: () => openPanel('avatarWorld', 'sandbox'),
           disabled: () => !isSimulationRunning.value,
         },
+      ],
+      common: [
+        { id: 'imprints', icon: '印', text: '烙印', action: () => openPanel('mainWorld', 'imprints') },
+        { id: 'reincarnation', icon: '轮', text: '轮回', action: () => openPanel('reincarnation', 'main') },
         { id: 'npcDirectory', icon: '众', text: '名录', action: () => openPanel('allWorlds', 'npcDirectory') },
-        { id: 'unpin', icon: '固', text: '取消', action: () => uiActions.unpinAllPanels() },
       ],
     };
 
     const handleOverlayClick = () => {
-      if (radialMenu.isVisible) {
-        closeRadialMenu();
-        return;
-      }
       if (inputModal.value.isVisible) {
         inputModalActions.hide();
         return;
       }
-    };
-
-    const openRadialMenu = (side: 'left' | 'right') => {
-      radialMenu.options = menuOptions[side];
-      radialMenu.isVisible = true;
-    };
-
-    const closeRadialMenu = () => {
-      radialMenu.isVisible = false;
     };
 
     const handleAction = async (actionContent: string) => {
@@ -269,11 +256,34 @@ export default defineComponent({
     };
 
     onMounted(() => {
+      const dockHost = document.getElementById('app');
+      if (dockHost) {
+        dockManagerService.initialize(dockHost);
+      } else {
+        console.error('Dock host element not found.');
+      }
       actions.loadAllData();
       actions.initializeEventListeners();
       dockManagerService.onAction = handleAction;
       commandService.subscribe(updateCommands);
       updateCommands();
+
+      // Setup layout restoration listener
+      eventBus.on('restoreLayout', (panels: PanelState[]) => {
+        const { openPanel } = usePanelManager();
+        dockManagerService.closeAllPanels(); // Ensure a clean slate before restoring
+        panels.forEach(panelState => {
+          try {
+            openPanel(panelState.world as any, panelState.panel, panelState.props || {});
+          } catch (e) {
+            console.error(`Failed to restore panel: ${panelState.world}-${panelState.panel}`, e);
+          }
+        });
+      });
+
+      // Initialize layout service with current fullscreen state and restore layout
+      layoutService.setCurrentFullscreenState(uiState.isWebFullscreen);
+      layoutService.restoreLayout();
     });
 
     return {
@@ -283,9 +293,7 @@ export default defineComponent({
       isWebFullscreen,
       inputModal,
       inputModalActions,
-      radialMenu,
-      openRadialMenu,
-      closeRadialMenu,
+      menuOptions,
       handleAction,
       handleSubmit,
       handleOverlayClick,
@@ -445,9 +453,11 @@ export default defineComponent({
   padding-bottom: 5vh;
   background-color: transparent;
   backdrop-filter: none;
+  pointer-events: none;
 }
 
 .input-modal-content {
+  pointer-events: auto;
   @include frosted-glass(rgba($color-indigo-deep, 0.8), 12px);
   border: 1px solid rgba($color-gold-liu, 0.4);
   border-radius: $border-radius-md;
@@ -487,7 +497,74 @@ export default defineComponent({
   width: 80%;
   max-width: 600px;
   z-index: 20;
-  // Further styling for command queue popup
+  /* Styles are now applied inline to ensure they are not overridden */
+  border-radius: $border-radius-md;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  padding: $spacing-md;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+
+  .popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: $spacing-sm;
+    border-bottom: 1px solid rgba($color-gold-liu, 0.2);
+
+    h3 {
+      color: $color-gold-pale;
+      font-family: $font-family-title;
+      font-size: $font-size-h3;
+      margin: 0;
+    }
+
+    .close-popup-button {
+      background: none;
+      border: none;
+      color: $color-grey-stone;
+      font-size: 22px;
+      cursor: pointer;
+      line-height: 1;
+
+      &:hover {
+        color: $color-white-moon;
+      }
+    }
+  }
+
+  .popup-body {
+    .command-list {
+      max-height: 200px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: $spacing-sm;
+      padding-right: $spacing-sm; // for scrollbar
+    }
+
+    .command-item {
+      background-color: rgba($color-black-void, 0.3);
+      padding: $spacing-sm $spacing-md;
+      border-radius: $border-radius-sm;
+      font-family: $font-family-main;
+      color: $color-white-moon;
+      word-break: break-all;
+    }
+
+    .empty-queue {
+      text-align: center;
+      color: $color-grey-stone;
+      padding: $spacing-lg 0;
+    }
+  }
+
+  .popup-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: $spacing-sm;
+    border-top: 1px solid rgba($color-gold-liu, 0.2);
+  }
 }
 
 :global(html.web-fullscreen-active),

@@ -1,4 +1,33 @@
 /**
+ * 尝试将一个字符串解析为 { key: "value", ... } 格式的对象。
+ * @param str - 要解析的字符串。
+ * @returns 解析后的对象，或原始字符串。
+ */
+function tryParseObject(str: string): any {
+  str = str.trim();
+  if (str.startsWith('{') && str.endsWith('}')) {
+    try {
+      // 移除花括号并按逗号分割
+      const properties = str.slice(1, -1).split(',');
+      const obj: any = {};
+      for (const prop of properties) {
+        const parts = prop.split(':');
+        if (parts.length === 2) {
+          const key = parts[0].trim().replace(/["']/g, '');
+          const value = parts[1].trim().replace(/["']/g, '');
+          obj[key] = value;
+        }
+      }
+      return obj;
+    } catch (e) {
+      // 解析失败，返回原始字符串
+      return str;
+    }
+  }
+  return str;
+}
+
+/**
  * 解析一个简单的、基于缩进的类YAML字符串为嵌套的JavaScript对象。
  * @param text - 要解析的字符串。
  * @returns 解析后的对象。
@@ -46,7 +75,7 @@ export function parseSimpleYaml(text: string): any {
         const value = trimmedLine.substring(separatorIndex + 1).trim();
 
         if (value) {
-          parent[key] = value;
+          parent[key] = tryParseObject(value);
         } else {
           // 这是一个新的对象/列表的开始
           const nextLineIndex = lines.indexOf(line) + 1;
@@ -58,6 +87,35 @@ export function parseSimpleYaml(text: string): any {
             const newObj = {};
             parent[key] = newObj;
             stack.push({ obj: newObj, indent });
+          }
+          
+          /**
+           * 尝试将一个字符串解析为 { key: "value", ... } 格式的对象。
+           * @param str - 要解析的字符串。
+           * @returns 解析后的对象，或原始字符串。
+           */
+          function tryParseObject(str: string): any {
+            str = str.trim();
+            if (str.startsWith('{') && str.endsWith('}')) {
+              try {
+                // 移除花括号并按逗号分割
+                const properties = str.slice(1, -1).split(',');
+                const obj: any = {};
+                for (const prop of properties) {
+                  const parts = prop.split(':');
+                  if (parts.length === 2) {
+                    const key = parts[0].trim().replace(/["']/g, '');
+                    const value = parts[1].trim().replace(/["']/g, '');
+                    obj[key] = value;
+                  }
+                }
+                return obj;
+              } catch (e) {
+                // 解析失败，返回原始字符串
+                return str;
+              }
+            }
+            return str;
           }
         }
       }

@@ -34,6 +34,18 @@ class SilentUpdater {
   }
 
   /**
+   * Resets the polling timer.
+   */
+  public reset() {
+    if (!this.isRunning || !this.updateCallback) return;
+    if (this.timerId) {
+      window.clearInterval(this.timerId);
+    }
+    const interval = this.timerId ? (this.timerId as any).__interval : 5000;
+    this.timerId = window.setInterval(() => this.runUpdate(), interval);
+  }
+
+  /**
    * Runs a single update cycle.
    */
   private async runUpdate() {
@@ -45,7 +57,7 @@ class SilentUpdater {
     this.isUpdating = true;
     try {
       await this.updateCallback();
-      console.log('[SilentUpdater] Silent update check completed.');
+      console.debug('[SilentUpdater] Silent update check completed.');
     } catch (error) {
       console.error('[SilentUpdater] Error during silent update:', error);
     } finally {

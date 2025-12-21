@@ -141,6 +141,8 @@ export function applyMvuUpdateFallback(script: string, currentMvuState: any): an
 
   const newState = cloneDeep(currentMvuState);
   let modified = false;
+  // ROO-FIX: 确定要操作的实际状态对象，以处理 stat_data 根丢失的情况。
+  const targetState = newState.stat_data || newState;
 
   const commands = _extractCommands(script);
 
@@ -156,21 +158,21 @@ export function applyMvuUpdateFallback(script: string, currentMvuState: any): an
 
           if (newValue instanceof Date) newValue = newValue.toISOString();
 
-          set(newState.stat_data, path, newValue);
+          set(targetState, path, newValue);
           modified = true;
           break;
         }
         case 'add': {
-          const currentValue = get(newState.stat_data, path);
+          const currentValue = get(targetState, path);
           const delta = _parseCommandValue(command.args[1]);
           if (typeof currentValue === 'number' && typeof delta === 'number') {
-            set(newState.stat_data, path, currentValue + delta);
+            set(targetState, path, currentValue + delta);
             modified = true;
           }
           break;
         }
         case 'remove': {
-          unset(newState.stat_data, path);
+          unset(targetState, path);
           modified = true;
           break;
         }
@@ -178,7 +180,7 @@ export function applyMvuUpdateFallback(script: string, currentMvuState: any): an
         case 'insert': {
           if (command.args.length === 2) {
             const valueToAssign = _parseCommandValue(command.args[1]);
-            const parentCollection = get(newState.stat_data, path);
+            const parentCollection = get(targetState, path);
 
             if (
               Array.isArray(parentCollection) &&
@@ -190,31 +192,31 @@ export function applyMvuUpdateFallback(script: string, currentMvuState: any): an
               const description = parentCollection[1];
               const newInnerArray = innerArray.concat(Array.isArray(valueToAssign) ? valueToAssign : [valueToAssign]);
               const newParentArray = [newInnerArray, description];
-              set(newState.stat_data, path, newParentArray);
+              set(targetState, path, newParentArray);
               modified = true;
             } else if (Array.isArray(parentCollection)) {
               const newCollection = parentCollection.concat(
                 Array.isArray(valueToAssign) ? valueToAssign : [valueToAssign],
               );
-              set(newState.stat_data, path, newCollection);
+              set(targetState, path, newCollection);
               modified = true;
             } else if (typeof parentCollection === 'object' && parentCollection !== null) {
               Object.assign(parentCollection, valueToAssign);
               modified = true;
             } else {
-              set(newState.stat_data, path, valueToAssign);
+              set(targetState, path, valueToAssign);
               modified = true;
             }
           } else if (command.args.length >= 3) {
             const keyOrIndex = _parseCommandValue(command.args[1]);
             const valueToAssign = _parseCommandValue(command.args[2]);
-            const collection = get(newState.stat_data, path);
+            const collection = get(targetState, path);
 
             if (Array.isArray(collection)) {
               if (typeof keyOrIndex === 'number') {
                 const newCollection = [...collection];
                 newCollection.splice(keyOrIndex, 0, valueToAssign);
-                set(newState.stat_data, path, newCollection);
+                set(targetState, path, newCollection);
                 modified = true;
               }
             } else if (typeof collection === 'object' && collection !== null) {
@@ -223,7 +225,7 @@ export function applyMvuUpdateFallback(script: string, currentMvuState: any): an
             } else {
               const newCollection: any = {};
               set(newCollection, String(keyOrIndex), valueToAssign);
-              set(newState.stat_data, path, newCollection);
+              set(targetState, path, newCollection);
               modified = true;
             }
           }
@@ -232,6 +234,15 @@ export function applyMvuUpdateFallback(script: string, currentMvuState: any): an
       }
     } catch (e) {
       console.error(`[MVU Fallback] 处理指令失败:`, command, e);
+    }
+  }
+
+  // ROO-FIX: 如果我们修改了 targetState，需要确保返回的是包含 stat_data 的原始结构（如果它最初存在）。
+  if (modified) {
+    if (newState.stat_data) {
+      newState.stat_data = targetState;
+    } else {
+      return targetState; // 如果最初就没有 stat_data，则返回修改后的对象本身
     }
   }
 

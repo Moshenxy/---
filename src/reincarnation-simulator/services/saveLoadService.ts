@@ -1,11 +1,12 @@
 import * as toastr from 'toastr';
 import { lorebookService } from './LorebookService';
-import { store } from '../store';
+import { serviceLocator } from './service-locator';
 
 const LOREBOOK_NAME = '轮回-诸天万界';
 const SAVE_SLOT_PREFIX = '存档-';
 const MAX_MANUAL_SAVES = 5;
 const AUTO_SAVE_SLOTS = ['自动-A', '自动-B'];
+const REROLL_SAVE_SLOT_ID = '自动-重来';
 const LOREBOOK_KEYS_TO_BACKUP: string[] = [
   '主世界',
   '化身世界',
@@ -31,14 +32,24 @@ export interface SaveSlot {
 class SaveLoadService {
   public manualSlots: SaveSlot[] = [];
   public autoSlots: SaveSlot[] = [];
+  public rerollSlot: SaveSlot | null = null;
   public turnCounter: number = 0;
   public isAutoSaveEnabled: boolean = true;
   private autoSaveInterval: any;
+  private areSlotsLoaded = false;
 
   constructor() {
     this.initializeSlots();
     this.loadAutoSaveState();
     this.loadTurnCounter();
+    // 构造函数中不再立即加载，改为按需加载
+  }
+
+  private async ensureSlotsLoaded() {
+    if (!this.areSlotsLoaded) {
+      await this.loadAllSaveSlots();
+      this.areSlotsLoaded = true;
+    }
   }
 
   private initializeSlots() {
@@ -48,6 +59,7 @@ class SaveLoadService {
     for (const id of AUTO_SAVE_SLOTS) {
       this.autoSlots.push({ id, name: `自动存档 ${id.split('-')[1]}`, timestamp: null, data: null });
     }
+    this.rerollSlot = { id: REROLL_SAVE_SLOT_ID, name: '重来存档', timestamp: null, data: null };
   }
 
   async loadAllSaveSlots() {
@@ -78,6 +90,9 @@ class SaveLoadService {
 
       this.manualSlots.forEach(updateSlot);
       this.autoSlots.forEach(updateSlot);
+      if (this.rerollSlot) {
+        updateSlot(this.rerollSlot);
+      }
     } catch (error) {
       console.error('加载存档槽位时出错:', error);
       toastr.error('加载存档列表失败。');
@@ -85,6 +100,7 @@ class SaveLoadService {
   }
 
   async saveGame(slotId: string, isAutoSave = false) {
+    await this.ensureSlotsLoaded(); // 在保存前确保槽位数据已加载
     if (!isAutoSave) {
       toastr.info(`正在保存到槽位 [${slotId}]...`);
     }
@@ -103,6 +119,7 @@ class SaveLoadService {
         lorebookBackup[key] = content ?? '';
       }
 
+      const store = serviceLocator.get('store');
       const lastLogEntry = store.worldLog.length > 0 ? store.worldLog[store.worldLog.length - 1] : null;
 
       const saveData = {
@@ -149,29 +166,29 @@ class SaveLoadService {
     }
   }
 
-  async loadGame(slot: SaveSlot) {
+  private async _internalLoadGame(slot: SaveSlot) {
     if (!slot.data || !slot.data.mvu_data) {
-      toastr.error('无法读取空存档或损坏的存档。');
-      return;
+      throw new Error('无法读取空存档或损坏的存档。');
     }
+    if (slot.data.lorebook_backup) {
+      for (const key in slot.data.lorebook_backup) {
+        await lorebookService.writeToLorebook(key, slot.data.lorebook_backup[key]);
+      }
+    }
+    const messages = await TavernHelper.getChatMessages('0');
+    const messageZero = messages[0] || {};
+    messageZero.data = slot.data.mvu_data;
+    messageZero.message = slot.data.message_content;
+    await TavernHelper.setChatMessages([messageZero], { refresh: 'all' });
+  }
+
+  async loadGame(slot: SaveSlot) {
     if (!confirm(`确定要读取存档 [${slot.name}] 吗？当前所有未保存的进度将会被覆盖。`)) {
       return;
     }
     toastr.info(`正在从 [${slot.name}] 读取存档...`);
     try {
-      if (slot.data.lorebook_backup) {
-        for (const key in slot.data.lorebook_backup) {
-          await lorebookService.writeToLorebook(key, slot.data.lorebook_backup[key]);
-        }
-      }
-
-      const messages = await TavernHelper.getChatMessages('0');
-      const messageZero = messages[0] || {};
-      messageZero.data = slot.data.mvu_data;
-      messageZero.message = slot.data.message_content;
-
-      await TavernHelper.setChatMessages([messageZero], { refresh: 'all' });
-
+      await this._internalLoadGame(slot);
       toastr.success(`已成功从 [${slot.name}] 读取存档！游戏即将刷新...`);
     } catch (error) {
       const errorMessage = `读档失败: ${error instanceof Error ? error.message : String(error)}`;
@@ -206,6 +223,25 @@ class SaveLoadService {
     localStorage.setItem('tianhua_turn_counter', this.turnCounter.toString());
     const slotId = this.turnCounter % 2 === 1 ? AUTO_SAVE_SLOTS[0] : AUTO_SAVE_SLOTS[1];
     await this.saveGame(slotId, true);
+  }
+
+  async saveStateForReroll() {
+    console.log('[Reroll] Saving state for potential reroll...');
+    await this.saveGame(REROLL_SAVE_SLOT_ID, true);
+  }
+
+  async loadRerollState() {
+    await this.ensureSlotsLoaded(); // 在加载前确保槽位数据已加载
+
+    if (!this.rerollSlot || !this.rerollSlot.data) {
+      toastr.error('没有可用于“重来”的存档点。');
+      throw new Error('No reroll save state found.');
+    }
+    console.log('[Reroll] Loading state for reroll...');
+    // 直接调用内部加载函数，跳过用户确认
+    await this._internalLoadGame(this.rerollSlot);
+    // 短暂延迟后刷新页面，确保状态完全应用
+    setTimeout(() => window.location.reload(), 500);
   }
 
   exportSave(slot: SaveSlot) {

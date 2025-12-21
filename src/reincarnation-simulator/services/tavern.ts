@@ -9,21 +9,27 @@ class TavernService {
    * 从Tavern后端获取最新的消息和状态数据
    */
   async fetchTavernData() {
-    console.log('Fetching data from Tavern...');
+    console.debug('Fetching data from Tavern...');
     const messages = await getChatMessages(getCurrentMessageId());
-    console.log('Messages received:', messages);
+    console.debug('Messages received:', messages);
     return messages;
   }
 
   /**
    * 调用AI生成回复
    * @param prompt - 发送给AI的完整提示
+   * @param variables - （可选）一个用于临时覆盖本次调用上下文变量的对象
    */
-  async generateAiResponse(prompt: string): Promise<string> {
-    const generateConfig = {
+  async generateAiResponse(prompt: string, variables?: any): Promise<string> {
+    const generateConfig: any = {
       injects: [{ role: 'user', content: prompt, position: 'in_chat', should_scan: true }],
       should_stream: false,
     };
+
+    if (variables) {
+      generateConfig.variables = variables;
+    }
+
     const aiResponse = await TavernHelper.generate(generateConfig);
     if (typeof aiResponse !== 'string') {
       throw new Error('AI未能返回有效文本。');
@@ -39,32 +45,7 @@ class TavernService {
   async invokeMvuScript(script: string, oldVariables: any): Promise<any> {
     const inputData: any = { old_variables: oldVariables };
 
-    // --- Start of AI Script Fix ---
-    let processedScript = script.replace(/「|」/g, "'"); // Fix invalid quotes
-
-    const creationLine = /_.assign\('角色', '(.+?)', {}\);/g;
-    const match = creationLine.exec(processedScript);
-
-    if (match) {
-      const charName = match[1];
-      const setLines = new RegExp(`_.set\\('角色\\\\.${charName}\\\\.([^']*)', (.*?)\\);`, 'g');
-
-      let userObjectString = `let user = {};\n`;
-      let lineMatch;
-      while ((lineMatch = setLines.exec(processedScript)) !== null) {
-        const prop = lineMatch[1];
-        const value = lineMatch[2];
-        userObjectString += `user['${prop}'] = ${value};\n`;
-      }
-      userObjectString += `_.assign('角色', '${charName}', user);`;
-
-      processedScript = processedScript.replace(creationLine, '');
-      processedScript = processedScript.replace(setLines, '');
-      processedScript += `\n${userObjectString}`;
-    }
-    // --- End of AI Script Fix ---
-
-    await eventEmit('mag_invoke_mvu', processedScript, inputData);
+    await eventEmit('mag_invoke_mvu', script, inputData);
     return inputData.new_variables;
   }
 }

@@ -24,3 +24,27 @@ export interface Epoch {
   内容: any;
   力量体系: any;
 }
+
+export interface Selections {
+  blueprint: string;
+  tone: string;
+  tags: string[];
+  relics: string[];
+  identity: string;
+  gender: string;
+  age: number;
+  talents: string[];
+  past_experiences: string[];
+  character_traits: string[];
+  core_need: string;
+  arts: string[];
+  backpack: { [key: string]: number };
+}
+
+export interface PotentialPoints {
+  [key: string]: number;
+  精: number;
+  气: number;
+  神: number;
+  运: number;
+}

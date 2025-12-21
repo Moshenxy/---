@@ -23,9 +23,9 @@
       </div>
       。
       <div class="selections-container" v-if="store.selections.identity">
-        <div class="selected-item-detailed">
-          <p class="item-desc">{{ getItem('identities', store.selections.identity)?.desc }}</p>
-        </div>
+         <div class="selected-item-detailed">
+           <p class="item-desc">{{ getItem('identities', store.selections.identity)?.desc }}</p>
+         </div>
       </div>
       <div class="custom-input-group">
         <input type="text" placeholder="自定义名称..." v-model="customInputs.identities.name" />
@@ -74,7 +74,7 @@
       <div class="selections-container">
         <div v-for="expId in store.selections.past_experiences" :key="expId" class="selected-item-detailed">
           <div class="item-header">
-            <span>{{ getItem('past_experiences', expId)?.name }}</span>
+            <span>{{ getItem( 'past_experiences', expId)?.name }}</span>
             <span class="remove-item" @click="handleRemoveItem(expId, 'past_experiences')">×</span>
           </div>
           <p class="item-desc">{{ getItem('past_experiences', expId)?.desc }}</p>
@@ -86,6 +86,7 @@
         <button type="button" @click="addCustom('past_experiences')">添加</button>
       </div>
     </div>
+
 
     <div class="sentence">
       你天生便拥有
@@ -161,15 +162,15 @@
         <input type="text" placeholder="自定义技艺名称..." v-model="customInputs.arts.name" />
         <textarea placeholder="自定义技艺详情..." v-model="customInputs.arts.desc"></textarea>
         <div class="custom-skills-creator">
-          <div v-for="(skill, index) in customInputs.arts.skills" :key="index" class="custom-skill-item">
-            <span>{{ skill.name }}: {{ skill.desc }}</span>
-            <button @click.stop.prevent="removeCustomSkill(index)" class="remove-btn">×</button>
-          </div>
-          <div class="skill-input-row">
-            <input type="text" placeholder="自定义技能名称..." v-model="customSkill.name" />
-            <textarea placeholder="自定义技能详情..." v-model="customSkill.desc"></textarea>
-            <button type="button" @click="addCustomSkill">添加技能</button>
-          </div>
+            <div v-for="(skill, index) in customInputs.arts.skills" :key="index" class="custom-skill-item">
+                <span>{{ skill.name }}: {{ skill.desc }}</span>
+                <button @click.stop.prevent="removeCustomSkill(index)" class="remove-btn">×</button>
+            </div>
+            <div class="skill-input-row">
+                <input type="text" placeholder="自定义技能名称..." v-model="customSkill.name" />
+                <textarea placeholder="自定义技能详情..." v-model="customSkill.desc"></textarea>
+                <button type="button" @click="addCustomSkill">添加技能</button>
+            </div>
         </div>
         <button type="button" @click="addCustom('arts')">添加自定义技艺</button>
       </div>
@@ -194,30 +195,30 @@ const customInputs = ref({
 const customSkill = ref({ name: '', desc: '' });
 
 const addCustomSkill = () => {
-  if (customSkill.value.name.trim() && customSkill.value.desc.trim()) {
-    customInputs.value.arts.skills.push({ ...customSkill.value, cost: 2 });
-    customSkill.value.name = '';
-    customSkill.value.desc = '';
-  }
+    if (customSkill.value.name.trim() && customSkill.value.desc.trim()) {
+        customInputs.value.arts.skills.push({ ...customSkill.value, cost: 2 });
+        customSkill.value.name = '';
+        customSkill.value.desc = '';
+    }
 };
 
-const removeCustomSkill = index => {
-  customInputs.value.arts.skills.splice(index, 1);
+const removeCustomSkill = (index) => {
+    customInputs.value.arts.skills.splice(index, 1);
 };
 
 const addCustom = type => {
   if (type === 'arts') {
     const artInput = customInputs.value.arts;
     if (artInput.name.trim() && artInput.desc.trim()) {
-      const newArt = {
-        id: `custom-art-${Date.now()}`,
-        name: artInput.name,
-        desc: artInput.desc,
-        cost: 5,
-        skills: artInput.skills.map(skill => ({ ...skill, id: `custom-skill-${Date.now()}` })),
-      };
+        const newArt = {
+            id: `custom-art-${Date.now()}`,
+            name: artInput.name,
+            desc: artInput.desc,
+            cost: 5,
+            skills: artInput.skills.map(skill => ({...skill, id: `custom-skill-${Date.now()}`}))
+        };
       addCustomItem('arts', newArt);
-
+      
       artInput.name = '';
       artInput.desc = '';
       artInput.skills = [];
@@ -279,7 +280,7 @@ const handleRemoveItem = (id, type) => {
   }
 };
 
-const getArtSkillsTooltip = artId => {
+const getArtSkillsTooltip = (artId) => {
   const art = GAME_DATA.arts.find(a => a.id === artId);
   if (!art || !art.skills || art.skills.length === 0) {
     return '';
@@ -308,7 +309,7 @@ const getArtSkillsTooltip = artId => {
 }
 
 .custom-input-group {
-  align-items: flex-start;
+    align-items: flex-start;
 }
 
 .custom-input-group {
@@ -318,44 +319,30 @@ const getArtSkillsTooltip = artId => {
   gap: 8px 16px;
   align-items: end;
   grid-template-areas:
-    'artName skillName'
-    'artDesc skillDesc'
-    'artSkills skillButton'
-    'addArtButton addArtButton';
+    "artName skillName"
+    "artDesc skillDesc"
+    "artSkills skillButton"
+    "addArtButton addArtButton";
 }
 
-.custom-input-group > input[placeholder*='技艺名称'] {
-  grid-area: artName;
-}
-.custom-input-group > textarea[placeholder*='技艺详情'] {
-  grid-area: artDesc;
-}
-.custom-input-group > .custom-skills-creator {
-  grid-area: artSkills;
-}
-.custom-input-group > button[type='button'] {
-  grid-area: addArtButton;
-}
+.custom-input-group > input[placeholder*="技艺名称"] { grid-area: artName; }
+.custom-input-group > textarea[placeholder*="技艺详情"] { grid-area: artDesc; }
+.custom-input-group > .custom-skills-creator { grid-area: artSkills; }
+.custom-input-group > button[type="button"] { grid-area: addArtButton; }
 
 .skill-input-row {
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: auto auto auto;
-  gap: 8px;
-  grid-template-areas:
-    'skillNameInput'
-    'skillDescInput'
-    'skillAddButton';
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 8px;
+    grid-template-areas:
+        "skillNameInput"
+        "skillDescInput"
+        "skillAddButton";
 }
-.skill-input-row input {
-  grid-area: skillNameInput;
-}
-.skill-input-row textarea {
-  grid-area: skillDescInput;
-}
-.skill-input-row button {
-  grid-area: skillAddButton;
-}
+.skill-input-row input { grid-area: skillNameInput; }
+.skill-input-row textarea { grid-area: skillDescInput; }
+.skill-input-row button { grid-area: skillAddButton; }
 
 .selected-item-detailed {
   background-color: rgba(0, 0, 0, 0.2);
@@ -395,4 +382,5 @@ const getArtSkillsTooltip = artId => {
   padding-left: 10px;
   margin-top: 4px;
 }
+
 </style>

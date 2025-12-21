@@ -37,17 +37,17 @@ export function parseWorldLoreForMap(text: string): WorldDefinition | null {
 
     if (trimmedLine.startsWith('- ')) {
       const listItemContent = trimmedLine.substring(2).trim();
-
+      
       if (!Array.isArray(parentObj)) {
-        const grandParent = stack[stack.length - 2].obj;
-        const lastKey = Object.keys(grandParent).pop();
-        if (lastKey && grandParent[lastKey] === parentObj) {
-          parentObj = [];
-          grandParent[lastKey] = parentObj;
-          stack[stack.length - 1].obj = parentObj;
-        } else {
-          continue;
-        }
+          const grandParent = stack[stack.length - 2].obj;
+          const lastKey = Object.keys(grandParent).pop();
+          if (lastKey && grandParent[lastKey] === parentObj) {
+              parentObj = [];
+              grandParent[lastKey] = parentObj;
+              stack[stack.length-1].obj = parentObj;
+          } else {
+              continue; 
+          }
       }
 
       const separatorIndex = listItemContent.indexOf(':');
@@ -97,11 +97,11 @@ function parseValue(value: string): any {
   if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
     const inner = trimmed.slice(1, -1);
     if (inner.startsWith('[') && inner.endsWith(']')) {
-      return parseValue(inner);
+        return parseValue(inner);
     }
     return inner;
   }
-
+  
   if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
     try {
       const content = trimmed.slice(1, -1).trim();
@@ -129,8 +129,9 @@ function parseValue(value: string): any {
       if (buffer) {
         parts.push(buffer.trim());
       }
-
+      
       return parts.map(part => parseValue(part));
+
     } catch (e) {
       // Fallback
     }

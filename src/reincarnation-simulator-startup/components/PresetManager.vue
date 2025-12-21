@@ -2,7 +2,7 @@
   <div v-if="show" class="modal-overlay" @click.self="close">
     <div class="modal-content">
       <h3>管理开局方案</h3>
-
+      
       <div class="preset-list">
         <div v-for="preset in presets" :key="preset.name" class="preset-item">
           <span class="preset-name">{{ preset.name }}</span>
@@ -22,7 +22,7 @@
 
       <div class="import-section">
         <button @click="triggerImport">导入方案文件</button>
-        <input type="file" ref="fileInput" @change="handleFileUpload" accept=".json" style="display: none" />
+        <input type="file" ref="fileInput" @change="handleFileUpload" accept=".json" style="display: none;" />
       </div>
 
       <button class="close-btn" @click="close">关闭</button>
@@ -54,19 +54,19 @@ const save = () => {
   refreshPresets();
 };
 
-const load = preset => {
+const load = (preset) => {
   PresetService.loadPreset(preset);
   close();
 };
 
-const remove = name => {
+const remove = (name) => {
   if (confirm(`确定要删除方案 "${name}" 吗？此操作不可撤销。`)) {
     PresetService.deletePreset(name);
     refreshPresets();
   }
 };
 
-const exportPreset = preset => {
+const exportPreset = (preset) => {
   PresetService.exportPreset(preset);
 };
 
@@ -74,7 +74,7 @@ const triggerImport = () => {
   fileInput.value.click();
 };
 
-const handleFileUpload = async event => {
+const handleFileUpload = async (event) => {
   const file = event.target.files[0];
   if (file) {
     await PresetService.importPreset(file);
@@ -86,14 +86,11 @@ const close = () => {
   emit('close');
 };
 
-watch(
-  () => props.show,
-  newVal => {
-    if (newVal) {
-      refreshPresets();
-    }
-  },
-);
+watch(() => props.show, (newVal) => {
+  if (newVal) {
+    refreshPresets();
+  }
+});
 
 onMounted(refreshPresets);
 </script>
@@ -177,8 +174,7 @@ h3 {
   padding: 2rem 0;
 }
 
-.save-section,
-.import-section {
+.save-section, .import-section {
   display: flex;
   gap: 1rem;
 }
@@ -192,8 +188,7 @@ h3 {
   border-radius: 4px;
 }
 
-.save-section button,
-.import-section button {
+.save-section button, .import-section button {
   padding: 0.5rem 1.5rem;
   background: var(--color-gold-liu);
   color: var(--color-black-void);

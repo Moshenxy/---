@@ -46,17 +46,8 @@
         >
           下一章 &rarr;
         </button>
-        <button v-if="store.currentPage === 6" type="button" @click="tavernService.buildWorld" class="submit-btn">
-          构筑世界
-        </button>
-        <button
-          v-if="store.currentPage === 7"
-          type="button"
-          @click="tavernService.startReincarnation"
-          class="submit-btn"
-        >
-          开启轮回
-        </button>
+        <button v-if="store.currentPage === 6" type="button" @click="tavernService.buildWorld" class="submit-btn">构筑世界</button>
+        <button v-if="store.currentPage === 7" type="button" @click="tavernService.startReincarnation" class="submit-btn">开启轮回</button>
       </div>
     </template>
     <PresetManager :show="showPresetManager" @close="showPresetManager = false" />
@@ -99,15 +90,7 @@ document.addEventListener('fullscreenchange', () => {
   isFullscreen.value = !!document.fullscreenElement;
 });
 
-const pages = [
-  CoverPage,
-  WorldVisionPage,
-  WorldBuilder,
-  CharacterCreator,
-  PotentialAllocator,
-  SummaryPage,
-  WorldConfirmationPage,
-];
+const pages = [CoverPage, WorldVisionPage, WorldBuilder, CharacterCreator, PotentialAllocator, SummaryPage, WorldConfirmationPage];
 
 const currentPageComponent = computed(() => pages[store.currentPage - 1]);
 </script>

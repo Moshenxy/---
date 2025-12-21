@@ -30,12 +30,13 @@ import RelationsDisplay from '../RelationsDisplay.vue';
 import InventoryGrid from '../InventoryGrid.vue';
 
 const props = defineProps<{
-  npc: Character;
-  npcId: string | null;
+  npc: Character,
+  npcId: string | null
 }>();
 
 const inventoryItems = computed(() => {
-  const database = store.worldState?.数据库;
+  const world = store.worldState?.世界?.[props.npc.所属世界];
+  const database = world?.数据库;
   if (!props.npc || !database) return [];
 
   const backpack = get(props.npc, '背包', {});
@@ -106,8 +107,7 @@ const inventoryItems = computed(() => {
   border-left: 3px solid $color-purple-mystery;
 }
 
-.memory-event,
-.memory-influence {
+.memory-event, .memory-influence {
   margin: 0;
   padding: 2px 0;
   color: $color-grey-stone;

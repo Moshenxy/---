@@ -23,7 +23,11 @@
           <div class="world-attributes-section">
             <h5 class="section-title">世界专属</h5>
             <ul v-if="worldAttributes.length > 0" class="attributes-list">
-              <li v-for="attr in worldAttributes" :key="attr.key" class="attribute-item" v-tooltip="attr.description">
+              <li
+                v-for="attr in worldAttributes"
+                :key="attr.key"
+                class="attribute-item"
+              >
                 <span class="label">{{ attr.key }}</span>
                 <span class="value">{{ formatAttributeValue(attr.value) }}</span>
               </li>
@@ -52,29 +56,33 @@ const formatAttributeValue = (attrValue: any): string => {
   if (attrValue === null || attrValue === undefined) return '-';
 
   if (typeof attrValue === 'object' && !Array.isArray(attrValue)) {
-    const keys = Object.keys(attrValue).filter(k => k !== '$meta' && k !== 'description');
+    // 移除 '名称' 键，因为它现在显示为 key
+    const { 名称, ...rest } = attrValue;
+    const keys = Object.keys(rest).filter(k => k !== '$meta' && k !== 'description');
 
-    // Case 1: Progress bar ({ current: X, max: Y } or { 当前: X, 上限: Y })
-    if (attrValue.current !== undefined && attrValue.max !== undefined) {
-      return `${attrValue.current} / ${attrValue.max}`;
+    if (keys.length === 0) return ''; // 如果只剩下名称，则不显示任何值
+
+    // Case 1: Progress bar
+    if (rest.current !== undefined && rest.max !== undefined) {
+      return `${rest.current} / ${rest.max}`;
     }
-    if (attrValue.当前 !== undefined && attrValue.上限 !== undefined) {
-      return `${attrValue.当前} / ${attrValue.上限}`;
+    if (rest.当前 !== undefined && rest.上限 !== undefined) {
+      return `${rest.当前} / ${rest.上限}`;
+    }
+    
+    // Case 2: Simple value wrapper
+    if (rest.value !== undefined && keys.length === 1) {
+      return String(getDisplayValue(rest.value));
     }
 
-    // Case 2: Simple value wrapper ({ value: X })
-    if (attrValue.value !== undefined && keys.length === 1) {
-      return String(getDisplayValue(attrValue.value));
+    // Case 3: List of named items
+    if (keys.length > 0 && keys.every(k => typeof rest[k] === 'object' && rest[k]?.名称)) {
+      return keys.map(k => rest[k].名称).join('、');
     }
 
-    // Case 3: List of named items ({ spell_01: { 名称: '火球术' } })
-    if (keys.length > 0 && keys.every(k => typeof attrValue[k] === 'object' && attrValue[k]?.名称)) {
-      return keys.map(k => attrValue[k].名称).join('、');
-    }
-
-    // Case 4: Composite structure ({ 范围: 10, 强度: 5 })
+    // Case 4: Composite structure
     if (keys.length > 0) {
-      return keys.map(key => `${key}: ${getDisplayValue(attrValue[key])}`).join(' | ');
+      return keys.map(key => `${key}: ${getDisplayValue(rest[key])}`).join(' | ');
     }
 
     return '...';
@@ -82,6 +90,7 @@ const formatAttributeValue = (attrValue: any): string => {
 
   return String(getDisplayValue(attrValue));
 };
+
 
 const character = computed(() => store.character);
 const soulOrigin = computed(() => getDisplayValue(character.value?.灵魂本源, 0));
@@ -194,7 +203,6 @@ const isDrawerOpen = ref(false);
       display: flex;
       justify-content: space-between;
       font-size: 0.9em;
-      cursor: help;
       .label {
         color: $color-grey-stone;
       }

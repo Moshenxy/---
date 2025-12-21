@@ -13,7 +13,7 @@
         <strong>面积</strong>
         <span>{{ formatArea(locationDetails.面积) }}</span>
       </div>
-      <div class="info-item">
+       <div class="info-item">
         <strong>相对坐标</strong>
         <span>{{ formatCoordinates(locationDetails.相对坐标) }}</span>
       </div>
@@ -23,7 +23,9 @@
       </div>
     </div>
   </div>
-  <div v-else class="loading-placeholder">正在获取地点信息...</div>
+  <div v-else class="loading-placeholder">
+    正在获取地点信息...
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -59,27 +61,28 @@ const formatArea = (area: any) => {
 };
 
 const formatCoordinates = (coords: any) => {
-  if (!coords) return '未知';
-  try {
-    const refId = cleanValue(coords.参考ID);
-    const refName = npcService.getLocationName(refId);
+    if (!coords) return '未知';
+    try {
+        const refId = cleanValue(coords.参考ID);
+        const refName = npcService.getLocationName(refId);
 
-    const bearingString = cleanValue(coords.方位);
-    const bearingParts = bearingString.split(',');
-    const direction = bearingParts[0] || '';
-    const angle = bearingParts[1] || '';
+        const bearingString = cleanValue(coords.方位);
+        const bearingParts = bearingString.split(',');
+        const direction = bearingParts[0] || '';
+        const angle = bearingParts[1] || '';
 
-    const distanceString = cleanValue(String(coords.距离));
-    const distanceParts = distanceString.split(',');
-    const value = distanceParts[0] || '';
-    const unit = distanceParts[1] || '';
+        const distanceString = cleanValue(String(coords.距离));
+        const distanceParts = distanceString.split(',');
+        const value = distanceParts[0] || '';
+        const unit = distanceParts[1] || '';
 
-    return `距 ${refName} ${value}${unit} ${direction}${angle}°`;
-  } catch (e) {
-    console.error('Error formatting coordinates:', e);
-    return '解析错误';
-  }
+        return `距 ${refName} ${value}${unit} ${direction}${angle}°`;
+    } catch (e) {
+        console.error("Error formatting coordinates:", e);
+        return '解析错误';
+    }
 };
+
 
 onMounted(async () => {
   const entries = await lorebookService.getEntries();

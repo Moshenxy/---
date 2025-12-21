@@ -22,19 +22,31 @@
 
 <script setup lang="ts">
 import { get } from 'lodash';
-import { computed, ref } from 'vue';
-import { confirmationService } from '../../../services/ConfirmationService';
-import { commandService } from '../../../services/CommandService';
-import { store, USER_ID, actions } from '../../../store';
-import SettlementChoiceCard from './SettlementChoiceCard.vue';
 import * as toastr from 'toastr';
+import { computed, ref } from 'vue';
+import { commandService } from '../../../services/CommandService';
+import { confirmationService } from '../../../services/ConfirmationService';
+import { store } from '../../../store';
+import SettlementChoiceCard from './SettlementChoiceCard.vue';
 
-const selectedChoice = ref<any | null>(null);
+interface Choice {
+  选项类型: string;
+  描述: string;
+  消耗: number;
+  数据: {
+    ID: string;
+    名称: string;
+  };
+}
 
-const choices = computed(() => {
-  const choicesObj = get(store.worldState, '模拟器.结算.宿命抉择', {});
+const selectedChoice = ref<Choice | null>(null);
+
+const choices = computed<Choice[]>(() => {
+  const choicesObj = get(store.worldState, '玩家.模拟器.结算.宿命抉择', {});
   if (typeof choicesObj === 'object' && choicesObj !== null) {
-    return Object.values(choicesObj).filter((c: any) => c && c.选项类型 && c.描述 && !c.描述.includes('占位'));
+    return Object.values(choicesObj).filter(
+      (c: any): c is Choice => c && c.选项类型 && c.描述 && !c.描述.includes('占位'),
+    );
   }
   return [];
 });
@@ -54,7 +66,7 @@ const confirmChoice = async () => {
     return;
   }
 
-  const soulEssence = get(mainCharacter, '灵魂本源[0]', 0);
+  const soulEssence = get(mainCharacter, '灵魂本源', 0);
 
   if (soulEssence < choice.消耗) {
     await confirmationService.show(

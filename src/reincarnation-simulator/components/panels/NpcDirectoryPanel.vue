@@ -35,7 +35,7 @@
             <span class="npc-name">{{ npc.姓名 }}</span>
             <span class="npc-location">{{ (npc as any).locationName }}</span>
           </div>
-          <FollowButton v-if="npc.姓名" :npc-id="npc.姓名" />
+          <FollowButton v-if="npc.id" :npc-id="npc.id" />
         </li>
       </ul>
       <div v-else class="placeholder">该世界暂无NPC</div>
@@ -55,6 +55,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 import { npcService } from '../../services/NpcService';
+import { useFollowSystem } from '../../services/useFollowSystem';
 import type { Character } from '../../types';
 import FollowButton from '../common/FollowButton.vue';
 import NpcDetailDisplay from '../common/NpcDetailDisplay.vue';
@@ -71,6 +72,7 @@ const selectedNpcId = ref<string | null>(null);
 const isWorldListVisible = ref(false);
 const worldSearchTerm = ref('');
 const npcSearchTerm = ref('');
+const { isFollowed } = useFollowSystem();
 
 const filteredWorlds = computed(() => {
   if (!worldSearchTerm.value) return worlds.value;
@@ -79,22 +81,41 @@ const filteredWorlds = computed(() => {
 
 const selectedWorldNpcs = computed(() => {
   if (!selectedWorldId.value) return [];
-  const npcs = npcService.getNpcsByWorld(selectedWorldId.value);
+  const npcs = npcService.getNpcsByWorld(selectedWorldId.value).filter(npc => npcService.getNpcId(npc) !== '本体');
   // 直接修改原数组，为每个NPC对象添加 locationName 属性
-  npcs.forEach(npc => {
-    const locationId = npc.当前位置;
-    (npc as any).locationName = npcService.getLocationName(locationId);
+  return npcs.map(npc => {
+    const npcId = npcService.getNpcId(npc);
+    return {
+      ...npc,
+      id: npcId,
+      locationName: npcService.getLocationName(npc.当前位置),
+    };
   });
-  return npcs;
 });
 
 const filteredNpcs = computed(() => {
-  if (!npcSearchTerm.value) return selectedWorldNpcs.value;
-  return selectedWorldNpcs.value.filter(n => n.姓名 && n.姓名.includes(npcSearchTerm.value));
+  let npcs = [...selectedWorldNpcs.value];
+
+  // Sort by followed status first
+  npcs.sort((a, b) => {
+    const aFollowed = a.id ? isFollowed(a.id) : false;
+    const bFollowed = b.id ? isFollowed(b.id) : false;
+    if (aFollowed && !bFollowed) return -1;
+    if (!aFollowed && bFollowed) return 1;
+    return 0;
+  });
+
+  if (!npcSearchTerm.value) {
+    return npcs;
+  }
+
+  return npcs.filter(n => n.姓名 && n.姓名.includes(npcSearchTerm.value));
 });
 
 const loadWorlds = async () => {
-  worlds.value = await npcService.initializeWorldAndLocationData();
+  const allWorlds = await npcService.initializeWorldAndLocationData();
+  // 过滤掉名为 "..." 的世界
+  worlds.value = allWorlds.filter(w => w.name !== '...');
   if (worlds.value.length > 0 && !selectedWorldId.value) {
     selectedWorldId.value = worlds.value[0].id;
   }
@@ -105,9 +126,9 @@ function selectWorld(worldId: string) {
   isWorldListVisible.value = false;
 }
 
-function selectNpc(npc: Character) {
+function selectNpc(npc: any) { // 使用 any 类型以接受带有 id 的 npc 对象
   selectedNpc.value = npc;
-  selectedNpcId.value = npcService.getNpcId(npc);
+  selectedNpcId.value = npc.id;
 }
 
 onMounted(loadWorlds);
@@ -116,6 +137,12 @@ watch(selectedWorldId, () => {
   selectedNpc.value = null;
   selectedNpcId.value = null;
 });
+
+watch(() => npcService.allNpcs.value, () => {
+  if (worlds.value.length === 0) {
+    loadWorlds();
+  }
+}, { deep: true });
 </script>
 
 <style lang="scss" scoped>

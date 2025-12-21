@@ -14,13 +14,13 @@
     </div>
     <div class="info-item full-width">
       <strong>解锁系统</strong>
-      <span>{{ realm.解锁系统?.名称 }} - {{ realm.解锁系统?.描述 }}</span>
+      <span>{{ realm.解锁系统?.名称 && realm.解锁系统?.名称 !== '无' ? `${realm.解锁系统.名称} - ${realm.解锁系统.描述}` : '无' }}</span>
     </div>
     <div class="info-item full-width">
       <strong>晋升需求</strong>
       <ul>
         <li v-for="(req, key) in realm.晋升需求" :key="key">
-          {{ req.条件?.描述 }}
+          {{ req.描述 }}
         </li>
       </ul>
     </div>
@@ -62,15 +62,14 @@ defineProps({
       opacity: 0.7;
     }
 
-    span,
-    ul {
+    span, ul {
       font-size: 14px;
       color: $color-white-moon;
       line-height: 1.6;
     }
-
+    
     ul {
-      padding-left: 20px;
+        padding-left: 20px;
     }
 
     &.full-width {

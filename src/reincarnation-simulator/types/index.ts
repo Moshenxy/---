@@ -1,5 +1,5 @@
 import type { Consumable, Relic, Material, Bond, Imprint } from './items';
-import type { Epoch, MetaRules } from './world';
+import type { Epoch, MetaRules, WorldRules, PowerSystem } from './world';
 
 export type { Epoch };
 
@@ -13,12 +13,13 @@ export type ExtensibleObject<T> = {
   $meta?: { extensible: true; description?: string };
 };
 
+
 // --- 核心数据实体接口 ---
 
 export interface RelationshipVector {
-  认知层: { 可靠度: number; 能力评价: number; 威胁度: number };
-  情感层: { 亲近感: number; 仰慕度: number };
-  利益层: { 资源价值: number; 合作潜力: number; 利益冲突: number };
+  认知层: { 可靠度: number; 能力评价: number; 威胁度: number; };
+  情感层: { 亲近感: number; 仰慕度: number; };
+  利益层: { 资源价值: number; 合作潜力: number; 利益冲突: number; };
   社会层: {
     名义关系: ExtensibleObject<string>;
     阶级差异: number;
@@ -61,14 +62,14 @@ export interface Character {
   };
 
   心流: {
-    情绪状态: { 喜悦: number; 悲伤: number; 愤怒: number; 恐惧: number };
+    情绪状态: { 喜悦: number; 悲伤: number; 愤怒: number; 恐惧: number; };
     核心需求: string;
     秘密: ExtensibleObject<{ 内容: string; 揭露条件: string }>;
     短期记忆: ExtensibleObject<any>;
     驱动力: {
       长期目标: ExtensibleObject<{ 名称: string; 动机: string; 状态: string }>;
       短期目标: ExtensibleObject<{ 名称: string; 动机: string; 状态: string }>;
-      决策倾向: { 常规: string; 优势时: string; 险境时: string; 面对利益时: string };
+      决策倾向: { 常规: string; 优势时: string; 险境时: string; 面对利益时: string; };
     };
     生活模式: {
       核心活动: ExtensibleObject<{ 基础意愿: number }>;
@@ -81,8 +82,8 @@ export interface Character {
 
   技艺?: { [skillId: string]: { 等级: number; 经验值: number } };
 
-  基础潜力: { 精: number; 气: number; 神: number; 运: number };
-  战斗参数: { 权能: number; 根基: number; 机变: number; 破法: number; 御法: number };
+  基础潜力: { 精: number; 气: number; 神: number; 运: number; };
+  战斗参数: { 权能: number; 根基: number; 机变: number; 破法: number; 御法: number; };
 
   当前状态: ExtensibleObject<any>;
   背包: { [itemId: string]: number };
@@ -94,21 +95,44 @@ export interface Character {
  * 世界的核心数据结构 (对应 stat_data 中的世界变量)
  * 严格参照 [InitVar].txt 的结构
  */
-export interface World {
-  元规则: MetaRules;
-  历史纪元: {
-    // 这里 Epoch 使用 any 是因为变量文件中的 Epoch 结构与世界书解析出的 Epoch 结构不同（缺少`内容`字段）
-    // 为了避免循环依赖和过度复杂的类型体操，此处做简化处理。
-    [epochId: string]: any;
+/**
+ * 空间实体接口，用于世界地图的构建。
+ */
+export interface SpatialEntity {
+  名称: string;
+  层级类型: string;
+  所属: { ID: string; 类型: string; };
+  面积?: [number, string];
+  描述: string;
+  相对坐标: {
+    参考ID: string;
+    方位: [string, number];
+    距离: [number, string];
   };
 }
 
-// --- 状态管理相关接口 ---
-
 /**
- * 完整的世界状态，对应于从酒馆后端获取的整个 stat_data 对象。
+ * 代表存储在 stat_data 中的纪元对象结构。
+ * 它与世界书中的 Epoch 定义不同，不包含庞大的 `内容` 字段，
+ * 且 `规则` 和 `力量体系` 是可选的，以适应简化后的 [InitVar].txt 模板。
  */
-export interface WorldState {
+export interface WorldEpoch extends Omit<Epoch, '内容' | '规则' | '力量体系'> {
+  规则?: WorldRules;
+  力量体系?: PowerSystem;
+  世界大事?: ExtensibleObject<any>;
+  内容?: {
+    空间实体?: ExtensibleObject<SpatialEntity>;
+    [key: string]: any;
+  }
+}
+
+export interface World {
+  定义: {
+    元规则: MetaRules;
+    历史纪元: {
+      [epochId: string]: WorldEpoch;
+    };
+  };
   数据库: {
     消耗品: { [id: string]: Consumable };
     奇物: { [id: string]: Relic };
@@ -127,11 +151,23 @@ export interface WorldState {
   角色: {
     [id: string]: Character;
   };
+}
+
+
+// --- 状态管理相关接口 ---
+
+/**
+ * 完整的世界状态，对应于从酒馆后端获取的整个 stat_data 对象。
+ */
+export interface WorldState {
+  玩家: {
+    本体: Character;
+    模拟器: any;
+    往世道标: any;
+  };
   世界: {
     [id: string]: World;
   };
-  模拟器?: any;
-  [key: string]: any;
 }
 
 /**
@@ -153,6 +189,7 @@ export interface AppState {
   newWorldsAvailable: boolean;
   isGenerating: boolean;
   generationError: string | null;
+  lastSubmittedAction: string | null;
 }
 
 // --- 其他辅助接口 ---
@@ -246,4 +283,21 @@ export interface ActiveSkill {
   类型: string;
   基础效果: string;
   效果等级公式: string;
+}
+
+/**
+ * 定义世界内的信息传播法则。
+ */
+export interface InformationPropagationRule {
+  /** 媒介类型 */
+  medium: 'rumor' | 'official_courier' | 'magical_transmission' | 'trade_caravan';
+  /** 基础传播速度 (公里/天) */
+  baseSpeed: number;
+  /** 影响速度的修正因素 */
+  modifiers: {
+    /** 空间稳定性对速度的影响系数 */
+    spatialStabilityFactor: number;
+    /** 世界能级对速度的影响系数（如灵网） */
+    energyLevelFactor: number;
+  };
 }

@@ -7,11 +7,11 @@
         <div class="rules-grid">
           <div class="rule-item">
             <div class="rule-name">宇宙蓝图</div>
-            <div class="rule-value">{{ world.元规则.宇宙蓝图 }}</div>
+            <div class="rule-value">{{ world.定义.元规则.宇宙蓝图 }}</div>
           </div>
           <div class="rule-item">
             <div class="rule-name">物理尺度</div>
-            <div class="rule-value">{{ world.元规则.物理尺度 }}</div>
+            <div class="rule-value">{{ world.定义.元规则.物理尺度 }}</div>
           </div>
         </div>
       </section>
@@ -88,8 +88,8 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
-import { lorebookService } from '../../services/LorebookService';
 import { detailModalService } from '../../services/DetailModalService';
+import { lorebookService } from '../../services/LorebookService';
 import { avatarWorld, mainWorld } from '../../store/getters';
 import type { Epoch, World } from '../../types';
 import RealmDetailCard from '../common/RealmDetailCard.vue';
@@ -106,14 +106,14 @@ const world = computed<World | null>(() => {
 });
 
 const availableEpochs = computed(() => {
-  if (!world.value || !world.value.历史纪元) return [];
-  return Object.values(world.value.历史纪元).filter(epoch => typeof epoch === 'object' && epoch.纪元ID);
+  if (!world.value || !world.value.定义.历史纪元) return [];
+  return Object.values(world.value.定义.历史纪元).filter(epoch => typeof epoch === 'object' && epoch.纪元ID);
 });
 
 const selectedEpochId = ref<string | null>(null);
 
 onMounted(async () => {
-  const entry = await lorebookService.readFromLorebook('主世界摘要');
+  const entry = await lorebookService.readFromLorebook('[系统]主世界摘要');
   if (entry) {
     // 将分隔符替换为HTML换行，并确保每个条目都是一个独立的段落
     worldSummary.value = entry
@@ -129,7 +129,7 @@ watch(
   world,
   newWorld => {
     if (newWorld) {
-      selectedEpochId.value = newWorld.元规则.当前纪元ID || availableEpochs.value[0]?.纪元ID || null;
+      selectedEpochId.value = newWorld.定义.元规则.当前纪元ID || availableEpochs.value[0]?.纪元ID || null;
     }
   },
   { immediate: true },
@@ -137,7 +137,7 @@ watch(
 
 const activeEpoch = computed<Epoch | null>(() => {
   if (!world.value || !selectedEpochId.value) return null;
-  return (world.value.历史纪元 as any)[selectedEpochId.value] || null;
+  return (world.value.定义.历史纪元 as any)[selectedEpochId.value] || null;
 });
 
 const 境界定义Array = computed(() => {

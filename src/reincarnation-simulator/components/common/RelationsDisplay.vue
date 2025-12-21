@@ -28,11 +28,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
 import { get } from 'lodash';
+import { computed, ref, watch, onMounted, onUpdated } from 'vue';
 import { npcService } from '../../services/NpcService';
-import ProgressBar from './ProgressBar.vue';
 import { store } from '../../store';
+import ProgressBar from './ProgressBar.vue';
 
 const vectorGroups = [
   {
@@ -64,12 +64,35 @@ const props = defineProps<{
   subjectId: string;
 }>();
 
-const relations = computed(() => {
-  if (!props.subjectId || !store.worldState?.因果之网) {
-    return {};
+const relations = ref({});
+
+watch(() => [props.subjectId, store.worldState?.世界], () => {
+  if (!props.subjectId || !store.worldState?.世界) {
+    relations.value = {};
+    return;
   }
-  return store.worldState.因果之网[props.subjectId] || {};
-});
+  
+  let worldId: string | null = null;
+  for (const id in store.worldState.世界) {
+    if (get(store.worldState.世界[id], `角色.${props.subjectId}`)) {
+      worldId = id;
+      break;
+    }
+  }
+
+  if (!worldId) {
+    relations.value = {};
+    return;
+  }
+
+  const causalNet = get(store.worldState.世界[worldId], '因果之网');
+  if (!causalNet) {
+    relations.value = {};
+    return;
+  }
+
+  relations.value = causalNet[props.subjectId] || {};
+}, { immediate: true, deep: true });
 
 const { getNpcNameById } = npcService;
 

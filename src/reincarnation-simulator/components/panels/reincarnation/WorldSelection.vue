@@ -10,16 +10,39 @@
     <div v-if="!isLoading" ref="starmapContainer" class="star-map-canvas" @click="handleCanvasClick"></div>
 
     <div class="world-detail-panel" :class="{ visible: !!detailedWorld }">
-      <template v-if="detailedWorld">
+      <template v-if="detailedWorld && activeEpoch">
         <h4>{{ detailedWorld.name }}</h4>
         <div class="detail-item">
-          <p><strong>能级:</strong> {{ detailedWorld.energyLevel }}</p>
+          <p><strong>宇宙蓝图:</strong> {{ detailedWorld.cosmologicalBlueprint }}</p>
         </div>
         <div class="detail-item">
-          <p><strong>时间流速:</strong> {{ detailedWorld.timeFlow }}x</p>
+          <p><strong>物理尺度:</strong> {{ detailedWorld.physicalScale }}</p>
+        </div>
+
+        <div class="epoch-tabs">
+          <button
+            v-for="epoch in detailedWorld.epochs"
+            :key="epoch.id"
+            :class="{ active: activeEpochId === epoch.id }"
+            @click="activeEpochId = epoch.id">
+            {{ epoch.name }}
+          </button>
+        </div>
+
+        <div class="detail-item">
+          <p><strong>能级:</strong> {{ activeEpoch.energyLevel }}</p>
+        </div>
+        <div class="detail-item">
+          <p><strong>时间流速:</strong> {{ activeEpoch.timeFlow }}x</p>
+        </div>
+        <div class="detail-item" v-if="activeEpoch.coreLaws && activeEpoch.coreLaws.length > 0">
+          <p><strong>核心法则:</strong></p>
+          <ul>
+            <li v-for="(law, index) in activeEpoch.coreLaws" :key="index">{{ law }}</li>
+          </ul>
         </div>
         <div class="world-description">
-          <p>{{ detailedWorld.description }}</p>
+          <p>{{ activeEpoch.description }}</p>
         </div>
         <div class="panel-footer">
           <button
@@ -56,19 +79,30 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { get } from 'lodash';
 // import { lorebookService } from '../../../services/LorebookService'; // 不再需要
 import { StarMapService } from '../../../services/StarMapService';
 import { actions, store } from '../../../store';
 import { isSimulationRunning, simulatorCooldown } from '../../../store/getters';
 import type { WorldbookEntry } from '../../../types';
 import './WorldSelection.scss';
-interface ParsedWorld {
-  id: number;
+interface Epoch {
+  id: string;
   name: string;
   energyLevel: number;
   timeFlow: number;
   description: string;
-  raw: WorldbookEntry;
+  coreLaws: string[];
+}
+
+interface ParsedWorld {
+  id: number;
+  name: string;
+  raw: any;
+  cosmologicalBlueprint: string;
+  physicalScale: string;
+  currentEpochId: string;
+  epochs: Epoch[];
 }
 
 const starmapContainer = ref<HTMLElement | null>(null);
@@ -79,27 +113,42 @@ const detailedWorld = ref<ParsedWorld | null>(null);
 const selectableWorldIds = ref<Set<number>>(new Set());
 const progress = ref(0);
 let progressInterval: number | null = null;
+const activeEpochId = ref<string | null>(null);
 
 // 5-speed level control
 const speedLevels = [0, 0.2, 0.5, 1.0, 2.0];
 const speedLevel = ref(2); // Default to level 2 (1.0x speed)
 
 const parsedWorlds = computed<ParsedWorld[]>(() => {
-  return store.reincarnationWorldOptions.map((w: WorldbookEntry) => {
-    const content = w.content || '';
-    const energyLevelMatch = content.match(/世界能级:\s*(\d+)/);
-    const timeFlowMatch = content.match(/时间流速:\s*([\d.]+)x/);
-    const descriptionMatch = content.match(/描述:\s*([^\n]+)/);
+  const worlds = get(store.worldState, '世界', {});
+  let idCounter = 0;
+  return Object.entries(worlds)
+    .filter(([worldId]) => worldId !== '$meta' && !worldId.includes('template'))
+    .map(([worldId, worldData]: [string, any]) => {
+      const historicalEpochs = get(worldData, '定义.历史纪元', {});
+      const epochs: Epoch[] = Object.entries(historicalEpochs)
+        .map(([epochId, epochData]: [string, any]) => {
+          const coreLaws = get(epochData, '规则.核心法则', {});
+          return {
+            id: epochId,
+            name: epochData.纪元名称 || '未知纪元',
+            energyLevel: get(epochData, '规则.世界能级', 1),
+            timeFlow: get(epochData, '规则.时间流速', 1),
+            description: epochData.纪元概述 || '一片混沌，无法窥其貌。',
+            coreLaws: Object.values(coreLaws).map((law: any) => law.名称).filter(Boolean) as string[],
+          };
+        });
 
-    return {
-      id: w.uid,
-      name: ((w.name || (w as any).comment) as string).replace(/【.*?】/g, '').trim(),
-      energyLevel: energyLevelMatch ? parseInt(energyLevelMatch[1], 10) : 1,
-      timeFlow: timeFlowMatch ? parseFloat(timeFlowMatch[1]) : 1,
-      description: descriptionMatch ? descriptionMatch[1] : '一片混沌，无法窥其貌。',
-      raw: w,
-    };
-  });
+      return {
+        id: ++idCounter,
+        name: worldData.名称 || '未知世界',
+        raw: { ...worldData, originalId: worldId },
+        cosmologicalBlueprint: get(worldData, '定义.元规则.宇宙蓝图', '未知'),
+        physicalScale: get(worldData, '定义.元规则.物理尺度', '未知'),
+        currentEpochId: get(worldData, '定义.元规则.当前纪元ID', ''),
+        epochs: epochs,
+      };
+    });
 });
 
 const cooldown = computed(() => simulatorCooldown.value);
@@ -165,9 +214,22 @@ const handleCanvasClick = (event: MouseEvent) => {
   if (pickedWorld) {
     detailedWorld.value = pickedWorld as ParsedWorld;
   } else {
-    detailedWorld.value = null; // Close panel if clicking on empty space
+    detailedWorld.value = null;
   }
 };
+
+const activeEpoch = computed(() => {
+  if (!detailedWorld.value || !activeEpochId.value) return null;
+  return detailedWorld.value.epochs.find(e => e.id === activeEpochId.value);
+});
+
+watch(detailedWorld, (newWorld) => {
+  if (newWorld) {
+    activeEpochId.value = newWorld.currentEpochId;
+  } else {
+    activeEpochId.value = null;
+  }
+});
 
 watch(starmapContainer, newContainer => {
   if (newContainer && !starMapService) {
@@ -227,9 +289,9 @@ watch(isSimulationRunning, (isRunning, wasRunning) => {
   }
 });
 
-const prepareReincarnation = (world: WorldbookEntry) => {
+const prepareReincarnation = (world: any) => {
   if (!isSimulationRunning.value) {
-    actions.triggerIdentityWorkflow(world);
+    actions.triggerIdentityWorkflow(world.originalId);
     detailedWorld.value = null;
   }
 };
@@ -244,15 +306,11 @@ const adjustSpeed = (delta: number) => {
   }
 };
 
-watch(
-  speedLevel,
-  newLevel => {
+watch(speedLevel, (newLevel) => {
     if (starMapService) {
       starMapService.setSpeedMultiplier(speedLevels[newLevel]);
     }
-  },
-  { immediate: true },
-);
+}, { immediate: true });
 </script>
 
 <style lang="scss" scoped>
@@ -354,6 +412,49 @@ watch(
     width: 100%;
     background: linear-gradient(to top, $color-cyan-tian, $color-gold-pale);
     transition: height 0.3s ease;
+  }
+}
+
+.epoch-tabs {
+  display: flex;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+
+  button {
+    padding: $spacing-xs $spacing-md;
+    border: 1px solid rgba($color-cyan-tian, 0.3);
+    background-color: transparent;
+    color: $color-grey-stone;
+    border-radius: $border-radius-sm;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: rgba($color-cyan-tian, 0.1);
+      border-color: $color-cyan-tian;
+      color: $color-white-moon;
+    }
+
+    &.active {
+      background-color: $color-cyan-tian;
+      border-color: $color-cyan-tian;
+      color: $color-black-void;
+      font-weight: bold;
+    }
+  }
+}
+
+.detail-item {
+  ul {
+    list-style-type: none;
+    padding-left: $spacing-md;
+    margin: $spacing-sm 0 0 0;
+  }
+
+  li {
+    color: $color-white-moon;
+    font-size: $font-size-small;
+    line-height: 1.6;
   }
 }
 </style>

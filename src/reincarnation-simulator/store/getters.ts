@@ -11,32 +11,38 @@ import { store } from './state';
  */
 export const playerCharacter: ComputedRef<Character | null> = computed(() => {
   if (!store.worldState) return null;
-  return get(store.worldState.角色, store.userId, null);
+  return get(store.worldState, '玩家.本体', null);
 });
 
 /**
  * 获取当前模拟中的化身角色数据
  */
 export const currentAvatar: ComputedRef<Character | null> = computed(() => {
-  if (!store.worldState?.模拟器 || !store.worldState?.角色) return null;
+  if (!store.worldState?.玩家?.模拟器 || !store.worldState?.世界) return null;
 
   // 1. 从模拟器获取当前化身的ID
-  const avatarId = get(store.worldState.模拟器, '模拟.当前化身ID');
+  const avatarId = get(store.worldState.玩家.模拟器, '模拟.当前化身ID');
 
   // 2. 如果没有ID，则没有化身
   if (!avatarId) {
     return null;
   }
 
-  // 3. 使用ID从“角色”总表中查找完整的化身数据
-  return get(store.worldState.角色, avatarId, null);
+  // 3. 遍历所有世界找到化身
+  for (const worldId in store.worldState.世界) {
+    const character = get(store.worldState.世界[worldId], `角色.${avatarId}`);
+    if (character) {
+      return character;
+    }
+  }
+  return null;
 });
 
 /**
  * 获取模拟器状态
  */
 export const simulator: ComputedRef<any> = computed(() => {
-  return store.worldState?.模拟器;
+  return store.worldState?.玩家.模拟器;
 });
 
 /**
@@ -71,7 +77,8 @@ export const daoHeart = computed(() => {
 
 export const reincarnationImprints = computed(() => {
   const character = playerCharacter.value;
-  const database = store.worldState?.数据库;
+  const world = mainWorld.value;
+  const database = world?.数据库;
 
   if (!character || !database?.烙印) {
     return [];
@@ -93,7 +100,8 @@ export const reincarnationImprints = computed(() => {
 
 export const playerSkills = computed(() => {
   const character = playerCharacter.value;
-  const database = store.worldState?.数据库 as any;
+  const world = mainWorld.value;
+  const database = world?.数据库 as any;
 
   if (!character || !database?.技艺) {
     return [];
@@ -112,12 +120,8 @@ export const playerSkills = computed(() => {
         (l: any) => typeof l === 'object' && l !== null && '等级' in l,
       );
 
-      const currentLevelInfo = levelSystem.find((l: any) => l.等级 === artData.等级) as
-        | { 升级所需经验: number; 称号: string }
-        | undefined;
-      const nextLevelInfo = levelSystem.find((l: any) => l.等级 === artData.等级 + 1) as
-        | { 升级所需经验: number }
-        | undefined;
+      const currentLevelInfo = levelSystem.find((l: any) => l.等级 === artData.等级) as { 升级所需经验: number; 称号: string } | undefined;
+      const nextLevelInfo = levelSystem.find((l: any) => l.等级 === artData.等级 + 1) as { 升级所需经验: number } | undefined;
 
       // Find associated active skills
       const associatedSkills = [];
@@ -136,7 +140,7 @@ export const playerSkills = computed(() => {
         description: artTemplate.描述,
         level: artData.等级,
         exp: artData.经验值,
-        expToNextLevel: nextLevelInfo ? nextLevelInfo.升级所需经验 : currentLevelInfo?.升级所需经验 || 'MAX',
+        expToNextLevel: nextLevelInfo ? nextLevelInfo.升级所需经验 : (currentLevelInfo?.升级所需经验 || 'MAX'),
         title: currentLevelInfo ? currentLevelInfo.称号 : '',
         associatedSkills,
       });
@@ -151,7 +155,8 @@ export const playerSkills = computed(() => {
 const createInventoryGetter = (characterRef: ComputedRef<Character | null>) => {
   return computed(() => {
     const character = characterRef.value;
-    const database = store.worldState?.数据库 as any;
+    const world = store.activeView === 'mainWorld' ? mainWorld.value : avatarWorld.value;
+    const database = world?.数据库 as any;
 
     if (!character || !database) {
       return [];
@@ -196,25 +201,33 @@ export const basePotentials = computed(() => {
 
 export const playerWorldAttributes = computed(() => {
   const character = playerCharacter.value;
-  const epoch = activeEpoch.value;
-
-  if (!character || !character.世界专属属性) {
+  if (!character || !character.世界专属属性 || !character.所属世界) {
     return [];
   }
 
-  const attributesData = character.世界专属属性;
-  const templates = epoch?.力量体系?.属性模板 || {};
+  const world = store.worldState?.世界?.[character.所属世界];
+  const currentEpochId = world?.定义?.元规则?.当前纪元ID;
+  if (!world || !currentEpochId) {
+     // 如果没有世界或纪元信息，直接返回原始ID
+    return Object.entries(character.世界专属属性)
+      .filter(([key]) => key !== '$meta')
+      .map(([key, value]) => ({ key, value, description: null }));
+  }
+
+  const currentEpoch = (world.定义.历史纪元 as Record<string, any>)?.[currentEpochId];
+  const attributeTemplates = currentEpoch?.力量体系?.属性模板 as Record<string, any> | undefined;
 
   const result: { key: string; value: any; description: string | null }[] = [];
+  const attributesData = character.世界专属属性;
 
   for (const key in attributesData) {
     if (key === '$meta') continue;
 
     const value = (attributesData as any)[key];
-    const template = (templates as any)[key];
-
+    const template = attributeTemplates ? attributeTemplates[key] : null;
+    
     result.push({
-      key: key,
+      key: template?.名称 || key,
       value: value,
       description: template?.描述 || null,
     });
@@ -236,12 +249,34 @@ export const isSimulationRunning = computed(() => {
 });
 
 export const simulatorCooldown = computed(() => {
-  if (!simulator.value) return { status: '未知', time: 'N/A' };
+  if (!simulator.value) return { status: '未知', remainingTime: 'N/A' };
   const prep = get(simulator.value, '准备', {});
   const status = get(prep, '状态', '未知');
   const time = get(prep, '冷却时间', 'N/A');
 
-  return { status, time };
+  return { status, remainingTime: time };
+});
+
+export const simulatorStatus = computed(() => {
+  const sim = simulator.value;
+  if (!sim) return 'unknown';
+
+  if (get(sim, '结算.待处理')) {
+    return 'settlement';
+  }
+  if (get(sim, '模拟.进行中')) {
+    return 'simulating';
+  }
+  if (get(sim, '准备.已选世界ID') && !get(sim, '模拟.进行中')) {
+    return 'avatar-selection';
+  }
+  if (get(sim, '准备.状态') === '冷却中') {
+    return 'cooldown';
+  }
+  if (get(sim, '准备.状态') === '就绪') {
+    return 'world-selection';
+  }
+  return 'unknown';
 });
 
 /**
@@ -252,7 +287,7 @@ export const mainWorld = computed(() => {
   const worlds = store.worldState.世界;
   for (const worldId in worlds) {
     if (worldId === '$meta' || worldId.includes('template')) continue;
-    if (get(worlds[worldId], '元规则.定位') === '主世界') {
+    if (get(worlds[worldId], '定义.元规则.定位') === '主世界') {
       return worlds[worldId];
     }
   }
@@ -267,7 +302,7 @@ export const avatarWorld = computed(() => {
   const worlds = store.worldState.世界;
   for (const worldId in worlds) {
     if (worldId === '$meta' || worldId.includes('template')) continue;
-    if (get(worlds[worldId], '元规则.定位') === '当前化身世界') {
+    if (get(worlds[worldId], '定义.元规则.定位') === '当前化身世界') {
       return worlds[worldId];
     }
   }
@@ -281,10 +316,10 @@ export const activeEpoch = computed(() => {
   const world = avatarWorld.value || mainWorld.value;
   if (!world) return null;
 
-  const currentEpochId = get(world, '元规则.当前纪元ID');
+  const currentEpochId = get(world, '定义.元规则.当前纪元ID');
   if (!currentEpochId) return null;
 
-  return get(world, `历史纪元.${currentEpochId}`, null);
+  return get(world, `定义.历史纪元.${currentEpochId}`, null);
 });
 
 /**
@@ -314,9 +349,9 @@ const formatTime = (time: any, defaultString: string): string => {
 export const mainWorldTimeStr = computed(() => {
   const world = mainWorld.value;
   if (!world) return '轮回空间';
-  const epochId = get(world, '元规则.当前纪元ID');
+  const epochId = get(world, '定义.元规则.当前纪元ID');
   if (!epochId) return '未知纪元';
-  const epoch = get(world, `历史纪元.${epochId}`);
+  const epoch = get(world, `定义.历史纪元.${epochId}`);
   return formatTime(get(epoch, '当前时间'), '轮回空间');
 });
 
@@ -326,9 +361,9 @@ export const mainWorldTimeStr = computed(() => {
 export const timeStr = computed(() => {
   const world = avatarWorld.value;
   if (!world) return '未知时间';
-  const epochId = get(world, '元规则.当前纪元ID');
+  const epochId = get(world, '定义.元规则.当前纪元ID');
   if (!epochId) return '未知纪元';
-  const epoch = get(world, `历史纪元.${epochId}`);
+  const epoch = get(world, `定义.历史纪元.${epochId}`);
   return formatTime(get(epoch, '当前时间'), '未知时间');
 });
 
@@ -339,8 +374,8 @@ export const calculateAge = (character: Character | null, world: any | null): nu
   if (!character || !world) return null;
 
   const birthDate = get(character, '出生日期');
-  const epochId = get(world, '元规则.当前纪元ID');
-  const epoch = get(world, `历史纪元.${epochId}`);
+  const epochId = get(world, '定义.元规则.当前纪元ID');
+  const epoch = get(world, `定义.历史纪元.${epochId}`);
   const currentTime = get(epoch, '当前时间');
 
   if (!birthDate || !currentTime || birthDate.纪元ID !== epochId) {
@@ -393,7 +428,8 @@ export const combinedNarrative = computed(() => {
  * @param name The name of the item to find.
  */
 export const getItemByName = (name: string): any | null => {
-  const database = store.worldState?.数据库;
+  const world = store.activeView === 'mainWorld' ? mainWorld.value : avatarWorld.value;
+  const database = world?.数据库;
   if (!database) return null;
 
   for (const category in database) {
@@ -415,19 +451,22 @@ export const getItemByName = (name: string): any | null => {
  * @param name The name of the NPC to find.
  */
 export const getNpcByName = (name: string): Character | null => {
-  const characters = store.worldState?.角色;
-  if (!characters) return null;
+  const worlds = store.worldState?.世界;
+  if (!worlds) return null;
 
-  for (const charId in characters) {
-    // Skip metadata and the player character
-    if (charId === '$meta' || charId === store.userId) continue;
+  for (const worldId in worlds) {
+    const characters = get(worlds[worldId], '角色');
+    if (characters) {
+      for (const charId in characters) {
+        if (charId === '$meta') continue;
 
-    const character = characters[charId];
-    if (character && character.姓名 && character.姓名 === name) {
-      return character;
+        const character = characters[charId];
+        if (character && character.姓名 && character.姓名 === name) {
+          return character;
+        }
+      }
     }
   }
-
   return null;
 };
 
@@ -444,17 +483,17 @@ export const worldSandboxData = computed(() => {
   if (worldState.世界) {
     for (const worldId in worldState.世界) {
       // 过滤掉元数据和模板ID
-      if (worldId === '$meta' || worldId === '世界ID') continue;
+      if (worldId === '$meta' || worldId.includes('template')) continue;
       const world = worldState.世界[worldId];
       // 确保world对象不是一个空的模板
-      const epochId = get(world, '元规则.当前纪元ID');
+      const epochId = get(world, '定义.元规则.当前纪元ID');
       if (!epochId) continue;
-
-      const activeEpoch = get(world, `历史纪元.${epochId}`);
+      
+      const activeEpoch = get(world, `定义.历史纪元.${epochId}`);
       if (!activeEpoch || !activeEpoch.规则) continue;
 
       const loreEntry = lorebookService.findEntryByComment(worldId);
-      const worldName = loreEntry?.comment || get(world, '元规则.定位') || worldId;
+      const worldName = loreEntry?.comment || get(world, '定义.元规则.定位') || worldId;
 
       const title = `
         能级: ${activeEpoch.规则?.世界能级 || '未知'}<br>
@@ -472,22 +511,14 @@ export const worldSandboxData = computed(() => {
   }
 
   // Add characters as nodes
-  if (worldState.角色) {
-    for (const charId in worldState.角色) {
-      // 过滤掉元数据和模板NPC
-      if (charId === '$meta' || charId === 'sample_npc_id') continue;
-      const character = worldState.角色[charId];
-      // 确保角色对象不是空的模板
-      if (!character.姓名 && !character.真名) continue;
-
-      const isPlayer = charId === store.userId;
-      const potentials = character.基础潜力;
+  const player = playerCharacter.value;
+  if (player) {
+      const potentials = player.基础潜力;
       const potentialText = potentials
         ? `精: ${potentials.精} | 气: ${potentials.气} | 神: ${potentials.神} | 运: ${potentials.运}`
         : '';
-      // 身份已对象化，需要转换
-      const identities = character.身份
-        ? Object.values(character.身份)
+      const identities = player.身份
+        ? Object.values(player.身份)
             .filter(item => typeof item === 'string')
             .join(', ')
         : '';
@@ -497,44 +528,79 @@ export const worldSandboxData = computed(() => {
       `.trim();
 
       nodes.push({
-        id: charId,
-        label: character.姓名 || character.真名 || charId,
-        group: isPlayer ? 'player' : 'npc',
+        id: store.userId,
+        label: player.真名 || store.userId,
+        group: 'player',
         title: title,
       });
+  }
 
-      // Add edge from character to their world
-      if (character.所属世界 && worldState.世界?.[character.所属世界]) {
-        edges.push({
-          from: charId,
-          to: character.所属世界,
-          arrows: 'to',
+  if (worldState.世界) {
+    for (const worldId in worldState.世界) {
+      const world = worldState.世界[worldId];
+      if (!world.角色) continue;
+      for (const charId in world.角色) {
+        if (charId === '$meta' || charId.includes('sample')) continue;
+        const character = world.角色[charId];
+        if (!character.姓名) continue;
+
+        const potentials = character.基础潜力;
+        const potentialText = potentials
+          ? `精: ${potentials.精} | 气: ${potentials.气} | 神: ${potentials.神} | 运: ${potentials.运}`
+          : '';
+        const identities = character.身份
+          ? Object.values(character.身份)
+              .filter(item => typeof item === 'string')
+              .join(', ')
+          : '';
+        const title = `
+          ${identities}<br>
+          ${potentialText}
+        `.trim();
+
+        nodes.push({
+          id: charId,
+          label: character.姓名 || charId,
+          group: 'npc',
+          title: title,
         });
+
+        if (character.所属世界 && worldState.世界?.[character.所属世界]) {
+          edges.push({
+            from: charId,
+            to: character.所属世界,
+            arrows: 'to',
+          });
+        }
       }
     }
   }
 
   // Add edges for relationships from 因果之网
-  if (worldState.因果之网) {
-    for (const subjectId in worldState.因果之网) {
-      if (!worldState.角色[subjectId]) continue; // Ensure subject exists
+  if (worldState.世界) {
+    for (const worldId in worldState.世界) {
+      const world = worldState.世界[worldId];
+      if (!world.因果之网) continue;
+      for (const subjectId in world.因果之网) {
+        if (!get(world, `角色.${subjectId}`) && subjectId !== store.userId) continue;
 
-      const subjectRelations = worldState.因果之网[subjectId];
-      for (const objectId in subjectRelations) {
-        if (!worldState.角色[objectId]) continue; // Ensure object exists
+        const subjectRelations = world.因果之网[subjectId];
+        for (const objectId in subjectRelations) {
+          if (!get(world, `角色.${objectId}`) && objectId !== store.userId) continue;
 
-        const relationship = subjectRelations[objectId];
-        const totalFavor = (get(relationship, '情感层.亲近感', 0) || 0) + (get(relationship, '情感层.仰慕度', 0) || 0);
-        const conflict = get(relationship, '利益层.利益冲突', 0) || 0;
+          const relationship = subjectRelations[objectId];
+          const totalFavor = (get(relationship, '情感层.亲近感', 0) || 0) + (get(relationship, '情感层.仰慕度', 0) || 0);
+          const conflict = get(relationship, '利益层.利益冲突', 0) || 0;
 
-        edges.push({
-          from: subjectId,
-          to: objectId,
-          label: get(relationship, '印象标签.综合标签', ''),
-          color: totalFavor > 50 ? '#4caf50' : totalFavor < -50 ? '#f44336' : '#9e9e9e',
-          dashes: conflict > 50, // Dashed line for high conflict
-          arrows: 'to',
-        });
+          edges.push({
+            from: subjectId,
+            to: objectId,
+            label: get(relationship, '印象标签.综合标签', ''),
+            color: totalFavor > 50 ? '#4caf50' : totalFavor < -50 ? '#f44336' : '#9e9e9e',
+            dashes: conflict > 50, // Dashed line for high conflict
+            arrows: 'to',
+          });
+        }
       }
     }
   }
@@ -543,6 +609,6 @@ export const worldSandboxData = computed(() => {
 });
 
 export const ripples = computed(() => {
-  if (!store.worldState?.模拟器?.结算) return null;
-  return store.worldState.模拟器.结算;
+  if (!store.worldState?.玩家?.模拟器?.结算) return null;
+  return store.worldState.玩家.模拟器.结算;
 });

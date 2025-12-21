@@ -1,41 +1,27 @@
 <template>
   <div class="reincarnation-panel">
     <div class="tabs">
-      <button :class="{ active: activeTab === 'worldSelection' }" @click="activeTab = 'worldSelection'">
-        待选择世界
-        <span
-          :style="{
-            color: cooldownService.isCoolingDown.value ? '#ffb74d' : isSimulationRunning ? '#e57373' : '#81c784',
-          }"
-        >
-          {{
-            cooldownService.isCoolingDown.value
-              ? `（冷却中: ${cooldownService.remainingTime.value}）`
-              : isSimulationRunning
-                ? '（轮回中）'
-                : '（轮回待命）'
-          }}
-        </span>
+      <button
+        :class="{ active: activeTab === 'worldSelection' }"
+        @click="activeTab = 'worldSelection'"
+        :disabled="reincarnationStatus !== 'world-selection' && reincarnationStatus !== 'cooldown'">
+        待选择世界 ({{ statusText }})
       </button>
       <button
         :class="{ active: activeTab === 'avatarSelection' }"
         @click="activeTab = 'avatarSelection'"
-        :disabled="!canSelectAvatar"
+        :disabled="reincarnationStatus !== 'avatar-selection'"
       >
         可选化身
       </button>
-      <button :class="{ active: activeTab === 'settlementView' }" @click="activeTab = 'settlementView'">
+      <button
+        :class="{ active: activeTab === 'settlementView' }"
+        @click="activeTab = 'settlementView'"
+        :disabled="reincarnationStatus !== 'settlement'">
         宿命抉择
       </button>
       <button :class="{ active: activeTab === 'log' }" @click="activeTab = 'log'">本世历程</button>
       <button :class="{ active: activeTab === 'ripples' }" @click="activeTab = 'ripples'">往世涟漪</button>
-      <button
-        :class="{ active: activeTab === 'settlement' }"
-        @click="activeTab = 'settlement'"
-        v-if="hasSettlementData"
-      >
-        轮回结算
-      </button>
     </div>
     <div class="tab-content">
       <WorldSelection v-if="activeTab === 'worldSelection'" />
@@ -43,38 +29,51 @@
       <SettlementView v-if="activeTab === 'settlementView'" />
       <LogPanel v-if="activeTab === 'log'" />
       <RipplesPanel v-if="activeTab === 'ripples'" />
-      <SettlementPanel v-if="activeTab === 'settlement'" />
+
+      <div v-if="reincarnationStatus === 'simulating'" class="status-placeholder">
+        轮回中...
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import { get } from 'lodash';
 import { store } from '../../store';
-import { isSimulationRunning } from '../../store/getters';
-import { cooldownService } from '../../services/CooldownService';
 import LogPanel from './LogPanel.vue';
 import RipplesPanel from './RipplesPanel.vue';
 import AvatarSelection from './reincarnation/AvatarSelection.vue';
 import SettlementView from './reincarnation/SettlementView.vue';
 import WorldSelection from './reincarnation/WorldSelection.vue';
-import SettlementPanel from './SettlementPanel.vue';
+import { simulatorStatus, simulatorCooldown } from '../../store/getters';
 
 const activeTab = ref('worldSelection');
 
-const canSelectAvatar = computed(() => Object.keys(store.reincarnationAvatarOptions || {}).length > 0);
-const hasSettlementData = computed(() => store.worldState?.模拟器?.结算?.待处理 === true);
+const reincarnationStatus = computed(() => simulatorStatus.value);
+const cooldown = computed(() => simulatorCooldown.value);
 
-// 如果有结算数据，自动跳转到结算页面
-watch(
-  hasSettlementData,
-  newValue => {
-    if (newValue) {
-      activeTab.value = 'settlementView';
-    }
-  },
-  { immediate: true },
-);
+const statusText = computed(() => {
+  switch (reincarnationStatus.value) {
+    case 'world-selection': return '轮回待命';
+    case 'avatar-selection': return '选择化身';
+    case 'simulating': return '轮回中';
+    case 'settlement': return '等待结算';
+    case 'cooldown': return `冷却中: ${cooldown.value.remainingTime}`;
+    default: return '未知状态';
+  }
+});
+
+watch(reincarnationStatus, (newStatus) => {
+  if (newStatus === 'world-selection') {
+    activeTab.value = 'worldSelection';
+  } else if (newStatus === 'avatar-selection') {
+    activeTab.value = 'avatarSelection';
+  } else if (newStatus === 'settlement') {
+    activeTab.value = 'settlementView';
+  }
+}, { immediate: true });
+
 </script>
 
 <style lang="scss" scoped>
@@ -133,7 +132,7 @@ watch(
         transform: scaleX(1);
       }
     }
-
+    
     &:disabled {
       color: rgba($color-grey-stone, 0.4);
       cursor: not-allowed;

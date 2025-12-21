@@ -1,16 +1,16 @@
 <template>
   <div class="detail-tab-content grid-layout">
-    <div class="detail-item full-width">
+    <div v-if="npc.基础潜力" class="detail-item full-width">
       <strong class="detail-key">基础潜力</strong>
       <AttributeGrid :attributes="npc.基础潜力" />
     </div>
-    <div class="detail-item full-width">
+    <div v-if="npc.战斗参数" class="detail-item full-width">
       <strong class="detail-key">战斗参数</strong>
       <AttributeGrid :attributes="npc.战斗参数" />
     </div>
     <div class="detail-item full-width">
       <strong class="detail-key">世界专属属性</strong>
-      <ObjectRenderer :data="npc.世界专属属性" />
+      <ObjectRenderer :data="worldAttributes" />
     </div>
     <div class="detail-item full-width">
       <strong class="detail-key">天赋</strong>
@@ -40,19 +40,49 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { get } from 'lodash';
-import { Character } from '../../../types';
-import { store } from '../../../store';
 import { detailModalService } from '../../../services/DetailModalService';
-import ArtDetail from './ArtDetail.vue';
-import TalentDetail from './TalentDetail.vue';
+import { store } from '../../../store';
+import { Character } from '../../../types';
 import AttributeGrid from '../AttributeGrid.vue';
 import ObjectRenderer from '../ObjectRenderer.vue';
+import ArtDetail from './ArtDetail.vue';
+import TalentDetail from './TalentDetail.vue';
 
 const props = defineProps<{ npc: Character }>();
 
+const worldAttributes = computed(() => {
+  const world = store.worldState?.世界?.[props.npc.所属世界];
+  const npcAttributes = props.npc.世界专属属性;
+
+  if (!npcAttributes) return {};
+  if (!world) return npcAttributes;
+
+  const currentEpochId = world.定义?.元规则?.当前纪元ID;
+  if (!currentEpochId) return npcAttributes;
+
+  const currentEpoch = (world.定义.历史纪元 as Record<string, any>)?.[currentEpochId];
+  const attributeTemplates = currentEpoch?.力量体系?.属性模板;
+
+  const resolvedAttributes: Record<string, any> = {};
+  for (const attrId in npcAttributes) {
+    if (attrId === '$meta') continue;
+
+    const template = attributeTemplates ? (attributeTemplates as Record<string, any>)[attrId] : null;
+    const attributeName = template?.名称 || attrId;
+
+    // 如果模板中没有名称，并且原始值是对象，则直接使用原始对象
+    if (!template?.名称 && typeof npcAttributes[attrId] === 'object' && npcAttributes[attrId] !== null) {
+      resolvedAttributes[attrId] = npcAttributes[attrId];
+    } else {
+      resolvedAttributes[attributeName] = npcAttributes[attrId];
+    }
+  }
+  return resolvedAttributes;
+});
+
 const talents = computed(() => {
-  const database = store.worldState?.数据库;
+  const world = store.worldState?.世界?.[props.npc.所属世界];
+  const database = world?.数据库;
   if (!props.npc.天赋 || !database || !('天赋' in database)) return [];
 
   const talentDb = database.天赋 as Record<string, any>;
@@ -67,7 +97,8 @@ const talents = computed(() => {
 });
 
 const skills = computed(() => {
-  const database = store.worldState?.数据库;
+  const world = store.worldState?.世界?.[props.npc.所属世界];
+  const database = world?.数据库;
   if (!props.npc.技艺 || !database || !('技艺' in database)) return [];
 
   const npcArts = props.npc.技艺;
@@ -98,7 +129,8 @@ const showTalentDetail = (talent: any) => {
 };
 
 const showArtDetail = (art: any) => {
-  const artTemplate = (store.worldState?.数据库?.技艺 as Record<string, any>)?.[art.id];
+  const world = store.worldState?.世界?.[props.npc.所属世界];
+  const artTemplate = (world?.数据库?.技艺 as Record<string, any>)?.[art.id];
   if (artTemplate) {
     detailModalService.show(art.name, ArtDetail, { art: artTemplate });
   }

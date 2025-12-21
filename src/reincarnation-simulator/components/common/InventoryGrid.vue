@@ -1,7 +1,7 @@
 <template>
   <div class="inventory-grid">
     <div v-if="items.length > 0" class="grid-container">
-      <div v-for="(item, index) in items" :key="index" class="item-cell">
+      <div v-for="(item, index) in items" :key="index" class="item-cell" @click="showItemDetail(item)">
         <span class="item-name">{{ item.名称 }}</span>
         <span v-if="item.数量" class="item-quantity">x{{ item.数量 }}</span>
       </div>
@@ -13,9 +13,17 @@
 </template>
 
 <script setup lang="ts">
+import { detailModalService } from '../../services/DetailModalService';
+import DatabaseItemCard from './DatabaseItemCard.vue';
+
 const props = defineProps<{
   items: any[];
 }>();
+
+const showItemDetail = (item: any) => {
+  if (!item) return;
+  detailModalService.show(item.名称, DatabaseItemCard, { item });
+};
 </script>
 
 <style lang="scss" scoped>

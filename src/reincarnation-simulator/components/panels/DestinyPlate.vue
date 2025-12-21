@@ -61,14 +61,7 @@
                 cx="50"
                 cy="50"
                 r="45"
-                :style="{
-                  'stroke-dashoffset':
-                    283 *
-                    (1 -
-                      (typeof attr.value === 'number' && typeof attr.max === 'number' && attr.max > 0
-                        ? attr.value / attr.max
-                        : 0)),
-                }"
+                :style="{ 'stroke-dashoffset': 283 * (1 - (typeof attr.value === 'number' && typeof attr.max === 'number' && attr.max > 0 ? attr.value / attr.max : 0)) }"
               />
             </svg>
             <div class="orbit-label" @mouseenter="setCenterContent(attr)" @mouseleave="resetCenterContent">
@@ -190,14 +183,25 @@ const combatParams = computed(() => {
 
 // 外环数据
 const orbitalNodes = computed(() => {
-  const attrs = characterData.value?.世界专属属性 || {};
+  const char = characterData.value;
+  if (!char || !char.世界专属属性) return [];
+
+  const attrs = char.世界专属属性;
+  const world = store.worldState?.世界?.[char.所属世界];
+  const currentEpochId = world?.定义?.元规则?.当前纪元ID;
+  const currentEpoch = currentEpochId ? (world?.定义.历史纪元 as Record<string, any>)?.[currentEpochId] : null;
+  const attributeTemplates = currentEpoch?.力量体系?.属性模板 as Record<string, any> | undefined;
+
   const specialKeys = ['修为信息', '命途契合度'];
 
   return Object.entries(attrs)
     .filter(([key]) => key !== '$meta')
     .map(([key, attrValue]) => {
-      const isSpecial = specialKeys.includes(key);
-      let description = `世界属性: ${key}`;
+      const template = attributeTemplates ? attributeTemplates[key] : null;
+      const name = template?.名称 || key;
+      const isSpecial = specialKeys.includes(name);
+
+      let description = template?.描述 || `世界属性: ${name}`;
       let value: string | number | null = null;
       let type: 'node' | 'orbit' = 'node';
       let max: number | string = 'MAX';
@@ -210,23 +214,25 @@ const orbitalNodes = computed(() => {
           type = 'orbit';
           value = getDisplayValue((attrValue as any).当前 ?? (attrValue as any).current, 0);
           max = getDisplayValue((attrValue as any).上限 ?? (attrValue as any).max, 100);
-          description = `${key}: ${value} / ${max}`;
+          description = `${name}: ${value} / ${max}`;
         } else if ('value' in attrValue) {
           value = getDisplayValue((attrValue as any).value, '-');
-        } else if (
-          valueKeys.length > 0 &&
-          valueKeys.every(k => typeof (attrValue as any)[k] === 'object' && (attrValue as any)[k]?.名称)
-        ) {
+        } else if (valueKeys.length > 0 && valueKeys.every(k => typeof (attrValue as any)[k] === 'object' && (attrValue as any)[k]?.名称)) {
           value = valueKeys.map(k => (attrValue as any)[k].名称).join('、');
         } else if (valueKeys.length > 0) {
           value = '...';
-          description = valueKeys.map(k => `${k}: ${getDisplayValue((attrValue as any)[k])}`).join(' | ');
+          // 移除重复的名称,只显示内部的键值对
+          const innerDescription = Object.keys(attrValue)
+            .filter(k => k !== '$meta' && k !== 'description' && k !== '名称')
+            .map(k => `${k}: ${getDisplayValue((attrValue as any)[k])}`)
+            .join(' | ');
+          description = innerDescription;
         }
       } else {
         value = getDisplayValue(attrValue, '-');
       }
 
-      return { id: key, name: key, value, max, type, description, isSpecial };
+      return { id: key, name: name, value, max, type, description, isSpecial };
     });
 });
 

@@ -1,21 +1,53 @@
-import { get } from 'lodash';
+import { cloneDeep, get, set } from 'lodash';
+import { z } from 'zod';
 import { commandService } from '../services/CommandService';
+import { contextService } from '../services/ContextService';
 import { lorebookService } from '../services/LorebookService';
 import { memoryService } from '../services/MemoryService';
 import { notificationService } from '../services/NotificationService';
+import { serviceLocator } from '../services/service-locator';
 import { tavernService } from '../services/tavern';
-import { contextService } from '../services/ContextService';
 import { workflowService } from '../services/WorkflowService';
+import { worldEvolutionService } from '../services/WorldEvolutionService';
 import { worldUpdateService } from '../services/WorldUpdateService';
 import type { WorldbookEntry } from '../types';
-import { WorldStateSchema } from '../types/schema';
-import { parseSimpleYaml } from '../utils/yamlParser';
+import { EvolutionaryPressure } from '../types/evolution';
 import { processTags } from '../utils/tagProcessor';
+import { parseSimpleYaml } from '../utils/yamlParser';
 import { isSimulationRunning } from './getters';
 import { store } from './state';
 
+/**
+ * 清理来自 Tavern 的传入数据，确保它指向实际的状态对象，
+ * 处理 `stat_data` 根可能存在或不存在的情况。
+ * @param data - 来自 `getChatMessages` 或 `invokeMvuScript` 的原始数据对象。
+ * @returns 实际的状态对象。
+ */
+function sanitizeStateData(data: any): any {
+  if (!data) return null;
+  // 启发式检测：如果“角色”存在于顶层，我们假设根路径丢失或已损坏。
+  // 顶层数据被假定为最新的。
+  if (data.玩家 || data.世界) {
+    // 如果`stat_data`也存在（损坏状态），我们优先选择顶层数据。
+    // 创建一个只包含预期状态键的新对象来清理它。
+    const cleanState: any = {};
+    const stateKeys = ['玩家', '世界'];
+    for (const key of stateKeys) {
+      if (data[key] !== undefined) {
+        cleanState[key] = data[key];
+      }
+    }
+    console.log('[sanitizeStateData] Detected corrupted state, returning cleaned top-level data.');
+    return cleanState;
+  }
+  // 标准情况：根未损坏，返回 stat_data 的内容或数据本身（如果 stat_data 丢失）。
+  return data.stat_data || data;
+}
+
 let lastProcessedMessageId: string | null = null; // 使用消息ID来防止重复处理
 let isLogHistoryLoaded = false; // Flag to ensure history is loaded only once
+const ZOD_ERROR_NOTIFIED_KEY = 'zodErrorNotified';
+let isZodErrorNotified = sessionStorage.getItem(ZOD_ERROR_NOTIFIED_KEY) === 'true';
 
 /**
  * Compares old and new game states and triggers notifications for changes.
@@ -25,19 +57,36 @@ let isLogHistoryLoaded = false; // Flag to ensure history is loaded only once
 function checkForChangesAndNotify(oldState: any, newState: any) {
   if (!oldState || !newState) return;
 
-  // 1. 新 NPC 创建
-  const oldNpcIds = Object.keys(get(oldState, '角色', {})).filter(id => id.startsWith('npc_'));
-  const newNpcIds = Object.keys(get(newState, '角色', {})).filter(id => id.startsWith('npc_'));
-  for (const npcId of newNpcIds) {
-    if (!oldNpcIds.includes(npcId)) {
-      const npcName = get(newState, `角色.${npcId}.姓名[0]`, npcId);
-      notificationService.info('新角色登场', `你遇到了 ${npcName}。`);
+  // 1. 新 NPC 创建 & 世界大事
+  const oldWorlds = get(oldState, '世界', {});
+  const newWorlds = get(newState, '世界', {});
+  for (const worldId in newWorlds) {
+    // 新 NPC 创建
+    const oldNpcIds = Object.keys(get(oldWorlds, `${worldId}.角色`, {})).filter(id => id.startsWith('npc_'));
+    const newNpcIds = Object.keys(get(newWorlds, `${worldId}.角色`, {})).filter(id => id.startsWith('npc_'));
+    for (const npcId of newNpcIds) {
+      if (!oldNpcIds.includes(npcId)) {
+        const npcName = get(newWorlds, `${worldId}.角色.${npcId}.姓名`, npcId);
+        notificationService.info('新角色登场', `你遇到了 ${npcName}。`);
+      }
+    }
+
+    // 世界大事
+    const oldEpochs = get(oldWorlds, `${worldId}.定义.历史纪元`, {});
+    const newEpochs = get(newWorlds, `${worldId}.定义.历史纪元`, {});
+    for (const epochId in newEpochs) {
+      const oldEvents = get(oldEpochs, `${epochId}.世界大事`, {});
+      const newEvents = get(newEpochs, `${epochId}.世界大事`, {});
+      const newEventKeys = Object.keys(newEvents).filter(key => !oldEvents[key]);
+      for (const key of newEventKeys) {
+        notificationService.warn('世界大事', newEvents[key].事件);
+      }
     }
   }
 
   // 2. Inventory Change Notification
-  const oldInventory = get(oldState, `角色.${store.userId}.背包`, {});
-  const newInventory = get(newState, `角色.${store.userId}.背包`, {});
+  const oldInventory = get(oldState, '玩家.本体.背包', {});
+  const newInventory = get(newState, '玩家.本体.背包', {});
   const allItemIds = new Set([...Object.keys(oldInventory), ...Object.keys(newInventory)].filter(id => id !== '$meta'));
 
   for (const itemId of allItemIds) {
@@ -52,8 +101,8 @@ function checkForChangesAndNotify(oldState: any, newState: any) {
   }
 
   // 3. User Attribute Change Notification
-  const oldUser = get(oldState, `角色.${store.userId}`, {});
-  const newUser = get(newState, `角色.${store.userId}`, {});
+  const oldUser = get(oldState, '玩家.本体', {});
+  const newUser = get(newState, '玩家.本体', {});
 
   const compareAndNotify = (path: string, name: string) => {
     const oldVal = get(oldUser, path);
@@ -78,22 +127,6 @@ function checkForChangesAndNotify(oldState: any, newState: any) {
   compareAndNotify('基础潜力', '基础潜力');
   compareAndNotify('战斗参数', '战斗参数');
   compareAndNotify('世界专属属性', '世界专属属性');
-
-  // 4. 世界大事
-  const oldWorlds = get(oldState, '世界', {});
-  const newWorlds = get(newState, '世界', {});
-  for (const worldId in newWorlds) {
-    const oldEpochs = get(oldWorlds, `${worldId}.历史纪元`, {});
-    const newEpochs = get(newWorlds, `${worldId}.历史纪元`, {});
-    for (const epochId in newEpochs) {
-      const oldEvents = get(oldEpochs, `${epochId}.世界大事`, {});
-      const newEvents = get(newEpochs, `${epochId}.世界大事`, {});
-      const newEventKeys = Object.keys(newEvents).filter(key => !oldEvents[key]);
-      for (const key of newEventKeys) {
-        notificationService.warn('世界大事', newEvents[key].事件);
-      }
-    }
-  }
 }
 
 async function loadWorldLogFromLorebook() {
@@ -161,30 +194,70 @@ async function fetchCoreData() {
   try {
     const messages = await tavernService.fetchTavernData();
     if (messages && messages.length > 0 && messages[0].data) {
-      const rawStateData = messages[0].data.stat_data || messages[0].data;
+      const rawStateData = sanitizeStateData(messages[0].data);
       const fullMessageContent = messages[0].message;
       const currentMessageId = messages[0].id;
       const oldState = JSON.parse(JSON.stringify(store.worldState)); // Capture state before update
 
-      // 动态识别 userId
-      const characters = get(rawStateData, '角色');
-      if (characters) {
-        const characterIds = Object.keys(characters).filter(id => id && id !== '$meta' && id !== 'sample_npc_id');
-        if (characterIds.length > 0) {
-          store.userId = characterIds[0];
+      try {
+        store.worldState = rawStateData as any;
+        // 如果成功，清除会话中的错误标志
+        if (isZodErrorNotified) {
+          sessionStorage.removeItem(ZOD_ERROR_NOTIFIED_KEY);
+          isZodErrorNotified = false;
+        }
+      } catch (error) {
+        console.warn('[Zod-AutoFix] Initial parsing failed. Attempting to auto-fix...', error);
+        const fixedData = cloneDeep(rawStateData);
+
+        if (error instanceof z.ZodError) {
+          for (const issue of error.issues) {
+            if (issue.code === 'invalid_type' && 'received' in issue && issue.received === 'undefined') {
+              let defaultValue: any = ''; // Default to empty string
+              if (issue.expected === 'number') defaultValue = 0;
+              else if (issue.expected === 'boolean') defaultValue = false;
+              else if (issue.expected === 'object') defaultValue = {};
+              else if (issue.expected === 'array') defaultValue = [];
+
+              console.log(
+                `[Zod-AutoFix] Fixing path [${issue.path.join(' -> ')}]: setting to default value`,
+                defaultValue,
+              );
+              set(fixedData, issue.path, defaultValue);
+            }
+          }
+
+          try {
+            store.worldState = fixedData as any;
+            notificationService.success('数据自动修复', '部分数据格式已自动修正。');
+            // 修复成功，清除错误标志
+            if (isZodErrorNotified) {
+              sessionStorage.removeItem(ZOD_ERROR_NOTIFIED_KEY);
+              isZodErrorNotified = false;
+            }
+          } catch (finalError) {
+            if (!isZodErrorNotified) {
+              const finalZodError = finalError as z.ZodError;
+              const firstIssue = finalZodError.issues[0];
+              const errorMessage = `路径 [${firstIssue.path.join(' -> ')}] 发生错误: ${firstIssue.message}。`;
+
+              console.error('Zod validation failed even after auto-fixing:', finalError);
+              notificationService.error('数据校验失败', `自动修复失败: ${errorMessage}`);
+              sessionStorage.setItem(ZOD_ERROR_NOTIFIED_KEY, 'true');
+              isZodErrorNotified = true;
+            }
+            store.worldState = fixedData as any;
+          }
+        } else {
+          store.worldState = rawStateData as any;
+          if (!isZodErrorNotified) {
+            console.error('Validation failed with non-Zod error:', error);
+            notificationService.error('数据错误', '发生了一个未知的数据格式错误。');
+            sessionStorage.setItem(ZOD_ERROR_NOTIFIED_KEY, 'true');
+            isZodErrorNotified = true;
+          }
         }
       }
-
-      try {
-        store.worldState = WorldStateSchema.parse(rawStateData) as any;
-      } catch (error) {
-        console.error('Zod validation failed for rawStateData:', error);
-        notificationService.error('数据校验失败', '从后端接收的世界数据格式不正确，请检查控制台。');
-        // 即使校验失败，也可能需要保留部分数据以供调试
-        store.worldState = rawStateData as any;
-      }
-
-      store.character = get(store.worldState, ['角色', store.userId]) || null;
 
       // After updating the state, compare with the old state for notifications
       checkForChangesAndNotify(oldState, store.worldState);
@@ -234,7 +307,7 @@ async function fetchCoreData() {
           }
 
           // 动态获取对应世界的时间
-          const targetWorldLocation = entryName === '主世界摘要' ? '主世界' : '当前化身世界';
+          const targetWorldLocation = entryName === '[系统]主世界摘要' ? '主世界' : '当前化身世界';
           const world = Object.values(get(store.worldState, '世界', {})).find(
             (w: any) => get(w, '元规则.定位') === targetWorldLocation,
           );
@@ -261,7 +334,7 @@ async function fetchCoreData() {
           if (world) {
             const worldName = get(world, '名称', '未知世界');
             const location = get(world, '状态.定位[0]');
-            const entryName = location === '主世界' ? '主世界摘要' : '化身世界摘要';
+            const entryName = location === '主世界' ? '[系统]主世界摘要' : '[系统]化身世界摘要';
             const worldTime = formatWorldTime(get(world, '状态.当前时间'));
             await processAndWriteSummary(summaryContent, entryName, `${worldName} 动态`);
           }
@@ -273,14 +346,14 @@ async function fetchCoreData() {
             (w: any) => get(w, '状态.定位[0]') === '主世界',
           );
           const worldTime = formatWorldTime(get(mainWorld, '状态.当前时间'));
-          await processAndWriteSummary(match[1].trim(), '主世界摘要', '主世界动态');
+          await processAndWriteSummary(match[1].trim(), '[系统]主世界摘要', '主世界动态');
         }
         if ((match = avatarWorldSummaryRegex.exec(fullMessageContent)) !== null) {
           const avatarWorld = Object.values(get(store.worldState, '世界', {})).find(
             (w: any) => get(w, '状态.定位[0]') === '当前化身世界',
           );
           const worldTime = formatWorldTime(get(avatarWorld, '状态.当前时间'));
-          await processAndWriteSummary(match[1].trim(), '化身世界摘要', '化身世界动态');
+          await processAndWriteSummary(match[1].trim(), '[系统]化身世界摘要', '化身世界动态');
         }
 
         // 3. 提取并处理可选化身
@@ -704,13 +777,22 @@ async function processAiResponse(response: string, prefixedInput: string) {
     const oldState = JSON.parse(JSON.stringify(store.worldState)); // Deep copy for comparison
     const newVariables = await tavernService.invokeMvuScript(updateScript, latestState);
     if (newVariables) {
+      const sanitizedVars = sanitizeStateData(newVariables);
       try {
-        store.worldState = WorldStateSchema.parse(newVariables) as any;
+        store.worldState = sanitizedVars as any;
+        isZodErrorNotified = false; // Reset on successful parse
       } catch (error) {
-        console.error('Zod validation failed for newVariables from MVU script:', error);
-        notificationService.error('数据校验失败', '变量更新脚本返回的数据格式不正确，请检查控制台。');
+        if (!isZodErrorNotified) {
+          const zodError = error as z.ZodError;
+          const firstIssue = zodError.issues[0];
+          const errorMessage = `路径 [${firstIssue.path.join(' -> ')}] 发生错误: ${firstIssue.message}。`;
+
+          console.error('Zod validation failed for newVariables from MVU script:', error);
+          notificationService.error('数据校验失败', errorMessage);
+          isZodErrorNotified = true;
+        }
         // 即使校验失败，也可能需要保留部分数据以供调试
-        store.worldState = newVariables as any;
+        store.worldState = sanitizedVars as any;
       }
       store.character = get(store.worldState, ['角色', store.userId]) || null;
       checkForChangesAndNotify(oldState, store.worldState);
@@ -718,24 +800,37 @@ async function processAiResponse(response: string, prefixedInput: string) {
   }
 }
 
-async function handleAction(actionText: string) {
+async function handleAction(actionText: string, isReroll = false) {
+  const saveLoadService = serviceLocator.get('saveLoadService');
   if (!actionText.trim()) return;
   if (!store.isReady) await loadAllData();
 
+  // 如果不是重来操作，则在行动前保存状态以备重来
+  if (!isReroll) {
+    await saveLoadService.saveStateForReroll();
+  }
+
   store.isGenerating = true;
   try {
+    // 【始】环: 观过去之因，定今日之果
+    console.log('[EvoSys] Executing Pre-Action Deduction...');
+    const pressures = worldEvolutionService.applyPressure(store.worldState);
+    const reactions = worldEvolutionService.simulateReactions(pressures, store.worldState);
+    for (const event of reactions) {
+      worldEvolutionService.propagateRipples(event, store.worldState);
+    }
+    const availableRipples = worldEvolutionService.getAvailableRipples(Date.now()); // 应使用游戏内时间
+
     const currentState = workflowService.getCurrentState();
 
-    // 1. 构建包含动态引导指令的最终 Prompt
-    const activeCharId = isSimulationRunning.value ? store.worldState?.模拟器.模拟.当前化身ID : store.userId;
-    const coreEntities = activeCharId
-      ? contextService.identifyCoreEntities(actionText, activeCharId, store.worldState)
-      : [];
-    const guidingInstruction = contextService.buildGuidingInstruction(coreEntities, store.worldState);
-    const finalPrompt = `${guidingInstruction}\n\n${actionText}`;
+    // 【承】之章: 意图分析与上下文构建 (融入世界脉搏)
+    const intent = contextService.analyzeUserIntent(actionText, store.worldState, availableRipples);
+    const leanContextVariables = contextService.buildLeanContext(intent, actionText, store.worldState, store.userId);
 
-    // 2. 发送最终 Prompt 给 AI
-    const rawAiResponse = await tavernService.generateAiResponse(finalPrompt);
+    console.log('[Actions] Generating AI response with lean context variables informed by world pulse.');
+
+    // 发送最终 Prompt 给 AI
+    const rawAiResponse = await tavernService.generateAiResponse(actionText, leanContextVariables);
 
     // 在处理之前，规范化标签
     const aiResponseString = processTags(rawAiResponse);
@@ -755,15 +850,42 @@ async function handleAction(actionText: string) {
     if (messages && messages.length > 0) {
       const messageZero = messages[0];
       messageZero.message = finalResponseString; // 保存拼接后的完整响应
-      messageZero.data = JSON.parse(JSON.stringify(store.worldState));
+
+      // ROO-FIX: 总是重建 `stat_data` 包装器以防止数据结构损坏。
+      // 保留 `message.data` 中可能存在的其他属性。
+      const newData = messageZero.data || {};
+      newData.stat_data = JSON.parse(JSON.stringify(store.worldState));
+
+      // 清理可能由于先前损坏而存在于顶层的流氓状态键。
+      const stateKeys = ['数据库', '因果之网', '往世道标', '角色', '世界', '模拟器'];
+      for (const key of stateKeys) {
+        delete newData[key];
+      }
+
+      messageZero.data = newData;
+
       await TavernHelper.setChatMessages([messageZero], { refresh: 'none' });
     }
 
-    // 关键修复：如果是在创世流程后，则自动重新加载页面
-    // 新增：在常规输入提交后，也执行页面重载
-    if (currentState === 'CREATION' || currentState === 'NORMAL') {
-      window.location.reload();
+    // 【末】环: 观今日之果，衍未来之因
+    console.log('[EvoSys] Executing Post-Action Deduction...');
+    const actionAsPressure: EvolutionaryPressure = {
+      type: 'custom',
+      source: { type: 'npc', id: store.userId },
+      intensity: 75, // 玩家的行动总是有较高强度的压力
+      description: `天命之人执行了行动: "${actionText}"`,
+      intent: actionText,
+    };
+    const actionReactions = worldEvolutionService.simulateReactions([actionAsPressure], store.worldState);
+    for (const event of actionReactions) {
+      worldEvolutionService.propagateRipples(event, store.worldState);
     }
+
+    // // 关键修复：如果是在创世流程后，则自动重新加载页面
+    // // 新增：在常规输入提交后，也执行页面重载
+    // if (currentState === 'CREATION' || currentState === 'NORMAL') {
+    //   window.location.reload();
+    // }
   } catch (error) {
     console.error('处理动作时出错:', error);
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -791,9 +913,51 @@ function initializeEventListeners() {
   console.log('[Store] Initializing data synchronization...');
 
   // 监听AI生成结束事件
-  eventOn(tavern_events.GENERATION_ENDED, async () => {
-    console.log('[Store] Generation ended. Fetching all data.');
-    await loadAllData();
+  eventOn(tavern_events.GENERATION_ENDED, () => {
+    console.log('[Store] Generation ended. Scheduling data fetch and error check.');
+
+    // 增加延迟以确保酒馆助手的日志完全写入
+    setTimeout(async () => {
+      console.log('[Store] Executing scheduled data fetch and error check...');
+
+      // 在加载新数据前，检查最后一条消息是否存在MVU错误
+      try {
+        const messages = await tavernService.fetchTavernData();
+        if (messages && messages.length > 0) {
+          const latestMessage = messages[messages.length - 1];
+          const content = latestMessage?.message || '';
+
+          // 【调试日志】打印获取到的原始消息内容
+          console.log('[ErrorInterceptor DEBUG] Fetched latest message content:', JSON.stringify(content));
+
+          // 正则表达式匹配MVU beta的路径不存在错误
+          const regex =
+            /【脚本 \| mvu beta】: Path '(.+?)' does not exist in stat_data, skipping set command \(json_patch\)/g;
+          let match;
+
+          while ((match = regex.exec(content)) !== null) {
+            const failedPath = match[1];
+            if (failedPath) {
+              const correctionCommand = `【系统指令】上一次更新失败：路径 '${failedPath}' 不存在。请遵循规则，先创建父级对象再设置属性。请在本次回复中修正此错误。`;
+
+              const commands = commandService.getCommands();
+              // 避免重复添加完全相同的修正指令
+              if (!commands.includes(correctionCommand)) {
+                commandService.addCommand(correctionCommand);
+                console.log(`[ErrorInterceptor] 拦截到JSON Patch错误，已添加修正指令到队列: ${failedPath}`);
+                notificationService.warn('AI 错误已捕获', '侦测到 AI 变量更新错误，已自动生成修正指令并加入队列。');
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('[ErrorInterceptor] 检查MVU错误时出错:', error);
+      }
+
+      // 无论是否捕获到错误，都继续执行数据加载流程
+      await loadAllData();
+      silentUpdater.reset();
+    }, 500); // 延迟500毫秒
   });
 
   // 启动静默更新轮询
@@ -876,6 +1040,30 @@ async function clearSettlementData() {
 export const actions = {
   loadAllData,
   handleAction,
+  rerollLastAction: async () => {
+    const saveLoadService = serviceLocator.get('saveLoadService');
+    const inputModalState = serviceLocator.get('inputModalState');
+    console.log('[Actions] Reroll requested.');
+    try {
+      // 1. 加载用于重来的存档状态
+      await saveLoadService.loadRerollState();
+
+      // 2. 获取上一次提交的输入
+      const lastInputAction = inputModalState.lastSubmittedValue;
+      if (!lastInputAction) {
+        notificationService.error('重来失败', '找不到上一次的输入内容。');
+        return;
+      }
+
+      notificationService.info('正在重来...', `重新提交输入: "${lastInputAction}"`);
+
+      // 3. 带着“重来”标记，重新执行动作
+      await handleAction(lastInputAction, true);
+    } catch (error) {
+      console.error('Reroll failed:', error);
+      notificationService.error('重来失败', error instanceof Error ? error.message : '未知错误');
+    }
+  },
   initializeEventListeners,
   fetchReincarnationWorlds,
   prepareReincarnation,
@@ -894,7 +1082,7 @@ export const actions = {
     await lorebookService.getEntries(true);
     // 3. 立即执行指令
     notificationService.info('创世', '已发送“重演天机”指令，等待AI创造新世界...');
-    await handleAction('<重演天机>');
+    await handleAction('重演天机');
   },
   triggerIdentityWorkflow: async (world: WorldbookEntry) => {
     console.log('[Actions] Triggering IDENTITY workflow...');
@@ -934,7 +1122,7 @@ export const actions = {
     await lorebookService.getEntries(true);
 
     // 3. 构造并直接发送指令
-    const command = `<选择化身 “${avatarName}”>`;
+    const command = `选择化身 “${avatarName}”`;
     notificationService.info('轮回开始', `已选定化身【${avatarName}】，轮回开始...`);
 
     // 4. 直接调用 handleAction
@@ -951,7 +1139,7 @@ export const actions = {
     store.activeView = targetWorld;
 
     const targetName = targetWorld === 'mainWorld' ? '主世界' : '化身世界';
-    const command = `<意识切换至 ${targetName}>`;
+    const command = `意识切换至 ${targetName}`;
     commandService.addCommand(command);
     notificationService.info('行动队列', `已将“意识切换至${targetName}”加入行动队列`);
   },

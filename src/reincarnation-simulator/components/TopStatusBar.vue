@@ -13,6 +13,9 @@
       <button @click="toggleFullscreen" class="view-toggle-btn" :title="fullscreenTitle">
         <i :class="fullscreenIcon"></i>
       </button>
+      <button @click="actions.rerollLastAction" class="view-toggle-btn" title="重来">
+        <i class="fas fa-undo"></i>
+      </button>
     </div>
     <div class="status-right">
       <WorldTimeDisplay world-type="avatar" />
@@ -25,6 +28,7 @@ import { computed } from 'vue';
 import { uiState, uiActions } from '../store/ui';
 import { usePanelManager } from '../services/usePanelManager';
 import WorldTimeDisplay from './WorldTimeDisplay.vue';
+import { actions } from '../store';
 
 const isBrowserFullscreen = computed(() => uiState.isBrowserFullscreen);
 const { openPanel } = usePanelManager();

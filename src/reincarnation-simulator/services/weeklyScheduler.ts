@@ -63,9 +63,7 @@ class WeeklyScheduler {
       const playerGradePrefix = playerClass.substring(0, 2); // 获取年级前缀，如 "1年", "2年"
 
       // 筛选出所有与该年级相关的课程（年级专属课 + 通用课）
-      const relevantCourses = coursePool.filter(c =>
-          c.班级ID.startsWith(playerGradePrefix) || c.班级ID === '通用'
-      );
+      const relevantCourses = coursePool.filter(c => c.班级ID.startsWith(playerGradePrefix) || c.班级ID === '通用');
 
       // 从相关课程中再细分出必修和选修
       const requiredCourses = relevantCourses.filter(c => c.课程类型 === '必修');

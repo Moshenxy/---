@@ -67,7 +67,6 @@ class LocationService {
 
       this.locations.splice(0, this.locations.length, ...tree);
       console.log('[LocationService] Location tree loaded:', this.locations);
-
     } catch (error) {
       console.error('Failed to load locations:', error);
     }
@@ -77,16 +76,16 @@ class LocationService {
     if (parentId === null) {
       return this.locations;
     }
-    
+
     const findInChildren = (nodes: Location[], id: string): Location[] | null => {
-        for (const node of nodes) {
-            if (node.id === id) {
-                return node.children;
-            }
-            const found = findInChildren(node.children, id);
-            if (found) return found;
+      for (const node of nodes) {
+        if (node.id === id) {
+          return node.children;
         }
-        return null;
+        const found = findInChildren(node.children, id);
+        if (found) return found;
+      }
+      return null;
     };
 
     return findInChildren(this.locations, parentId) || [];
@@ -94,15 +93,15 @@ class LocationService {
 
   public getLocationNameById(id: string): string {
     const findName = (nodes: Location[], locId: string): string | null => {
-        for (const node of nodes) {
-            if (node.id === locId) {
-                return node.name;
-            }
-            const found = findName(node.children, locId);
-            if (found) return found;
+      for (const node of nodes) {
+        if (node.id === locId) {
+          return node.name;
         }
-        return null;
-    }
+        const found = findName(node.children, locId);
+        if (found) return found;
+      }
+      return null;
+    };
     return findName(this.locations, id) || id;
   }
 }

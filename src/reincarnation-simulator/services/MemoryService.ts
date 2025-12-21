@@ -38,23 +38,25 @@ class MemoryService {
       await this.writeMemory(this.INSTANT_MEMORY_KEY, '暂无瞬时记忆。');
       return;
     }
-    
-    const content = logs.map(log => {
-      // 确保所有字段都以 key|value 的形式正确格式化
-      return [
-        `序号|${log.序号}`,
-        `日期|${log.日期}`,
-        `标题|${log.标题}`,
-        `地点|${log.地点}`,
-        `人物|${log.人物}`,
-        `描述|${log.描述}`,
-        `人物关系|${log.人物关系}`,
-        `标签|${Array.isArray(log.标签) ? log.标签.join(', ') : log.标签}`,
-        `重要信息|${log.重要信息}`,
-        `暗线与伏笔|${log.暗线与伏笔}`,
-        `自动化系统|${log.自动化系统}`
-      ].join('\n');
-    }).join('\n\n---\n\n');
+
+    const content = logs
+      .map(log => {
+        // 确保所有字段都以 key|value 的形式正确格式化
+        return [
+          `序号|${log.序号}`,
+          `日期|${log.日期}`,
+          `标题|${log.标题}`,
+          `地点|${log.地点}`,
+          `人物|${log.人物}`,
+          `描述|${log.描述}`,
+          `人物关系|${log.人物关系}`,
+          `标签|${Array.isArray(log.标签) ? log.标签.join(', ') : log.标签}`,
+          `重要信息|${log.重要信息}`,
+          `暗线与伏笔|${log.暗线与伏笔}`,
+          `自动化系统|${log.自动化系统}`,
+        ].join('\n');
+      })
+      .join('\n\n---\n\n');
 
     await this.writeMemory(this.INSTANT_MEMORY_KEY, content.trim());
   }
@@ -69,16 +71,18 @@ class MemoryService {
       return;
     }
 
-    const content = logs.map(log => {
-      // 短期记忆：提取核心信息，保持key|value结构
-      return [
-        `序号|${log.序号}`,
-        `日期|${log.日期}`,
-        `标题|${log.标题}`,
-        `人物|${log.人物}`,
-        `描述|${log.描述}`
-      ].join('\n');
-    }).join('\n\n---\n\n');
+    const content = logs
+      .map(log => {
+        // 短期记忆：提取核心信息，保持key|value结构
+        return [
+          `序号|${log.序号}`,
+          `日期|${log.日期}`,
+          `标题|${log.标题}`,
+          `人物|${log.人物}`,
+          `描述|${log.描述}`,
+        ].join('\n');
+      })
+      .join('\n\n---\n\n');
 
     await this.writeMemory(this.SHORT_TERM_MEMORY_KEY, content.trim());
   }

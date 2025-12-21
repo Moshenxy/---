@@ -2,8 +2,12 @@
 @use '../theme/mixins' as *;
 
 @keyframes orbit {
-  from { transform: rotate(0deg) translateX(150px) rotate(0deg); }
-  to { transform: rotate(360deg) translateX(150px) rotate(-360deg); }
+  from {
+    transform: rotate(0deg) translateX(150px) rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg) translateX(150px) rotate(-360deg);
+  }
 }
 
 .world-detail-modal-content {
@@ -25,7 +29,7 @@
     margin-bottom: $spacing-xl;
     position: relative;
   }
-  
+
   .section-title {
     font-family: $font-family-title;
     font-size: $font-size-h2;
@@ -74,7 +78,7 @@
     position: relative;
     height: 350px;
     margin: $spacing-xl 0;
-    
+
     // Central Axis
     &::before {
       content: '';
@@ -106,7 +110,7 @@
     flex-direction: column;
     align-items: center;
     gap: $spacing-xs;
-    
+
     // --- Orbital positioning ---
     @for $i from 1 through 5 {
       &:nth-child(#{$i}) {
@@ -125,10 +129,13 @@
       height: 10px;
       border-radius: 50%;
       background: $color-gold-pale;
-      box-shadow: 0 0 8px $color-gold-pale, 0 0 15px $color-gold-liu;
+      box-shadow:
+        0 0 8px $color-gold-pale,
+        0 0 15px $color-gold-liu;
     }
 
-    .level-name, .level-energy {
+    .level-name,
+    .level-energy {
       position: absolute;
       top: -30px;
       white-space: nowrap;
@@ -143,7 +150,7 @@
       font-size: $font-size-base;
     }
     .level-energy {
-      display:none; // Hide for cleaner look, can be added back
+      display: none; // Hide for cleaner look, can be added back
     }
   }
 }

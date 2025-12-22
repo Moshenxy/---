@@ -15,6 +15,7 @@ class WorkflowService {
   private currentState: WorkflowState = 'NORMAL';
   private narrativeCache: string | null = null; // 用于暂存 <gametxt>
   private updateScriptCache: string | null = null; // 用于暂存 <UpdateVariable>
+  private lastJsonPatch: string | null = null; // 用于暂存 <JSONPatch>
   private preserveMode: 'none' | 'gametxt' | 'full' = 'none';
 
   constructor() {
@@ -135,6 +136,28 @@ class WorkflowService {
     }
 
     return content;
+  }
+
+  /**
+   * 缓存上一轮的JSONPatch内容。
+   * @param jsonPatch - 从 <UpdateVariable> 标签中提取的JSONPatch字符串。
+   */
+  public cacheLastJsonPatch(jsonPatch: string): void {
+    this.lastJsonPatch = jsonPatch;
+    console.log('[WorkflowService] Cached last JSONPatch.');
+  }
+
+  /**
+   * 取出缓存的JSONPatch并清空。
+   * @returns 缓存的JSONPatch字符串，如果没有则返回null。
+   */
+  public popLastJsonPatch(): string | null {
+    const patch = this.lastJsonPatch;
+    this.lastJsonPatch = null;
+    if (patch) {
+      console.log('[WorkflowService] Popped last JSONPatch.');
+    }
+    return patch;
   }
 }
 

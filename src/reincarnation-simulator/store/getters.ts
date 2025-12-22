@@ -120,12 +120,8 @@ export const playerSkills = computed(() => {
         (l: any) => typeof l === 'object' && l !== null && '等级' in l,
       );
 
-      const currentLevelInfo = levelSystem.find((l: any) => l.等级 === artData.等级) as
-        | { 升级所需经验: number; 称号: string }
-        | undefined;
-      const nextLevelInfo = levelSystem.find((l: any) => l.等级 === artData.等级 + 1) as
-        | { 升级所需经验: number }
-        | undefined;
+      const currentLevelInfo = levelSystem.find((l: any) => l.等级 === artData.等级) as { 升级所需经验: number; 称号: string } | undefined;
+      const nextLevelInfo = levelSystem.find((l: any) => l.等级 === artData.等级 + 1) as { 升级所需经验: number } | undefined;
 
       // Find associated active skills
       const associatedSkills = [];
@@ -144,7 +140,7 @@ export const playerSkills = computed(() => {
         description: artTemplate.描述,
         level: artData.等级,
         exp: artData.经验值,
-        expToNextLevel: nextLevelInfo ? nextLevelInfo.升级所需经验 : currentLevelInfo?.升级所需经验 || 'MAX',
+        expToNextLevel: nextLevelInfo ? nextLevelInfo.升级所需经验 : (currentLevelInfo?.升级所需经验 || 'MAX'),
         title: currentLevelInfo ? currentLevelInfo.称号 : '',
         associatedSkills,
       });
@@ -212,7 +208,7 @@ export const playerWorldAttributes = computed(() => {
   const world = store.worldState?.世界?.[character.所属世界];
   const currentEpochId = world?.定义?.元规则?.当前纪元ID;
   if (!world || !currentEpochId) {
-    // 如果没有世界或纪元信息，直接返回原始ID
+     // 如果没有世界或纪元信息，直接返回原始ID
     return Object.entries(character.世界专属属性)
       .filter(([key]) => key !== '$meta')
       .map(([key, value]) => ({ key, value, description: null }));
@@ -229,7 +225,7 @@ export const playerWorldAttributes = computed(() => {
 
     const value = (attributesData as any)[key];
     const template = attributeTemplates ? attributeTemplates[key] : null;
-
+    
     result.push({
       key: template?.名称 || key,
       value: value,
@@ -492,7 +488,7 @@ export const worldSandboxData = computed(() => {
       // 确保world对象不是一个空的模板
       const epochId = get(world, '定义.元规则.当前纪元ID');
       if (!epochId) continue;
-
+      
       const activeEpoch = get(world, `定义.历史纪元.${epochId}`);
       if (!activeEpoch || !activeEpoch.规则) continue;
 
@@ -517,26 +513,26 @@ export const worldSandboxData = computed(() => {
   // Add characters as nodes
   const player = playerCharacter.value;
   if (player) {
-    const potentials = player.基础潜力;
-    const potentialText = potentials
-      ? `精: ${potentials.精} | 气: ${potentials.气} | 神: ${potentials.神} | 运: ${potentials.运}`
-      : '';
-    const identities = player.身份
-      ? Object.values(player.身份)
-          .filter(item => typeof item === 'string')
-          .join(', ')
-      : '';
-    const title = `
+      const potentials = player.基础潜力;
+      const potentialText = potentials
+        ? `精: ${potentials.精} | 气: ${potentials.气} | 神: ${potentials.神} | 运: ${potentials.运}`
+        : '';
+      const identities = player.身份
+        ? Object.values(player.身份)
+            .filter(item => typeof item === 'string')
+            .join(', ')
+        : '';
+      const title = `
         ${identities}<br>
         ${potentialText}
       `.trim();
 
-    nodes.push({
-      id: store.userId,
-      label: player.真名 || store.userId,
-      group: 'player',
-      title: title,
-    });
+      nodes.push({
+        id: store.userId,
+        label: player.真名 || store.userId,
+        group: 'player',
+        title: title,
+      });
   }
 
   if (worldState.世界) {
@@ -593,8 +589,7 @@ export const worldSandboxData = computed(() => {
           if (!get(world, `角色.${objectId}`) && objectId !== store.userId) continue;
 
           const relationship = subjectRelations[objectId];
-          const totalFavor =
-            (get(relationship, '情感层.亲近感', 0) || 0) + (get(relationship, '情感层.仰慕度', 0) || 0);
+          const totalFavor = (get(relationship, '情感层.亲近感', 0) || 0) + (get(relationship, '情感层.仰慕度', 0) || 0);
           const conflict = get(relationship, '利益层.利益冲突', 0) || 0;
 
           edges.push({

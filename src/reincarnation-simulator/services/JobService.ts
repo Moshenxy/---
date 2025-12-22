@@ -44,7 +44,7 @@ class JobService {
 
     for (const block of locationBlocks) {
       if (!block.trim()) continue;
-
+      
       const lines = ('ID|' + block).trim().split('\n');
       const location: { [key: string]: string } = {};
       lines.forEach(line => {

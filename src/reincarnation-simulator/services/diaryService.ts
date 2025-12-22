@@ -29,14 +29,12 @@ class DiaryService {
 
     try {
       const aiResponse = await TavernHelper.generate({
-        injects: [
-          {
-            role: 'user',
-            content: prompt,
-            position: 'none',
-            depth: 0,
-          },
-        ],
+        injects: [{
+          role: 'user',
+          content: prompt,
+          position: 'none',
+          depth: 0,
+        }],
         should_stream: false,
       });
       // 简单提取，后续可以做得更精细
@@ -71,23 +69,17 @@ class DiaryService {
     }
   }
 
-  public async updateLogFromSummary(
-    originalEntries: any[],
-    updatedSummary: string,
-    type: 'small' | 'large',
-  ): Promise<void> {
+  public async updateLogFromSummary(originalEntries: any[], updatedSummary: string, type: 'small' | 'large'): Promise<void> {
     const prompt = this.buildUpdatePrompt(originalEntries, updatedSummary, type);
-
+    
     try {
       const aiResponse = await TavernHelper.generate({
-        injects: [
-          {
-            role: 'user',
-            content: prompt,
-            position: 'none',
-            depth: 0,
-          },
-        ],
+        injects: [{
+          role: 'user',
+          content: prompt,
+          position: 'none',
+          depth: 0,
+        }],
         should_stream: false,
       });
 
@@ -109,7 +101,7 @@ class DiaryService {
 
   private buildUpdatePrompt(originalEntries: any[], updatedSummary: string, type: 'small' | 'large'): string {
     const originalContent = originalEntries.map(e => e.raw).join('\n');
-
+    
     return `
       # 任务：智能更新原始日志
       你是一个强大的文本分析与重构AI。用户的总结是对原始日志的修正和提炼。

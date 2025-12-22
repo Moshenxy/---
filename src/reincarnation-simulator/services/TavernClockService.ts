@@ -78,7 +78,7 @@ class TavernClockService {
 
           await lorebookService.appendToEntry('本世历程', logContentToWrite, '\n\n---\n\n');
           console.log(`[TavernClockService] Appended new log (序号: ${newLogEntry.序号}) to "本世历程".`);
-          
+
           // 在更新日志后立即更新记忆系统
           await memoryService.updateMemory(store.worldLog);
         }
@@ -114,7 +114,7 @@ class TavernClockService {
         const settlementContent = Object.entries(settlementData)
           .map(([key, value]) => `${key}|${value}`)
           .join('\n');
-        
+
         await lorebookService.writeToLorebook('往世涟漪', settlementContent, { isEnabled: true, keys: ['往世涟漪'] });
         console.log('[TavernClockService] Wrote settlement data to "往世涟漪".');
 
@@ -140,13 +140,13 @@ class TavernClockService {
       const parsed = parseBlock(summaryContent);
       const title = parsed['标题'] || toastrTitle;
       const description = parsed['描述'] || summaryContent;
-      
+
       const existingSummaries = await lorebookService.readFromLorebook(entryName);
       if (existingSummaries && existingSummaries.includes(description)) {
         console.log(`[TavernClockService] Summary content already exists in "${entryName}". Skipping.`);
         return;
       }
-      
+
       notificationService.info(title, description);
       const formattedSummary = `标题|${title}\n描述|${description}\n标签|${parsed['标签'] || ''}`;
       await lorebookService.appendToEntry(entryName, formattedSummary, '\n\n---\n\n');

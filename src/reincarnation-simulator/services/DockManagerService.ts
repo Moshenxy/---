@@ -71,7 +71,7 @@ class DockManagerService {
       if ((componentState as any)?.title) {
         container.setTitle((componentState as any).title);
       }
-      
+
       // Add a destroy listener to notify LayoutService
       (container as any).on('destroy', () => {
         const panelId = (componentState as any)?.panelId;

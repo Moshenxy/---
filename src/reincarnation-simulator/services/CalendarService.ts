@@ -29,9 +29,7 @@ class CalendarService {
     const user = getCharacterById(store.worldState, store.userId);
     if (user) {
       const scheduleData = safeGetValue(user, '日程', [], false);
-      const validSchedules = Array.isArray(scheduleData)
-        ? scheduleData.flat().filter((s: any) => s && s.ID)
-        : [];
+      const validSchedules = Array.isArray(scheduleData) ? scheduleData.flat().filter((s: any) => s && s.ID) : [];
       this.schedules.splice(0, this.schedules.length, ...validSchedules);
     }
   }
@@ -46,7 +44,7 @@ class CalendarService {
     if (item.描述) command += `，描述为“${item.描述}”`;
     if (item.ID && action !== '添加') command += ` (ID: ${item.ID})`;
     command += '。';
-    
+
     store.commandCache.push(command);
     console.log(`[CalendarService] Command cached: ${command}`);
   }

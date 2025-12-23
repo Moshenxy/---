@@ -2,13 +2,15 @@ import { ref, watch } from 'vue';
 
 const FOLLOWED_NPCS_STORAGE_KEY = 'reincarnation_followed_npcs';
 
-const followedNpcs = ref(new Set<string>(
-  JSON.parse(localStorage.getItem(FOLLOWED_NPCS_STORAGE_KEY) || '[]')
-));
+const followedNpcs = ref(new Set<string>(JSON.parse(localStorage.getItem(FOLLOWED_NPCS_STORAGE_KEY) || '[]')));
 
-watch(followedNpcs, (newSet) => {
-  localStorage.setItem(FOLLOWED_NPCS_STORAGE_KEY, JSON.stringify(Array.from(newSet)));
-}, { deep: true });
+watch(
+  followedNpcs,
+  newSet => {
+    localStorage.setItem(FOLLOWED_NPCS_STORAGE_KEY, JSON.stringify(Array.from(newSet)));
+  },
+  { deep: true },
+);
 
 export function useFollowSystem() {
   const follow = (npcId: string) => {
@@ -22,7 +24,7 @@ export function useFollowSystem() {
   const isFollowed = (npcId: string) => {
     return followedNpcs.value.has(npcId);
   };
-  
+
   const toggleFollow = (npcId: string) => {
     if (isFollowed(npcId)) {
       unfollow(npcId);

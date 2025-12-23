@@ -150,7 +150,7 @@ class EntityIndexService {
       if (epochId === '$meta') continue;
       const epoch = epochs[epochId];
       const content = get(epoch, '内容', {});
-      
+
       // 索引空间实体
       const locations = get(content, '空间实体', {});
       for (const id in locations) {
@@ -165,7 +165,7 @@ class EntityIndexService {
             epochId,
             source: 'world',
             path: `定义.历史纪元.${epochId}.内容.空间实体`,
-            parentId: loc.所属?.ID || null
+            parentId: loc.所属?.ID || null,
           });
         }
       }
@@ -183,7 +183,7 @@ class EntityIndexService {
             worldId,
             epochId,
             source: 'world',
-            path: `定义.历史纪元.${epochId}.内容.资源`
+            path: `定义.历史纪元.${epochId}.内容.资源`,
           });
         }
       }
@@ -201,13 +201,12 @@ class EntityIndexService {
             worldId,
             epochId,
             source: 'world',
-            path: `定义.历史纪元.${epochId}.内容.文明.势力`
+            path: `定义.历史纪元.${epochId}.内容.文明.势力`,
           });
         }
       }
     }
   }
-
 }
 
 export const entityIndexService = new EntityIndexService();

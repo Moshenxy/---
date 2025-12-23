@@ -14,7 +14,10 @@ function getIndent(line: string): number {
 /**
  * 查找路径。这个版本只查找，不创建。
  */
-function findPathRange(lines: string[], path: string): { startIndex: number; endIndex: number; parentIndent: number } | null {
+function findPathRange(
+  lines: string[],
+  path: string,
+): { startIndex: number; endIndex: number; parentIndent: number } | null {
   const pathParts = path.split('.');
   let searchContext = { lines, offset: 0 };
   let parentIndent = -1;
@@ -23,27 +26,27 @@ function findPathRange(lines: string[], path: string): { startIndex: number; end
   for (const part of pathParts) {
     let found = false;
     // 在当前上下文中查找
-    const relativeIndex = searchContext.lines.findIndex(line => 
-        (parentIndent === -1 || getIndent(line) > parentIndent) && line.trim().startsWith(part + ':')
+    const relativeIndex = searchContext.lines.findIndex(
+      line => (parentIndent === -1 || getIndent(line) > parentIndent) && line.trim().startsWith(part + ':'),
     );
 
     if (relativeIndex !== -1) {
-        const absoluteIndex = searchContext.offset + relativeIndex;
-        const line = lines[absoluteIndex];
-        parentIndent = getIndent(line);
-        lastFoundIndex = absoluteIndex;
-        
-        const blockEnd = findBlockEnd(lines, absoluteIndex, parentIndent);
-        searchContext = {
-            lines: lines.slice(absoluteIndex + 1, blockEnd),
-            offset: absoluteIndex + 1,
-        };
-        found = true;
+      const absoluteIndex = searchContext.offset + relativeIndex;
+      const line = lines[absoluteIndex];
+      parentIndent = getIndent(line);
+      lastFoundIndex = absoluteIndex;
+
+      const blockEnd = findBlockEnd(lines, absoluteIndex, parentIndent);
+      searchContext = {
+        lines: lines.slice(absoluteIndex + 1, blockEnd),
+        offset: absoluteIndex + 1,
+      };
+      found = true;
     }
 
     if (!found) return null;
   }
-  
+
   if (lastFoundIndex === -1) return null;
 
   const endIndex = findBlockEnd(lines, lastFoundIndex, parentIndent);
@@ -51,15 +54,14 @@ function findPathRange(lines: string[], path: string): { startIndex: number; end
 }
 
 function findBlockEnd(lines: string[], startIndex: number, indent: number): number {
-    for (let i = startIndex + 1; i < lines.length; i++) {
-        const line = lines[i];
-        if (line.trim() !== '' && getIndent(line) <= indent) {
-            return i;
-        }
+  for (let i = startIndex + 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (line.trim() !== '' && getIndent(line) <= indent) {
+      return i;
     }
-    return lines.length;
+  }
+  return lines.length;
 }
-
 
 /**
  * 应用“添加”指令，如果路径不存在则自动创建。
@@ -72,12 +74,14 @@ function applyAdd(lines: string[], path: string, contentToAdd: string): string[]
     console.log(`[worldbookUpdater] ADD: 路径 "${path}" 不存在，尝试创建...`);
     const pathParts = path.split('.');
     let currentPath = '';
-    
+
     for (let i = 0; i < pathParts.length; i++) {
       const part = pathParts[i];
       const nextPath = currentPath ? `${currentPath}.${part}` : part;
       if (!findPathRange(lines, nextPath)) {
-        const parentRange = currentPath ? findPathRange(lines, currentPath) : { endIndex: lines.length, parentIndent: -2 };
+        const parentRange = currentPath
+          ? findPathRange(lines, currentPath)
+          : { endIndex: lines.length, parentIndent: -2 };
         if (parentRange) {
           const newKeyIndent = parentRange.parentIndent + 2;
           const newKeyLine = ' '.repeat(newKeyIndent) + part + ':';
@@ -105,7 +109,7 @@ function applyAdd(lines: string[], path: string, contentToAdd: string): string[]
 
   const firstLineIndex = contentLines.findIndex(l => l.trim() !== '');
   if (firstLineIndex === -1) return lines;
-  
+
   const baseContentIndent = getIndent(contentLines[firstLineIndex]);
   const indentShift = targetItemIndent - baseContentIndent;
 
@@ -121,52 +125,54 @@ function applyAdd(lines: string[], path: string, contentToAdd: string): string[]
 
 // ... (applyReplace and applyRemove remain the same)
 function applyReplace(lines: string[], path: string, newContent: string): string[] {
-    const range = findPathRange(lines, path);
-    if (!range) {
-        console.error(`[worldbookUpdater] REPLACE: 无法在内容中找到路径: ${path}`);
-        return lines;
-    }
-    const { startIndex, endIndex, parentIndent } = range;
-    const contentIndent = parentIndent + 2;
-    const contentLines = newContent.split('\n').map(line => ' '.repeat(contentIndent) + line);
-    lines.splice(startIndex + 1, endIndex - (startIndex + 1), ...contentLines);
-    console.log(`[worldbookUpdater] 成功替换路径内容: ${path}`);
+  const range = findPathRange(lines, path);
+  if (!range) {
+    console.error(`[worldbookUpdater] REPLACE: 无法在内容中找到路径: ${path}`);
     return lines;
+  }
+  const { startIndex, endIndex, parentIndent } = range;
+  const contentIndent = parentIndent + 2;
+  const contentLines = newContent.split('\n').map(line => ' '.repeat(contentIndent) + line);
+  lines.splice(startIndex + 1, endIndex - (startIndex + 1), ...contentLines);
+  console.log(`[worldbookUpdater] 成功替换路径内容: ${path}`);
+  return lines;
 }
 
 function applyRemove(lines: string[], path: string, contentToRemove: string): string[] {
-    const range = findPathRange(lines, path);
-    if (!range) {
-        console.error(`[worldbookUpdater] REMOVE: 无法在内容中找到路径: ${path}`);
-        return lines;
-    }
-    const { startIndex, endIndex } = range;
-    const contentToRemoveLines = contentToRemove.trim().split('\n').map(l => l.trim());
-    const blockToSearchIn = lines.slice(startIndex + 1, endIndex);
-    let foundIndexInBlock = -1;
-    for (let i = 0; i <= blockToSearchIn.length - contentToRemoveLines.length; i++) {
-        let isMatch = true;
-        for (let j = 0; j < contentToRemoveLines.length; j++) {
-            if (blockToSearchIn[i + j].trim() !== contentToRemoveLines[j]) {
-                isMatch = false;
-                break;
-            }
-        }
-        if (isMatch) {
-            foundIndexInBlock = i;
-            break;
-        }
-    }
-    if (foundIndexInBlock !== -1) {
-        const removeStartIndex = startIndex + 1 + foundIndexInBlock;
-        lines.splice(removeStartIndex, contentToRemoveLines.length);
-        console.log(`[worldbookUpdater] 成功从路径中移除内容: ${path}`);
-    } else {
-        console.warn(`[worldbookUpdater] REMOVE: 在路径 "${path}" 下未找到要移除的内容。`);
-    }
+  const range = findPathRange(lines, path);
+  if (!range) {
+    console.error(`[worldbookUpdater] REMOVE: 无法在内容中找到路径: ${path}`);
     return lines;
+  }
+  const { startIndex, endIndex } = range;
+  const contentToRemoveLines = contentToRemove
+    .trim()
+    .split('\n')
+    .map(l => l.trim());
+  const blockToSearchIn = lines.slice(startIndex + 1, endIndex);
+  let foundIndexInBlock = -1;
+  for (let i = 0; i <= blockToSearchIn.length - contentToRemoveLines.length; i++) {
+    let isMatch = true;
+    for (let j = 0; j < contentToRemoveLines.length; j++) {
+      if (blockToSearchIn[i + j].trim() !== contentToRemoveLines[j]) {
+        isMatch = false;
+        break;
+      }
+    }
+    if (isMatch) {
+      foundIndexInBlock = i;
+      break;
+    }
+  }
+  if (foundIndexInBlock !== -1) {
+    const removeStartIndex = startIndex + 1 + foundIndexInBlock;
+    lines.splice(removeStartIndex, contentToRemoveLines.length);
+    console.log(`[worldbookUpdater] 成功从路径中移除内容: ${path}`);
+  } else {
+    console.warn(`[worldbookUpdater] REMOVE: 在路径 "${path}" 下未找到要移除的内容。`);
+  }
+  return lines;
 }
-
 
 /**
  * 解析并应用更新指令到现有的世界书内容上。
@@ -183,16 +189,16 @@ export function applyWorldbookUpdates(existingContent: string, modificationComma
     if (addMatch) {
       const path = addMatch[1];
       const contentToAdd = trimmedCommand.substring(addMatch[0].length);
-      
+
       // 核心修复：基于ID的通用防重机制
       const idMatch = contentToAdd.match(/^\s*-\s*ID:\s*(\S+)/m);
       if (idMatch) {
-          const id = idMatch[1];
-          const idCheckPattern = new RegExp(`ID:\\s*${id}`);
-          if (idCheckPattern.test(existingContent)) {
-              console.warn(`[worldbookUpdater] ID "${id}" 已存在，跳过 ADD 防止重复录入。`);
-              continue;
-          }
+        const id = idMatch[1];
+        const idCheckPattern = new RegExp(`ID:\\s*${id}`);
+        if (idCheckPattern.test(existingContent)) {
+          console.warn(`[worldbookUpdater] ID "${id}" 已存在，跳过 ADD 防止重复录入。`);
+          continue;
+        }
       } else if (existingContent.includes(contentToAdd.trim())) {
         // 对没有ID的内容块，保留基于文本的模糊检查
         console.warn(`[worldbookUpdater] 内容已存在 (无ID)，跳过 ADD 防止重复录入。`);
@@ -200,7 +206,7 @@ export function applyWorldbookUpdates(existingContent: string, modificationComma
       }
 
       lines = applyAdd(lines, path, contentToAdd);
-      existingContent = lines.join('\n'); 
+      existingContent = lines.join('\n');
       continue;
     }
 

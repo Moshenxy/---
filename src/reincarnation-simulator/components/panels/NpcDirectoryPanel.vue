@@ -126,7 +126,8 @@ function selectWorld(worldId: string) {
   isWorldListVisible.value = false;
 }
 
-function selectNpc(npc: any) { // 使用 any 类型以接受带有 id 的 npc 对象
+function selectNpc(npc: any) {
+  // 使用 any 类型以接受带有 id 的 npc 对象
   selectedNpc.value = npc;
   selectedNpcId.value = npc.id;
 }
@@ -138,11 +139,15 @@ watch(selectedWorldId, () => {
   selectedNpcId.value = null;
 });
 
-watch(() => npcService.allNpcs.value, () => {
-  if (worlds.value.length === 0) {
-    loadWorlds();
-  }
-}, { deep: true });
+watch(
+  () => npcService.allNpcs.value,
+  () => {
+    if (worlds.value.length === 0) {
+      loadWorlds();
+    }
+  },
+  { deep: true },
+);
 </script>
 
 <style lang="scss" scoped>

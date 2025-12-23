@@ -1,4 +1,5 @@
-o<template>
+o
+<template>
   <div class="panel-wrapper memory-panel-container">
     <div class="panel-content">
       <h3 class="panel-title">世界记忆系统</h3>
@@ -218,7 +219,7 @@ button {
 
 .memory-content {
   flex-grow: 1;
-  
+
   textarea {
     width: 100%;
     height: 100%;

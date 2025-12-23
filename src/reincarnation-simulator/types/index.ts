@@ -13,13 +13,12 @@ export type ExtensibleObject<T> = {
   $meta?: { extensible: true; description?: string };
 };
 
-
 // --- 核心数据实体接口 ---
 
 export interface RelationshipVector {
-  认知层: { 可靠度: number; 能力评价: number; 威胁度: number; };
-  情感层: { 亲近感: number; 仰慕度: number; };
-  利益层: { 资源价值: number; 合作潜力: number; 利益冲突: number; };
+  认知层: { 可靠度: number; 能力评价: number; 威胁度: number };
+  情感层: { 亲近感: number; 仰慕度: number };
+  利益层: { 资源价值: number; 合作潜力: number; 利益冲突: number };
   社会层: {
     名义关系: ExtensibleObject<string>;
     阶级差异: number;
@@ -62,14 +61,14 @@ export interface Character {
   };
 
   心流: {
-    情绪状态: { 喜悦: number; 悲伤: number; 愤怒: number; 恐惧: number; };
+    情绪状态: { 喜悦: number; 悲伤: number; 愤怒: number; 恐惧: number };
     核心需求: string;
     秘密: ExtensibleObject<{ 内容: string; 揭露条件: string }>;
     短期记忆: ExtensibleObject<any>;
     驱动力: {
       长期目标: ExtensibleObject<{ 名称: string; 动机: string; 状态: string }>;
       短期目标: ExtensibleObject<{ 名称: string; 动机: string; 状态: string }>;
-      决策倾向: { 常规: string; 优势时: string; 险境时: string; 面对利益时: string; };
+      决策倾向: { 常规: string; 优势时: string; 险境时: string; 面对利益时: string };
     };
     生活模式: {
       核心活动: ExtensibleObject<{ 基础意愿: number }>;
@@ -82,8 +81,8 @@ export interface Character {
 
   技艺?: { [skillId: string]: { 等级: number; 经验值: number } };
 
-  基础潜力: { 精: number; 气: number; 神: number; 运: number; };
-  战斗参数: { 权能: number; 根基: number; 机变: number; 破法: number; 御法: number; };
+  基础潜力: { 精: number; 气: number; 神: number; 运: number };
+  战斗参数: { 权能: number; 根基: number; 机变: number; 破法: number; 御法: number };
 
   当前状态: ExtensibleObject<any>;
   背包: { [itemId: string]: number };
@@ -101,7 +100,7 @@ export interface Character {
 export interface SpatialEntity {
   名称: string;
   层级类型: string;
-  所属: { ID: string; 类型: string; };
+  所属: { ID: string; 类型: string };
   面积?: [number, string];
   描述: string;
   相对坐标: {
@@ -123,7 +122,7 @@ export interface WorldEpoch extends Omit<Epoch, '内容' | '规则' | '力量体
   内容?: {
     空间实体?: ExtensibleObject<SpatialEntity>;
     [key: string]: any;
-  }
+  };
 }
 
 export interface World {
@@ -152,7 +151,6 @@ export interface World {
     [id: string]: Character;
   };
 }
-
 
 // --- 状态管理相关接口 ---
 

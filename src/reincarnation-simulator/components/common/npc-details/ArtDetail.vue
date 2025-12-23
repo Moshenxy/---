@@ -7,18 +7,18 @@
     </div>
     <p class="art-description">{{ art.描述 }}</p>
     <div class="effects">
-      <p><strong>效果:</strong> {{ art.效果描述 }}</p>
-      <p><strong>公式:</strong> {{ art.效果等级公式 }}</p>
+        <p><strong>效果:</strong> {{ art.效果描述 }}</p>
+        <p><strong>公式:</strong> {{ art.效果等级公式 }}</p>
     </div>
 
     <div class="skills-section" v-if="skills.length > 0">
-      <h5>下属技能</h5>
-      <ul>
-        <li v-for="skill in skills" :key="skill.ID">
-          <strong>{{ skill.名称 }} ({{ skill.类型 }})</strong>
-          <p>{{ skill.描述 }}</p>
-        </li>
-      </ul>
+        <h5>下属技能</h5>
+        <ul>
+            <li v-for="skill in skills" :key="skill.ID">
+                <strong>{{ skill.名称 }} ({{ skill.类型 }})</strong>
+                <p>{{ skill.描述 }}</p>
+            </li>
+        </ul>
     </div>
   </div>
 </template>
@@ -32,11 +32,12 @@ const props = defineProps<{
 }>();
 
 const skills = computed(() => {
-  const database = store.worldState?.数据库;
-  if (!database || !('技能' in database)) return [];
-  const skillDb = database.技能 as Record<string, any>;
-  return Object.values(skillDb).filter(skill => skill.关联技艺 === props.art.ID);
+    const database = store.worldState?.数据库;
+    if (!database || !('技能' in database)) return [];
+    const skillDb = database.技能 as Record<string, any>;
+    return Object.values(skillDb).filter(skill => skill.关联技艺 === props.art.ID);
 });
+
 </script>
 
 <style lang="scss" scoped>
@@ -72,41 +73,31 @@ const skills = computed(() => {
   color: $color-grey-stone;
 }
 .effects {
-  background: rgba($color-black-void, 0.3);
-  padding: $spacing-md;
-  border-radius: $border-radius-sm;
-  margin-bottom: $spacing-lg;
-  p {
-    margin: 0 0 $spacing-sm 0;
-  }
-  strong {
-    color: $color-cyan-tian;
-  }
+    background: rgba($color-black-void, 0.3);
+    padding: $spacing-md;
+    border-radius: $border-radius-sm;
+    margin-bottom: $spacing-lg;
+    p { margin: 0 0 $spacing-sm 0; }
+    strong { color: $color-cyan-tian; }
 }
 .skills-section {
-  margin-top: $spacing-xl;
-  h5 {
-    color: $color-gold-pale;
-    font-family: $font-family-title;
-    border-bottom: 1px solid rgba($color-gold-liu, 0.3);
-    padding-bottom: $spacing-sm;
-    margin-bottom: $spacing-md;
-  }
-  ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  li {
-    margin-bottom: $spacing-md;
-    strong {
-      color: $color-white-moon;
+    margin-top: $spacing-xl;
+    h5 {
+        color: $color-gold-pale;
+        font-family: $font-family-title;
+        border-bottom: 1px solid rgba($color-gold-liu, 0.3);
+        padding-bottom: $spacing-sm;
+        margin-bottom: $spacing-md;
     }
-    p {
-      margin: $spacing-xs 0 0 0;
-      color: $color-grey-stone;
-      font-size: $font-size-small;
+    ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
     }
-  }
+    li {
+        margin-bottom: $spacing-md;
+        strong { color: $color-white-moon; }
+        p { margin: $spacing-xs 0 0 0; color: $color-grey-stone; font-size: $font-size-small; }
+    }
 }
 </style>

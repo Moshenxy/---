@@ -1,5 +1,4 @@
-o
-<template>
+o<template>
   <div class="panel-wrapper memory-panel-container">
     <div class="panel-content">
       <h3 class="panel-title">世界记忆系统</h3>
@@ -50,7 +49,8 @@ o
 
 <script setup lang="ts">
 import * as toastr from 'toastr';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { eventBus } from '../../services/EventBus';
 import { lorebookService } from '../../services/LorebookService';
 import { memoryService } from '../../services/MemoryService';
 import { store } from '../../store';
@@ -105,6 +105,17 @@ async function forceUpdate() {
 onMounted(() => {
   config.value = memoryService.getConfig();
   fetchMemoryContent();
+
+  // 订阅记忆更新事件
+  const handleMemoryUpdate = () => {
+    console.log('[MemoryPanel] Received memory-updated event. Refreshing content...');
+    fetchMemoryContent(true);
+  };
+  eventBus.on('memory-updated', handleMemoryUpdate);
+
+  onUnmounted(() => {
+    eventBus.off('memory-updated', handleMemoryUpdate);
+  });
 });
 </script>
 
@@ -207,7 +218,7 @@ button {
 
 .memory-content {
   flex-grow: 1;
-
+  
   textarea {
     width: 100%;
     height: 100%;

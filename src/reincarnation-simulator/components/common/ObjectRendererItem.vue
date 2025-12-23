@@ -14,7 +14,7 @@
       <template v-else-if="isSimpleValue(value)">
         <span class="object-value">{{ value.value }}</span>
       </template>
-
+      
       <!-- Case 3: Data Item (ID, 名称, 描述) -->
       <template v-else-if="isDataItem(value)">
         <div class="data-item">
@@ -24,19 +24,14 @@
           </div>
         </div>
       </template>
-
+      
       <!-- Case 4: Recursive Object -->
       <template v-else-if="isObject(value)">
         <ul :class="{ 'multi-column': Object.keys(value).length > 4 }">
-          <ObjectRendererItem
-            v-for="(subValue, subKey) in filterMeta(value)"
-            :key="subKey"
-            :item-key="String(subKey)"
-            :value="subValue"
-          />
+           <ObjectRendererItem v-for="(subValue, subKey) in filterMeta(value)" :key="subKey" :item-key="String(subKey)" :value="subValue" />
         </ul>
       </template>
-
+      
       <!-- Case 4: Primitive Value -->
       <template v-else>
         <span class="object-value">{{ value }}</span>

@@ -4,10 +4,10 @@ import { commandService } from '../services/CommandService';
 import { contextService } from '../services/ContextService';
 import { lorebookService } from '../services/LorebookService';
 import { memoryService } from '../services/MemoryService';
+import { saveLoadService } from '../services/saveLoadService';
 import { notificationService } from '../services/NotificationService';
 import { serviceLocator } from '../services/service-locator';
 import { tavernService } from '../services/tavern';
-import { TavernClockService, tavernClockService } from '../services/TavernClockService';
 import { workflowService } from '../services/WorkflowService';
 import { worldEvolutionService } from '../services/WorldEvolutionService';
 import { worldUpdateService } from '../services/WorldUpdateService';
@@ -47,7 +47,6 @@ function sanitizeStateData(data: any): any {
 
 let lastProcessedMessageId: string | null = null; // 使用消息ID来防止重复处理
 let isLogHistoryLoaded = false; // Flag to ensure history is loaded only once
-let isProcessingAction = false; // 防止更新循环的状态标志
 const ZOD_ERROR_NOTIFIED_KEY = 'zodErrorNotified';
 let isZodErrorNotified = sessionStorage.getItem(ZOD_ERROR_NOTIFIED_KEY) === 'true';
 
@@ -278,9 +277,34 @@ async function fetchCoreData() {
         }
       }
 
-      // 只有当消息ID是新的时，才处理副作用
-      if (currentMessageId !== lastProcessedMessageId) {
-        lastProcessedMessageId = currentMessageId;
+      // 仅当消息内容发生变化时，才处理摘要和选项
+      if (fullMessageContent) {
+        // 提取并显示所有摘要
+        const mainWorldSummaryRegex = /<主世界摘要>([\s\S]+?)<\/主世界摘要>/g;
+        const avatarWorldSummaryRegex = /<化身世界摘要>([\s\S]+?)<\/化身世界摘要>/g;
+        let match;
+
+        if ((match = mainWorldSummaryRegex.exec(fullMessageContent)) !== null) {
+          notificationService.info('主世界动态', match[1].trim());
+        }
+        if ((match = avatarWorldSummaryRegex.exec(fullMessageContent)) !== null) {
+          notificationService.info('化身世界动态', match[1].trim());
+        }
+
+        // 提取并处理可选化身
+        const avatarOptionsMatch = fullMessageContent.match(/<可选化身>([\s\S]+?)<\/可选化身>/i);
+        if (avatarOptionsMatch) {
+          const parser = new DOMParser();
+          const xmlDoc = parser.parseFromString(`<root>${avatarOptionsMatch[1]}</root>`, 'application/xml');
+          const avatars = Array.from(xmlDoc.getElementsByTagName('化身')).map(el => {
+            return {
+              姓名: el.getElementsByTagName('姓名')[0]?.textContent || '未知',
+              身份: el.getElementsByTagName('身份')[0]?.textContent || '未知',
+              简介: el.getElementsByTagName('简介')[0]?.textContent || '未知',
+            };
+          });
+          store.reincarnationAvatarOptions = avatars;
+        }
       }
     }
   } catch (error) {
@@ -424,19 +448,17 @@ async function processAiResponse(response: string, prefixedInput: string) {
       };
     });
     store.reincarnationAvatarOptions = avatars;
+
+    // 可以在这里自动切换到“可选化身”标签页
+    // 但为了更好的控制，暂时只缓存数据
   }
+
+  // 注意：世界书标签的处理逻辑已移至 fetchCoreData，以捕获轮询更新
+  // 这里保留变量更新脚本的处理
 
   // 4. 提取并执行变量更新脚本
   const updateScriptMatch = response.match(/<UpdateVariable>([\s\S]+?)<\/UpdateVariable>/i);
   let updateScript = updateScriptMatch ? updateScriptMatch[1].trim() : null;
-
-  // [Roo-Fix] 提取并缓存 JSONPatch 内容
-  if (updateScript) {
-    const jsonPatchMatch = updateScript.match(/<JSONPatch>([\s\S]+?)<\/JSONPatch>/i);
-    if (jsonPatchMatch && jsonPatchMatch[1]) {
-      workflowService.cacheLastJsonPatch(jsonPatchMatch[1].trim());
-    }
-  }
 
   // 暂存逻辑：如果回复中包含 gametxt 或 updateScript，则进行缓存
   if (narrative) {
@@ -444,6 +466,12 @@ async function processAiResponse(response: string, prefixedInput: string) {
   }
   if (updateScript) {
     workflowService.cacheUpdateScript(updateScript);
+    // 提取并缓存 JSONPatch 内容
+    const jsonPatchMatch = response.match(/<JSONPatch>([\s\S]*?)<\/JSONPatch>/i);
+    if (jsonPatchMatch && jsonPatchMatch[1]) {
+      // @ts-ignore
+      workflowService.cacheJsonPatch(jsonPatchMatch[1].trim());
+    }
   }
 
   // [Roo-Fix] 移除错误的恢复逻辑，拼接操作已移至 handleAction
@@ -529,8 +557,6 @@ async function handleAction(actionText: string, isReroll = false) {
     await saveLoadService.saveStateForReroll();
   }
 
-  isProcessingAction = true;
-  silentUpdater.stop(); // 暂停后台轮询
   store.isGenerating = true;
   try {
     // 【始】环: 观过去之因，定今日之果
@@ -550,12 +576,13 @@ async function handleAction(actionText: string, isReroll = false) {
 
     console.log('[Actions] Generating AI response with lean context variables informed by world pulse.');
 
-    // [Roo-Fix] 将上一轮的JSONPatch附加到本次行动的文本中
-    const lastJsonPatch = workflowService.popLastJsonPatch();
+    // 【复盘机制】获取上一次的JSONPatch并拼接到输入中
+    // @ts-ignore
+    const lastJsonPatch = workflowService.popJsonPatch();
     let finalActionText = actionText;
     if (lastJsonPatch) {
-      finalActionText = `<上轮变量变更>\n<JSONPatch>\n${lastJsonPatch}\n</JSONPatch>\n</上轮变量变更>\n\n${actionText}`;
-      console.log('[Actions] Appending last JSONPatch to the new prompt.');
+      finalActionText = `<上次更新的变量>\n${lastJsonPatch}\n</上次更新的变量>\n\n【本次行动】:\n${actionText}`;
+      console.log('[Review] Sending last JSON patch for AI review.');
     }
 
     // 发送最终 Prompt 给 AI
@@ -571,13 +598,12 @@ async function handleAction(actionText: string, isReroll = false) {
     // 3. 使用拼接后的完整响应进行后续处理
     await processAiResponse(finalResponseString, actionText);
 
-    // 5. [Roo-Fix] 将世界书写入操作集中到此处
-    await tavernClockService.processAfterTick(finalResponseString);
+    // 4. 核心修复：在这里同步处理世界书写入和自动存档
+    await _processAndSaveLorebookTags(finalResponseString);
+    await memoryService.updateMemory(store.worldLog); // 更新记忆系统
+    await saveLoadService.performAutoSave(); // 执行自动存档
 
-    // 6. 更新世界记忆系统 (已移动到 TavernClockService 中)
-    // await memoryService.updateMemory(store.worldLog);
-
-    // 7. 保存拼接后的完整响应到消息记录
+    // 6. 保存拼接后的完整响应到消息记录
     const messages = await tavernService.fetchTavernData();
     if (messages && messages.length > 0) {
       const messageZero = messages[0];
@@ -624,8 +650,6 @@ async function handleAction(actionText: string, isReroll = false) {
     store.generationError = `AI响应失败: ${errorMessage}`;
     notificationService.error('操作失败', '与AI交互失败，请检查控制台。');
   } finally {
-    isProcessingAction = false;
-    silentUpdater.start(loadAllData, 5000); // 恢复后台轮询
     // 延迟一小段时间再关闭加载界面，以便用户能看到错误信息
     if (store.generationError) {
       setTimeout(() => {
@@ -648,10 +672,6 @@ function initializeEventListeners() {
 
   // 监听AI生成结束事件
   eventOn(tavern_events.GENERATION_ENDED, () => {
-    if (isProcessingAction) {
-      console.log('[Store] Action in progress, skipping redundant data load from GENERATION_ENDED event.');
-      return;
-    }
     console.log('[Store] Generation ended. Scheduling data fetch and error check.');
 
     // 增加延迟以确保酒馆助手的日志完全写入
@@ -699,7 +719,7 @@ function initializeEventListeners() {
   });
 
   // 启动静默更新轮询
-  silentUpdater.start(loadAllData, 5000); // 5秒轮询一次
+  // silentUpdater.start(loadAllData, 5000); // 5秒轮询一次
 
   isInitialized = true;
   console.log('[Store] Data synchronization listeners and polling are active.');
@@ -891,6 +911,77 @@ export const actions = {
 /**
  * 提取键值对的辅助函数
  */
+async function _processAndSaveLorebookTags(fullMessageContent: string) {
+  if (!fullMessageContent) return;
+
+  console.log('[Actions] Processing and saving lorebook tags...');
+  let match;
+  const processLogRegex = /<本世历程>([\s\S]+?)<\/本世历程>/g;
+  const settlementRegex = /<往世涟漪>([\s\S]+?)<\/往世涟漪>/g;
+
+  // 解析 <本世历程>
+  while ((match = processLogRegex.exec(fullMessageContent)) !== null) {
+    const block = parseBlock(match[1]);
+    if (!block['序号'] || isNaN(parseInt(block['序号'], 10))) continue;
+
+    const newLogEntry: any = {
+      ...block,
+      序号: parseInt(block['序号'], 10),
+      标签: block['标签']
+        ? block['标签']
+            .replace(/[[\]"]/g, '')
+            .split('|') // 使用 | 作为分隔符
+            .map(t => t.trim())
+            .filter(t => t)
+        : [],
+    };
+
+    const isDuplicate = store.worldLog.some(log => log.序号 === newLogEntry.序号);
+    if (!isDuplicate) {
+      store.worldLog.push(newLogEntry);
+    }
+  }
+
+  if (store.worldLog.length > 0) {
+    store.worldLog.sort((a, b) => a.序号 - b.序号);
+    const latestLog = store.worldLog[store.worldLog.length - 1];
+    const existingLogs = await lorebookService.readFromLorebook('本世历程');
+    const newLogContent = Object.entries(latestLog)
+      .map(([key, value]) => `${key}|${Array.isArray(value) ? value.join('|') : value}`)
+      .join('\n');
+
+    if (!existingLogs || !existingLogs.includes(`序号|${latestLog.序号}`)) {
+      console.log(`[Actions] Appending new log (序号: ${latestLog.序号}) to "本世历程".`);
+      await lorebookService.appendToEntry('本世历程', newLogContent, '\n\n---\n\n');
+    }
+  }
+
+  // 解析 <往世涟漪>
+  if ((match = settlementRegex.exec(fullMessageContent)) !== null) {
+    const block = parseBlock(match[1]);
+    const settlementData = {
+      第x世: parseInt(block['第x世'], 10) || 0,
+      事件脉络: block['事件脉络'] || '',
+      本世概述: block['本世概述'] || '',
+      本世成就: block['本世成就'] || '',
+      本世遗珍: block['本世遗珍'] || '',
+      红尘羁绊: block['红尘羁绊'] || '',
+      陨落之因: block['陨落之因'] || '',
+      真我一念: block['真我一念'] || '',
+      涟漪余波: block['涟漪余波'] || '',
+    };
+    store.settlementData = settlementData;
+
+    const settlementContent = Object.entries(settlementData)
+      .map(([key, value]) => `${key}|${value}`)
+      .join('\n');
+    await lorebookService.writeToLorebook('往世涟漪', settlementContent, { isEnabled: true, keys: ['往世涟漪'] });
+
+    await lorebookService.writeToLorebook('本世历程', '', { isEnabled: true, keys: ['本世历程'] });
+    store.worldLog = [];
+  }
+}
+
 function parseBlock(block: string): { [key: string]: string } {
   const data: { [key: string]: string } = {};
   const lines = block.trim().split('\n');

@@ -30,12 +30,7 @@ const allNpcs = computed(() => {
       }
       // 确保我们不会将玩家本体对象本身错误地加入NPC列表
       // Additional check to prevent player character from being listed as NPC
-      if (
-        charId === '本体' ||
-        (worldState.玩家 &&
-          worldState.玩家.本体 &&
-          (world.角色 as Record<string, any>)[charId] === worldState.玩家.本体)
-      ) {
+      if (charId === '本体' || (worldState.玩家 && worldState.玩家.本体 && (world.角色 as Record<string, any>)[charId] === worldState.玩家.本体)) {
         continue;
       }
       allNpcs.push(world.角色[charId]);
@@ -72,7 +67,7 @@ async function initializeWorldAndLocationData(): Promise<{ id: string; name: str
 
     const world = (worlds as Record<string, any>)[worldId];
     const worldName = get(world, '名称');
-
+    
     if (worldId && worldName) {
       worldInfoList.push({ id: worldId, name: worldName });
     }
@@ -95,7 +90,7 @@ async function initializeWorldAndLocationData(): Promise<{ id: string; name: str
       }
     }
   }
-
+  
   console.log('[NpcService] Initialized worlds and locations from worldState.', worldInfoList);
   return worldInfoList;
 }

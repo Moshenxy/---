@@ -6,12 +6,8 @@
     </div>
     <div class="course-info">
       <h3 class="course-name">{{ course.课程名称 }}</h3>
-      <p class="course-teacher">
-        <i class="fas fa-user-tie"></i> {{ course.教师 }}
-      </p>
-      <p class="course-location">
-        <i class="fas fa-map-marker-alt"></i> {{ course.教室ID }}
-      </p>
+      <p class="course-teacher"><i class="fas fa-user-tie"></i> {{ course.教师 }}</p>
+      <p class="course-location"><i class="fas fa-map-marker-alt"></i> {{ course.教室ID }}</p>
     </div>
   </div>
 </template>

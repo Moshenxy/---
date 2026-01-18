@@ -1,9 +1,7 @@
 <template>
   <div class="world-vision-container">
     <h2 class="title">世界构想</h2>
-    <p class="description">
-      请在此输入您对本次轮回世界的初步构想与期望，AI将根据您的描述，为您量身推演出数个独特的开局演化方案。
-    </p>
+    <p class="description">请在此输入您对本次轮回世界的初步构想与期望，AI将根据您的描述，为您量身推演出数个独特的开局演化方案。</p>
     <textarea
       v-model="visionText"
       class="vision-textarea"

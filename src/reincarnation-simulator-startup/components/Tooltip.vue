@@ -21,7 +21,7 @@ const visible = ref(false);
 const tooltipTop = ref('0px');
 const tooltipLeft = ref('0px');
 
-const showTooltip = event => {
+const showTooltip = (event) => {
   const rect = event.target.getBoundingClientRect();
   tooltipTop.value = `${rect.bottom + 8}px`; // 增加一点距离
   tooltipLeft.value = `${rect.left}px`;

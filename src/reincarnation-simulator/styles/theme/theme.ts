@@ -1,6 +1,6 @@
 // [Theme] Reincarnation Simulator - Visual Recast
 // File: theme.ts
-// Desc: Exports the SCSS color variables as a JavaScript object 
+// Desc: Exports the SCSS color variables as a JavaScript object
 //       for use in TypeScript files.
 
 export const themeColors = {

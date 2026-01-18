@@ -45,8 +45,8 @@ export function yamlToHtml(text: string): string {
           html += `<h4>${key}</h4>`;
         }
       } else {
-         // 没有冒号的行，作为普通段落
-         html += `<p>${trimmedLine}</p>`;
+        // 没有冒号的行，作为普通段落
+        html += `<p>${trimmedLine}</p>`;
       }
     }
   });
@@ -63,13 +63,13 @@ export function yamlToHtml(text: string): string {
  * 格式化单行内容，将 "key: value" 转换为 "<strong>key:</strong> value"
  */
 function formatLine(line: string): string {
-    const separatorIndex = line.indexOf(':');
-    if(separatorIndex > -1) {
-        const key = line.substring(0, separatorIndex).trim();
-        const value = line.substring(separatorIndex + 1).trim();
-        if (key && value) {
-            return `<strong>${key}:</strong> ${value}`;
-        }
+  const separatorIndex = line.indexOf(':');
+  if (separatorIndex > -1) {
+    const key = line.substring(0, separatorIndex).trim();
+    const value = line.substring(separatorIndex + 1).trim();
+    if (key && value) {
+      return `<strong>${key}:</strong> ${value}`;
     }
-    return line;
+  }
+  return line;
 }

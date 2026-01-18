@@ -34,8 +34,16 @@ class WorldMapDataService {
       console.warn(`WorldMapDataService: 在纪元 "${epoch.纪元名称}" 中没有找到 "空间实体" 数据。`);
       return null;
     }
+    
+    // 使用 Object.keys 和 for...in 循环来替代 Object.values
+    const entitiesArray: SpatialEntity[] = [];
+    for (const key in spatialEntities) {
+      if (key !== '$meta' && Object.prototype.hasOwnProperty.call(spatialEntities, key)) {
+        entitiesArray.push({ ...(spatialEntities as any)[key], ID: key });
+      }
+    }
 
-    const hierarchy = this.buildHierarchy(Object.values(spatialEntities));
+    const hierarchy = this.buildHierarchy(entitiesArray);
     (hierarchy as any).cacheKey = cacheKey; // Attach cache key
     this.hierarchyCache = hierarchy;
     return this.hierarchyCache;
@@ -73,11 +81,12 @@ class WorldMapDataService {
 
     // 2. 构建层级关系并识别根节点
     for (const node of nodeMap.values()) {
+       // A node is a root node if it has no parentId, its parentId is 'WORLD_ORIGIN',
+       // or its parent is not found in the map (it's an orphan, treat as root).
       const parent = node.parentId ? nodeMap.get(node.parentId) : null;
       if (parent) {
         parent.children.push(node);
       } else {
-        // 如果没有父节点，或者父节点是 'WORLD_ORIGIN'，则其为顶级节点
         rootNodes.push(node);
       }
     }

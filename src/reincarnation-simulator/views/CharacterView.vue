@@ -4,7 +4,10 @@
       <div class="section-title">基础属性</div>
       <div id="base-attributes-list" class="attributes-list">
         <template v-for="(attr, key) in baseAttributes.value" :key="key">
-          <AttributeDisplay :name="String(key)" :value="`${attr.值} / ${attr.软上限}`" />
+          <AttributeDisplay
+            :name="String(key)"
+            :value="`${attr.值} / ${attr.软上限}`"
+          />
         </template>
       </div>
     </div>
@@ -40,13 +43,18 @@
     <div class="panel-section">
       <div class="section-title">天赋与特长</div>
       <div id="talents-list" class="attributes-list">
-        <AttributeDisplay v-for="(talent, index) in talents" :key="index" :name="talent.名称" :value="talent.描述" />
+        <AttributeDisplay
+          v-for="(talent, index) in talents"
+          :key="index"
+          :name="talent.名称"
+          :value="talent.描述"
+        />
       </div>
     </div>
     <div class="panel-section">
       <div class="section-title">今日课程</div>
       <div id="schedule-list" class="attributes-list">
-        <AttributeDisplay
+         <AttributeDisplay
           v-for="(course, index) in todayCourses"
           :key="index"
           :name="course.标题"
@@ -58,8 +66,10 @@
       <div class="section-title">人际关系</div>
       <div id="relations-list" class="attributes-list">
         <div v-for="(rel, name) in relationships.value" :key="name" class="attribute-item">
-          <span class="attribute-name">{{ name }}</span>
-          <span class="attribute-value"> 亲密:{{ rel.亲密 }} 信赖:{{ rel.信赖 }} </span>
+            <span class="attribute-name">{{ name }}</span>
+            <span class="attribute-value">
+                亲密:{{ rel.亲密 }} 信赖:{{ rel.信赖 }}
+            </span>
         </div>
       </div>
     </div>

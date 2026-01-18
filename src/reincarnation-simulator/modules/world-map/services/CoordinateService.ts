@@ -53,32 +53,30 @@ class CoordinateService {
    */
   private parseAzimuth(azimuthValue: string | (string | number)[]): number | null {
     try {
-      let parts: (string | number)[] = [];
+      let baseDirection: string;
+      let offsetDegrees = 0;
 
       if (Array.isArray(azimuthValue)) {
-        parts = azimuthValue;
+        baseDirection = String(azimuthValue[0]).trim();
+        offsetDegrees = azimuthValue.length > 1 ? Number(azimuthValue[1]) : 0;
       } else if (typeof azimuthValue === 'string') {
-        const content = azimuthValue.trim().slice(1, -1);
-        const matches = content.match(/'[^']*'|"[^"]*"|[^,\s]+/g);
-        if (matches) {
-          parts = matches.map(part => part.replace(/['"]/g, ''));
-        }
-      }
-
-      if (parts.length === 0) {
-        console.warn(`[CoordinateService] 无法从输入中解析出任何有效部分:`, azimuthValue);
+        // Handle cases like "['东南', 10]" or just "东南"
+        const cleanedValue = azimuthValue.replace(/[[\]'"]/g, '').trim();
+        const parts = cleanedValue.split(',');
+        baseDirection = parts[0].trim();
+        offsetDegrees = parts.length > 1 ? Number(parts[1]) : 0;
+      } else {
+        console.warn('[CoordinateService] 无效的方位角输入类型:', azimuthValue);
         return null;
       }
 
-      // 最终修复：彻底清理方向字符串，移除所有括号、引号和多余空格
-      const baseDirection = String(parts[0])
-        .replace(/[[\]'"]/g, '')
-        .trim();
-      // 核心修复：如果数组只有一个元素，则将角度偏移量默认为 0
-      const offsetDegrees = parts.length > 1 ? Number(parts[1]) : 0;
+      if (!baseDirection) {
+        console.warn('[CoordinateService] 无法从输入中解析出基本方向:', azimuthValue);
+        return null;
+      }
 
       if (isNaN(offsetDegrees)) {
-        console.warn(`[CoordinateService] 方位中的角度值不是一个有效的数字:`, parts[1]);
+        console.warn(`[CoordinateService] 方位中的角度值不是一个有效的数字:`, azimuthValue);
         // 即使角度无效，也尝试仅使用基础方向进行渲染
         const baseAngle = this.baseAngleMap.get(baseDirection);
         return baseAngle !== undefined ? baseAngle : null;

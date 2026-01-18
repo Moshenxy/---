@@ -233,20 +233,38 @@ watch(
 );
 
 onMounted(async () => {
-  const worldData = (await lorebookService.loadAndParseWorldData('化身世界')) as WorldDefinition | null;
-  if (worldData) {
-    mapActions.setWorldData(worldData);
-    fullHierarchy.value = worldMapDataService.getMapHierarchy(worldData);
+  try {
+    const activeEpoch = await lorebookService.loadAndParseWorldData('化身世界');
+    if (activeEpoch) {
+      fullHierarchy.value = worldMapDataService.getMapHierarchy(activeEpoch);
+    } else {
+      console.error('AvatarWorldMapView: Failed to load or parse avatar world epoch data.');
+    }
+  } catch (error) {
+    console.error('AvatarWorldMapView: Error in onMounted:', error);
   }
 
-  // 设置玩家和化身位置
-  if (store.worldState) {
-    const avatarId = store.worldState.模拟器?.模拟?.当前化身ID?.[0];
-    const userLocation = store.worldState.角色?.[store.userId]?.当前位置?.[0] || null;
-    const avatarLocation =
-      avatarId && store.worldState.角色?.[avatarId] ? store.worldState.角色[avatarId].当前位置?.[0] || null : null;
-    mapActions.setPlayerLocations({ user: userLocation, avatar: avatarLocation });
-  }
+  // Watch for worldState updates to set player locations
+  watch(
+    () => store.worldState,
+    newState => {
+      if (!newState) return;
+      const avatarId = newState.玩家?.模拟器?.模拟?.当前化身ID;
+      const userLocation = newState.玩家?.本体?.当前位置 || null;
+      let avatarLocation: string | null = null;
+      if (avatarId && newState.世界) {
+        for (const world of Object.values(newState.世界)) {
+          const foundAvatar = world.角色?.[avatarId];
+          if (foundAvatar) {
+            avatarLocation = foundAvatar.当前位置 || null;
+            break;
+          }
+        }
+      }
+      mapActions.setPlayerLocations({ user: userLocation, avatar: avatarLocation });
+    },
+    { immediate: true, deep: true },
+  );
 
   if (svgRef.value) {
     const { width, height } = svgRef.value.getBoundingClientRect();

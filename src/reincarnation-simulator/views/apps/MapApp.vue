@@ -308,18 +308,18 @@ async function loadMapData() {
 
       // Custom centering logic
       if (!mapContainer.value) return;
-      const mapContainerRect = mapContainer.value.getBoundingClientRect();
-      const sidebarWidth = isFilterSidebarOpen.value ? 220 : 0;
-      const viewbox = {
-        left: sidebarWidth,
-        top: 0,
-        width: mapContainerRect.width - sidebarWidth,
-        height: mapContainerRect.height,
-      };
+       const mapContainerRect = mapContainer.value.getBoundingClientRect();
+       const sidebarWidth = isFilterSidebarOpen.value ? 220 : 0;
+       const viewbox = {
+           left: sidebarWidth,
+           top: 0,
+           width: mapContainerRect.width - sidebarWidth,
+           height: mapContainerRect.height,
+       };
 
-      panzoomInstance.showRectangle(rect, {
-        viewbox,
-      });
+       panzoomInstance.showRectangle(rect, {
+           viewbox,
+       });
 
       // The 'transform' event will handle updating panState
       // But we need to ensure it's updated for the first render

@@ -67,14 +67,17 @@ const worldAttributes = computed(() => {
   for (const attrId in npcAttributes) {
     if (attrId === '$meta') continue;
 
-    const template = attributeTemplates ? (attributeTemplates as Record<string, any>)[attrId] : null;
-    const attributeName = template?.名称 || attrId;
-
-    // 如果模板中没有名称，并且原始值是对象，则直接使用原始对象
-    if (!template?.名称 && typeof npcAttributes[attrId] === 'object' && npcAttributes[attrId] !== null) {
-      resolvedAttributes[attrId] = npcAttributes[attrId];
+    const attributeValue = npcAttributes[attrId];
+    
+    // 如果属性值本身就是一个包含名称和描述的复杂对象
+    if (typeof attributeValue === 'object' && attributeValue !== null && '名称' in attributeValue && '描述' in attributeValue) {
+      // 使用它自己的名称作为key，并将整个对象作为value
+      resolvedAttributes[attributeValue.名称] = attributeValue;
     } else {
-      resolvedAttributes[attributeName] = npcAttributes[attrId];
+      // 否则，回退到从模板查找名称
+      const template = attributeTemplates ? (attributeTemplates as Record<string, any>)[attrId] : null;
+      const attributeName = template?.名称 || attrId;
+      resolvedAttributes[attributeName] = attributeValue;
     }
   }
   return resolvedAttributes;

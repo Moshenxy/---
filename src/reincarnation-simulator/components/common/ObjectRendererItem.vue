@@ -1,5 +1,9 @@
 <template>
-  <li>
+  <!-- ComplexAttribute is a self-contained block, so it's rendered at the top level -->
+  <template v-if="isComplexAttribute(value)">
+    <ComplexAttribute :data="value" />
+  </template>
+  <li v-else>
     <span class="object-key" :title="value?.description">{{ itemKey }}:</span>
     <div class="value-cell">
       <!-- Case 1: Progress Bar (current/max) -->
@@ -10,12 +14,17 @@
         </div>
       </template>
 
-      <!-- Case 2: Simple Value (value key) -->
+      <!-- Case 2: Attribute Grid -->
+      <template v-else-if="isAttributeGridData(value)">
+        <AttributeGrid :attributes="value" />
+      </template>
+
+      <!-- Case 3: Simple Value (value key) -->
       <template v-else-if="isSimpleValue(value)">
         <span class="object-value">{{ value.value }}</span>
       </template>
 
-      <!-- Case 3: Data Item (ID, 名称, 描述) -->
+      <!-- Case 4: Data Item (ID, 名称, 描述) -->
       <template v-else-if="isDataItem(value)">
         <div class="data-item">
           <div v-for="(dataValue, dataKey) in value" :key="dataKey" class="data-item-row">
@@ -25,7 +34,7 @@
         </div>
       </template>
 
-      <!-- Case 4: Recursive Object -->
+      <!-- Case 5: Recursive Object -->
       <template v-else-if="isObject(value)">
         <ul :class="{ 'multi-column': Object.keys(value).length > 4 }">
           <ObjectRendererItem
@@ -37,7 +46,7 @@
         </ul>
       </template>
 
-      <!-- Case 4: Primitive Value -->
+      <!-- Case 6: Primitive Value -->
       <template v-else>
         <span class="object-value">{{ value }}</span>
       </template>
@@ -46,6 +55,8 @@
 </template>
 
 <script setup lang="ts">
+import AttributeGrid from './AttributeGrid.vue';
+import ComplexAttribute from './npc-details/ComplexAttribute.vue';
 import ObjectRendererItem from './ObjectRendererItem.vue'; // Self-referencing
 
 defineProps<{
@@ -57,6 +68,23 @@ const isObject = (value: any): value is Record<string, any> => {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 };
 
+const isAttributeGridData = (value: any) => {
+  if (!isObject(value)) return false;
+  // 如果对象包含 '名称' 或 '描述'，则它更可能是个复杂对象，不应用网格布局
+  if ('名称' in value || '描述' in value) return false;
+  const values = Object.values(value);
+  return values.length > 1 && values.every(v => typeof v === 'string' || typeof v === 'number');
+};
+
+const isComplexAttribute = (value: any) => {
+  if (!isObject(value) || !('名称' in value && '描述' in value)) {
+    return false;
+  }
+  // Check if there are other properties that are objects themselves, which makes it complex
+  const otherKeys = Object.keys(value).filter(k => k !== '名称' && k !== '描述' && k !== '$meta');
+  return otherKeys.some(k => typeof value[k] === 'object');
+};
+
 const isProgressBar = (value: any) => {
   return isObject(value) && 'current' in value && 'max' in value;
 };
@@ -66,7 +94,13 @@ const isSimpleValue = (value: any) => {
 };
 
 const isDataItem = (value: any) => {
-  return isObject(value) && ('ID' in value || '名称' in value) && !('value' in value) && !('current' in value);
+  return (
+    isObject(value) &&
+    ('ID' in value || '名称' in value) &&
+    !('value' in value) &&
+    !('current' in value) &&
+    Object.values(value).every(v => typeof v !== 'object')
+  );
 };
 
 const filterMeta = (data: Record<string, any>) => {

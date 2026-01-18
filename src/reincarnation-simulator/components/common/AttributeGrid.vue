@@ -22,6 +22,7 @@ const filteredAttributes = computed(() => {
 
 function formatValue(value: any): string {
   if (typeof value === 'object' && value !== null) {
+    // Keep special formatting for progress-bar like objects
     if ('当前' in value && '上限' in value) {
       let output = `${value['当前']}/${value['上限']}`;
       if ('恢复速度' in value) {
@@ -29,10 +30,8 @@ function formatValue(value: any): string {
       }
       return output;
     }
-    // For other complex objects, format them line by line
-    return Object.entries(value)
-      .map(([key, val]) => `${key}: ${val}`)
-      .join('\n');
+    // For any other object, return a placeholder, as the parent should handle it.
+    return '[Object]';
   }
   return String(value);
 }
@@ -42,33 +41,62 @@ function formatValue(value: any): string {
 @use '../../styles/theme/variables' as *;
 
 .attribute-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: $spacing-lg;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: $spacing-md;
+  width: 100%;
 }
 
 .attribute-item {
   display: flex;
-  flex-direction: column; // 让key和value垂直排列
-  align-items: flex-start;
-  gap: $spacing-sm;
-  background-color: rgba($color-black-void, 0.3);
-  padding: $spacing-md;
+  flex-direction: column;
+  background: rgba($color-indigo-deep, 0.5);
   border-radius: $border-radius-md;
-  border: 1px solid rgba($color-gold-liu, 0.1);
-  flex-basis: 45%; // 在足够宽的容器中，一行最多两个
-  min-width: 150px; // 保证最小宽度
+  padding: $spacing-md;
+  border: 1px solid rgba($color-gold-liu, 0.2);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -80%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba($color-gold-pale, 0.08),
+      transparent
+    );
+    transform: skewX(-25deg);
+    transition: left 0.6s ease;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba($color-gold-pale, 0.08);
+    border-color: rgba($color-gold-pale, 0.3);
+    &::before {
+      left: 120%;
+    }
+  }
 }
 
 .attribute-key {
+  font-size: $font-size-base;
   color: $color-grey-stone;
-  font-size: $font-size-small;
+  margin-bottom: $spacing-xs;
+  font-family: $font-family-main;
 }
 
 .attribute-value {
-  color: $color-white-moon;
-  font-weight: bold;
-  font-size: $font-size-base;
-  white-space: pre-wrap; // 支持换行显示
+  font-size: $font-size-h2;
+  font-family: $font-family-title;
+  color: $color-gold-pale;
+  font-weight: 400;
+  text-shadow: 0 0 8px rgba($color-gold-liu, 0.5);
 }
 </style>

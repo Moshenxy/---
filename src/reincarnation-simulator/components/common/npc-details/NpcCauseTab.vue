@@ -30,8 +30,8 @@ import RelationsDisplay from '../RelationsDisplay.vue';
 import InventoryGrid from '../InventoryGrid.vue';
 
 const props = defineProps<{
-  npc: Character;
-  npcId: string | null;
+  npc: Character,
+  npcId: string | null
 }>();
 
 const inventoryItems = computed(() => {
@@ -107,8 +107,7 @@ const inventoryItems = computed(() => {
   border-left: 3px solid $color-purple-mystery;
 }
 
-.memory-event,
-.memory-influence {
+.memory-event, .memory-influence {
   margin: 0;
   padding: 2px 0;
   color: $color-grey-stone;

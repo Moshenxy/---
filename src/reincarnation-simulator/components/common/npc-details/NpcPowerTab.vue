@@ -68,14 +68,9 @@ const worldAttributes = computed(() => {
     if (attrId === '$meta') continue;
 
     const attributeValue = npcAttributes[attrId];
-
+    
     // 如果属性值本身就是一个包含名称和描述的复杂对象
-    if (
-      typeof attributeValue === 'object' &&
-      attributeValue !== null &&
-      '名称' in attributeValue &&
-      '描述' in attributeValue
-    ) {
+    if (typeof attributeValue === 'object' && attributeValue !== null && '名称' in attributeValue && '描述' in attributeValue) {
       // 使用它自己的名称作为key，并将整个对象作为value
       resolvedAttributes[attributeValue.名称] = attributeValue;
     } else {

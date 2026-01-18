@@ -23,7 +23,11 @@
           <div class="world-attributes-section">
             <h5 class="section-title">世界专属</h5>
             <ul v-if="worldAttributes.length > 0" class="attributes-list">
-              <li v-for="attr in worldAttributes" :key="attr.key" class="attribute-item">
+              <li
+                v-for="attr in worldAttributes"
+                :key="attr.key"
+                class="attribute-item"
+              >
                 <span class="label">{{ attr.key }}</span>
                 <span class="value">{{ formatAttributeValue(attr.value) }}</span>
               </li>
@@ -65,7 +69,7 @@ const formatAttributeValue = (attrValue: any): string => {
     if (rest.当前 !== undefined && rest.上限 !== undefined) {
       return `${rest.当前} / ${rest.上限}`;
     }
-
+    
     // Case 2: Simple value wrapper
     if (rest.value !== undefined && keys.length === 1) {
       return String(getDisplayValue(rest.value));
@@ -86,6 +90,7 @@ const formatAttributeValue = (attrValue: any): string => {
 
   return String(getDisplayValue(attrValue));
 };
+
 
 const character = computed(() => store.character);
 const soulOrigin = computed(() => getDisplayValue(character.value?.灵魂本源, 0));

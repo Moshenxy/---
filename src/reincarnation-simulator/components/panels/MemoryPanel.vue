@@ -103,20 +103,19 @@ async function forceUpdate() {
   toastr.success('记忆层级更新完毕');
 }
 
+const handleMemoryUpdate = () => {
+  console.log('[MemoryPanel] Detected memory update. Refreshing content...');
+  fetchMemoryContent(true); // Force refresh
+};
+
 onMounted(() => {
   config.value = memoryService.getConfig();
   fetchMemoryContent();
+  eventBus.on('memoryUpdated', handleMemoryUpdate);
+});
 
-  // 订阅记忆更新事件
-  const handleMemoryUpdate = () => {
-    console.log('[MemoryPanel] Received memory-updated event. Refreshing content...');
-    fetchMemoryContent(true);
-  };
-  eventBus.on('memory-updated', handleMemoryUpdate);
-
-  onUnmounted(() => {
-    eventBus.off('memory-updated', handleMemoryUpdate);
-  });
+onUnmounted(() => {
+  eventBus.off('memoryUpdated', handleMemoryUpdate);
 });
 </script>
 

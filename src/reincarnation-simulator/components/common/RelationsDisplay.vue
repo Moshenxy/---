@@ -66,37 +66,33 @@ const props = defineProps<{
 
 const relations = ref({});
 
-watch(
-  () => [props.subjectId, store.worldState?.世界],
-  () => {
-    if (!props.subjectId || !store.worldState?.世界) {
-      relations.value = {};
-      return;
+watch(() => [props.subjectId, store.worldState?.世界], () => {
+  if (!props.subjectId || !store.worldState?.世界) {
+    relations.value = {};
+    return;
+  }
+  
+  let worldId: string | null = null;
+  for (const id in store.worldState.世界) {
+    if (get(store.worldState.世界[id], `角色.${props.subjectId}`)) {
+      worldId = id;
+      break;
     }
+  }
 
-    let worldId: string | null = null;
-    for (const id in store.worldState.世界) {
-      if (get(store.worldState.世界[id], `角色.${props.subjectId}`)) {
-        worldId = id;
-        break;
-      }
-    }
+  if (!worldId) {
+    relations.value = {};
+    return;
+  }
 
-    if (!worldId) {
-      relations.value = {};
-      return;
-    }
+  const causalNet = get(store.worldState.世界[worldId], '因果之网');
+  if (!causalNet) {
+    relations.value = {};
+    return;
+  }
 
-    const causalNet = get(store.worldState.世界[worldId], '因果之网');
-    if (!causalNet) {
-      relations.value = {};
-      return;
-    }
-
-    relations.value = causalNet[props.subjectId] || {};
-  },
-  { immediate: true, deep: true },
-);
+  relations.value = causalNet[props.subjectId] || {};
+}, { immediate: true, deep: true });
 
 const { getNpcNameById } = npcService;
 

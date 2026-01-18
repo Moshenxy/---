@@ -237,7 +237,11 @@ class SaveLoadService {
       toastr.error('没有可用于“重来”的存档点。');
       throw new Error('No reroll save state found.');
     }
-    console.log('[Reroll] Loading state for reroll...');
+    console.log('[Reroll] Loading state for reroll and setting restore flag...');
+
+    // 设置一个标志，以便在页面重新加载后恢复输入
+    localStorage.setItem('reincarnation-simulator-restore-input', 'true');
+
     // 直接调用内部加载函数，跳过用户确认
     await this._internalLoadGame(this.rerollSlot);
     // 短暂延迟后刷新页面，确保状态完全应用

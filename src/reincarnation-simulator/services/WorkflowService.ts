@@ -15,7 +15,6 @@ class WorkflowService {
   private currentState: WorkflowState = 'NORMAL';
   private narrativeCache: string | null = null; // 用于暂存 <gametxt>
   private updateScriptCache: string | null = null; // 用于暂存 <UpdateVariable>
-  private lastJsonPatchCache: string | null = null; // 用于暂存上一次的JSONPatch
   private preserveMode: 'none' | 'gametxt' | 'full' = 'none';
 
   constructor() {
@@ -94,20 +93,6 @@ class WorkflowService {
       console.log('[WorkflowService] Popped cached update script.');
     }
     return script;
-  }
-
-  public cacheJsonPatch(patch: string) {
-    this.lastJsonPatchCache = patch;
-    console.log('[WorkflowService] JSONPatch cached.');
-  }
-
-  public popJsonPatch(): string | null {
-    const patch = this.lastJsonPatchCache;
-    this.lastJsonPatchCache = null;
-    if (patch) {
-      console.log('[WorkflowService] Popped cached JSONPatch.');
-    }
-    return patch;
   }
 
   /**

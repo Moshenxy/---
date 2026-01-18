@@ -1,8 +1,8 @@
 import { ComponentContainer, GoldenLayout, LayoutConfig } from 'golden-layout';
 import { Component, defineComponent, h, render } from 'vue';
 import MainView from '../MainView.vue';
-import { eventBus } from './EventBus';
 import { panelRegistry } from './panelRegistry';
+import { eventBus } from './EventBus';
 
 class DockManagerService {
   private goldenLayout: GoldenLayout | null = null;
@@ -24,6 +24,7 @@ class DockManagerService {
         this.registerComponent(componentName, panelInfo.component);
       }
     }
+
 
     window.addEventListener('resize', () => this.updateLayout());
 
@@ -62,7 +63,7 @@ class DockManagerService {
 
     this.goldenLayout?.registerComponent(componentName, (container: ComponentContainer, componentState: any) => {
       const vueComponent = defineComponent({
-        setup: () => () => h(component, { ...componentState?.props, container }),
+        setup: () => () => h(component, componentState?.props || {}),
       });
       const vnode = h(vueComponent);
       render(vnode, container.getElement() as HTMLElement);
@@ -71,7 +72,7 @@ class DockManagerService {
       if ((componentState as any)?.title) {
         container.setTitle((componentState as any).title);
       }
-
+      
       // Add a destroy listener to notify LayoutService
       (container as any).on('destroy', () => {
         const panelId = (componentState as any)?.panelId;

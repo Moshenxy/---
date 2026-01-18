@@ -64,7 +64,7 @@
           <div
             v-if="isQueueVisible"
             class="command-queue-popup"
-            style="background-color: #0a0f1e; border: 1px solid #d4af37"
+            style="background-color: #0a0f1e; border: 1px solid #d4af37;"
           >
             <div class="popup-header">
               <h3>指令队列</h3>
@@ -409,9 +409,10 @@ export default defineComponent({
 }
 
 .detail-modal {
-  min-width: 400px;
-  max-width: 80vw;
-  max-height: 90vh;
+  width: 800px; /* Fixed width */
+  max-width: 90vw;
+  height: 600px; /* Fixed height */
+  max-height: 80vh;
   display: flex;
   flex-direction: column;
 
@@ -445,6 +446,8 @@ export default defineComponent({
     overflow-y: auto;
     padding-right: $spacing-sm; // for scrollbar
     color: $color-white-moon; // Ensure default text is readable
+    flex-grow: 1;
+    min-height: 0;
   }
 }
 

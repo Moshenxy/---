@@ -4,17 +4,14 @@ import { commandService } from '../services/CommandService';
 import { contextService } from '../services/ContextService';
 import { lorebookService } from '../services/LorebookService';
 import { memoryService } from '../services/MemoryService';
-import { saveLoadService } from '../services/saveLoadService';
 import { notificationService } from '../services/NotificationService';
 import { serviceLocator } from '../services/service-locator';
 import { tavernService } from '../services/tavern';
 import { workflowService } from '../services/WorkflowService';
 import { worldEvolutionService } from '../services/WorldEvolutionService';
-import { worldUpdateService } from '../services/WorldUpdateService';
 import type { WorldbookEntry } from '../types';
 import { EvolutionaryPressure } from '../types/evolution';
 import { processTags } from '../utils/tagProcessor';
-import { parseSimpleYaml } from '../utils/yamlParser';
 import { isSimulationRunning } from './getters';
 import { store } from './state';
 
@@ -277,21 +274,87 @@ async function fetchCoreData() {
         }
       }
 
-      // 仅当消息内容发生变化时，才处理摘要和选项
-      if (fullMessageContent) {
+      // 只有当消息内容发生变化时，才处理所有响应解析
+      // 核心修复：只有当消息ID是新的时，才处理所有副作用（如写入世界书）
+      if (fullMessageContent && currentMessageId !== lastProcessedMessageId) {
         // 提取并显示所有摘要
+        // --- 摘要处理 (新旧格式兼容) ---
+        const summaryRegex = /<摘要 a_id="(.+?)">([\s\S]+?)<\/摘要>/g;
         const mainWorldSummaryRegex = /<主世界摘要>([\s\S]+?)<\/主世界摘要>/g;
         const avatarWorldSummaryRegex = /<化身世界摘要>([\s\S]+?)<\/化身世界摘要>/g;
         let match;
 
-        if ((match = mainWorldSummaryRegex.exec(fullMessageContent)) !== null) {
-          notificationService.info('主世界动态', match[1].trim());
-        }
-        if ((match = avatarWorldSummaryRegex.exec(fullMessageContent)) !== null) {
-          notificationService.info('化身世界动态', match[1].trim());
+        const formatWorldTime = (time: any): string => {
+          if (!time) return new Date().toLocaleString('zh-CN', { hour12: false }); // Fallback
+
+          const era = get(time, '纪元名称', '');
+          const year = get(time, '年', '----');
+          const month = String(get(time, '月', '--')).padStart(2, '0');
+          const day = String(get(time, '日', '--')).padStart(2, '0');
+          const hour = String(get(time, '时', '--')).padStart(2, '0');
+          const minute = String(get(time, '分', '--')).padStart(2, '0');
+
+          return `${era} ${year}年${month}月${day}日 ${hour}:${minute}`;
+        };
+
+        const processAndWriteSummary = async (content: string, entryName: string, toastrTitle: string) => {
+          const existingSummaries = await lorebookService.readFromLorebook(entryName);
+          if (existingSummaries && existingSummaries.includes(content)) {
+            console.log(`[Actions] Summary content already exists in "${entryName}". Skipping.`);
+            return;
+          }
+
+          // 动态获取对应世界的时间
+          const targetWorldLocation = entryName === '[系统]主世界摘要' ? '主世界' : '当前化身世界';
+          const world = Object.values(get(store.worldState, '世界', {})).find(
+            (w: any) => get(w, '元规则.定位') === targetWorldLocation,
+          );
+
+          let timestamp = new Date().toLocaleString('zh-CN', { hour12: false });
+          if (world) {
+            const currentEpochId = get(world, '元规则.当前纪元ID');
+            if (currentEpochId) {
+              const currentTime = get(world, `历史纪元.${currentEpochId}.当前时间`);
+              timestamp = formatWorldTime(currentTime);
+            }
+          }
+
+          notificationService.info(toastrTitle, content);
+          const formattedSummary = `【${timestamp}】\n${content}`;
+          await lorebookService.appendToEntry(entryName, formattedSummary, '\n\n---\n\n');
+        };
+
+        // 新格式: <摘要 a_id="...">
+        while ((match = summaryRegex.exec(fullMessageContent)) !== null) {
+          const worldId = match[1];
+          const summaryContent = match[2].trim();
+          const world = get(store.worldState, `世界.${worldId}`);
+          if (world) {
+            const worldName = get(world, '名称', '未知世界');
+            const location = get(world, '状态.定位[0]');
+            const entryName = location === '主世界' ? '[系统]主世界摘要' : '[系统]化身世界摘要';
+            const worldTime = formatWorldTime(get(world, '状态.当前时间'));
+            await processAndWriteSummary(summaryContent, entryName, `${worldName} 动态`);
+          }
         }
 
-        // 提取并处理可选化身
+        // 旧格式: <主世界摘要> / <化身世界摘要>
+        if ((match = mainWorldSummaryRegex.exec(fullMessageContent)) !== null) {
+          const mainWorld = Object.values(get(store.worldState, '世界', {})).find(
+            (w: any) => get(w, '状态.定位[0]') === '主世界',
+          );
+          const worldTime = formatWorldTime(get(mainWorld, '状态.当前时间'));
+          await processAndWriteSummary(match[1].trim(), '[系统]主世界摘要', '主世界动态');
+        }
+        if ((match = avatarWorldSummaryRegex.exec(fullMessageContent)) !== null) {
+          const avatarWorld = Object.values(get(store.worldState, '世界', {})).find(
+            (w: any) => get(w, '状态.定位[0]') === '当前化身世界',
+          );
+          const worldTime = formatWorldTime(get(avatarWorld, '状态.当前时间'));
+          await processAndWriteSummary(match[1].trim(), '[系统]化身世界摘要', '化身世界动态');
+        }
+
+        // 3. 提取并处理可选化身
         const avatarOptionsMatch = fullMessageContent.match(/<可选化身>([\s\S]+?)<\/可选化身>/i);
         if (avatarOptionsMatch) {
           const parser = new DOMParser();
@@ -305,6 +368,17 @@ async function fetchCoreData() {
           });
           store.reincarnationAvatarOptions = avatars;
         }
+
+        console.log('[Roo Debug] fetchCoreData: New message content detected. Processing world tags...');
+        console.log('[Roo Debug] fetchCoreData: New message content detected. Processing world tags...');
+
+        // 世界书修改指令的处理已被移除
+
+        // 核心修复：在处理完所有指令后，更新最后处理的消息ID
+        lastProcessedMessageId = currentMessageId;
+
+        // 自动更新世界记忆系统
+        await memoryService.updateMemory(store.worldLog);
       }
     }
   } catch (error) {
@@ -466,12 +540,6 @@ async function processAiResponse(response: string, prefixedInput: string) {
   }
   if (updateScript) {
     workflowService.cacheUpdateScript(updateScript);
-    // 提取并缓存 JSONPatch 内容
-    const jsonPatchMatch = response.match(/<JSONPatch>([\s\S]*?)<\/JSONPatch>/i);
-    if (jsonPatchMatch && jsonPatchMatch[1]) {
-      // @ts-ignore
-      workflowService.cacheJsonPatch(jsonPatchMatch[1].trim());
-    }
   }
 
   // [Roo-Fix] 移除错误的恢复逻辑，拼接操作已移至 handleAction
@@ -547,6 +615,32 @@ async function processAiResponse(response: string, prefixedInput: string) {
   }
 }
 
+async function updateLastPatchFromHistory() {
+  try {
+    const messages = await tavernService.fetchTavernData();
+    if (messages && messages.length > 0) {
+      // 寻找最后一条非用户发送的消息
+      const lastAiMessage = [...messages].reverse().find(m => !m.is_user);
+      if (!lastAiMessage) return;
+
+      const lastMessage = lastAiMessage;
+      const updateScriptMatch = lastMessage.message?.match(/<UpdateVariable>([\s\S]+?)<\/UpdateVariable>/i);
+      const updateScript = updateScriptMatch ? updateScriptMatch[1].trim() : null;
+      const jsonPatchMatch = updateScript?.match(/<JSONPatch>([\s\S]*?)<\/JSONPatch>/i);
+
+      if (jsonPatchMatch && jsonPatchMatch[1]) {
+        const patchContent = jsonPatchMatch[1].trim();
+        store.lastGeneratedPatch = patchContent;
+        console.log('[CACHE_DEBUG] Silently updated JSONPatch from history.');
+      } else {
+        store.lastGeneratedPatch = null; // Ensure cache is cleared if no patch is found
+      }
+    }
+  } catch (error) {
+    console.error('Failed to silently update patch from history:', error);
+  }
+}
+
 async function handleAction(actionText: string, isReroll = false) {
   const saveLoadService = serviceLocator.get('saveLoadService');
   if (!actionText.trim()) return;
@@ -560,6 +654,9 @@ async function handleAction(actionText: string, isReroll = false) {
   store.isGenerating = true;
   try {
     // 【始】环: 观过去之因，定今日之果
+    // 在所有操作之前，静默更新一次最新的 Patch
+    await updateLastPatchFromHistory();
+
     console.log('[EvoSys] Executing Pre-Action Deduction...');
     const pressures = worldEvolutionService.applyPressure(store.worldState);
     const reactions = worldEvolutionService.simulateReactions(pressures, store.worldState);
@@ -576,17 +673,18 @@ async function handleAction(actionText: string, isReroll = false) {
 
     console.log('[Actions] Generating AI response with lean context variables informed by world pulse.');
 
-    // 【复盘机制】获取上一次的JSONPatch并拼接到输入中
-    // @ts-ignore
-    const lastJsonPatch = workflowService.popJsonPatch();
-    let finalActionText = actionText;
-    if (lastJsonPatch) {
-      finalActionText = `<上次更新的变量>\n${lastJsonPatch}\n</上次更新的变量>\n\n【本次行动】:\n${actionText}`;
-      console.log('[Review] Sending last JSON patch for AI review.');
-    }
+    // 构建带有上一次Patch历史的输入
+    const aiInput = `<previous_patch>
+${store.lastGeneratedPatch || '无'}
+</previous_patch>
+<user_input>
+${actionText}
+</user_input>`;
+
+    console.log('[SUBMIT_DEBUG] Submitting to AI with combined input:', aiInput);
 
     // 发送最终 Prompt 给 AI
-    const rawAiResponse = await tavernService.generateAiResponse(finalActionText, leanContextVariables);
+    const rawAiResponse = await tavernService.generateAiResponse(aiInput, leanContextVariables);
 
     // 在处理之前，规范化标签
     const aiResponseString = processTags(rawAiResponse);
@@ -598,12 +696,11 @@ async function handleAction(actionText: string, isReroll = false) {
     // 3. 使用拼接后的完整响应进行后续处理
     await processAiResponse(finalResponseString, actionText);
 
-    // 4. 核心修复：在这里同步处理世界书写入和自动存档
-    await _processAndSaveLorebookTags(finalResponseString);
-    await memoryService.updateMemory(store.worldLog); // 更新记忆系统
-    await saveLoadService.performAutoSave(); // 执行自动存档
+    // 2024-05-24: 日志和记忆更新已被 LogSyncService 和 index.ts 中的 watch 替代
+    // await processAndSaveLorebookTags(finalResponseString);
+    // await memoryService.updateMemory(store.worldLog);
 
-    // 6. 保存拼接后的完整响应到消息记录
+    // 保存拼接后的完整响应到消息记录
     const messages = await tavernService.fetchTavernData();
     if (messages && messages.length > 0) {
       const messageZero = messages[0];
@@ -624,6 +721,9 @@ async function handleAction(actionText: string, isReroll = false) {
 
       await TavernHelper.setChatMessages([messageZero], { refresh: 'none' });
     }
+
+    // 自动存档现在会保存已更新的世界书内容
+    await saveLoadService.performAutoSave();
 
     // 【末】环: 观今日之果，衍未来之因
     console.log('[EvoSys] Executing Post-Action Deduction...');
@@ -713,12 +813,14 @@ function initializeEventListeners() {
       }
 
       // 无论是否捕获到错误，都继续执行数据加载流程
-      await loadAllData();
+      // [Roo-Fix] 移除此处的 loadAllData() 调用，因为它导致了无限循环
+      // await loadAllData();
       silentUpdater.reset();
     }, 500); // 延迟500毫秒
   });
 
   // 启动静默更新轮询
+  // [Roo-Fix] 移除不必要的轮询，因为它会造成性能浪费和潜在的逻辑冲突。
   // silentUpdater.start(loadAllData, 5000); // 5秒轮询一次
 
   isInitialized = true;
@@ -800,23 +902,12 @@ export const actions = {
   handleAction,
   rerollLastAction: async () => {
     const saveLoadService = serviceLocator.get('saveLoadService');
-    const inputModalState = serviceLocator.get('inputModalState');
     console.log('[Actions] Reroll requested.');
     try {
-      // 1. 加载用于重来的存档状态
+      // This will now set a flag and reload the page.
+      // The startup logic in index.ts will handle restoring the input.
+      notificationService.info('正在返回上一轮...', '页面即将刷新。');
       await saveLoadService.loadRerollState();
-
-      // 2. 获取上一次提交的输入
-      const lastInputAction = inputModalState.lastSubmittedValue;
-      if (!lastInputAction) {
-        notificationService.error('重来失败', '找不到上一次的输入内容。');
-        return;
-      }
-
-      notificationService.info('正在重来...', `重新提交输入: "${lastInputAction}"`);
-
-      // 3. 带着“重来”标记，重新执行动作
-      await handleAction(lastInputAction, true);
     } catch (error) {
       console.error('Reroll failed:', error);
       notificationService.error('重来失败', error instanceof Error ? error.message : '未知错误');
@@ -909,54 +1000,105 @@ export const actions = {
 };
 
 /**
- * 提取键值对的辅助函数
+ * [Roo-Fix] 新增函数：处理并保存世界书标签（历程、涟漪、摘要）
+ * @param fullMessageContent - AI返回的完整消息内容
  */
-async function _processAndSaveLorebookTags(fullMessageContent: string) {
+async function processAndSaveLorebookTags(fullMessageContent: string) {
   if (!fullMessageContent) return;
 
-  console.log('[Actions] Processing and saving lorebook tags...');
   let match;
   const processLogRegex = /<本世历程>([\s\S]+?)<\/本世历程>/g;
   const settlementRegex = /<往世涟漪>([\s\S]+?)<\/往世涟漪>/g;
+  const summaryRegex = /<摘要 a_id="(.+?)">([\s\S]+?)<\/摘要>/g;
+  const mainWorldSummaryRegex = /<主世界摘要>([\s\S]+?)<\/主世界摘要>/g;
+  const avatarWorldSummaryRegex = /<化身世界摘要>([\s\S]+?)<\/化身世界摘要>/g;
 
-  // 解析 <本世历程>
+  // --- 摘要处理 ---
+  const formatWorldTime = (time: any): string => {
+    if (!time) return new Date().toLocaleString('zh-CN', { hour12: false });
+    const era = get(time, '纪元名称', '');
+    const year = get(time, '年', '----');
+    const month = String(get(time, '月', '--')).padStart(2, '0');
+    const day = String(get(time, '日', '--')).padStart(2, '0');
+    const hour = String(get(time, '时', '--')).padStart(2, '0');
+    const minute = String(get(time, '分', '--')).padStart(2, '0');
+    return `${era} ${year}年${month}月${day}日 ${hour}:${minute}`;
+  };
+
+  const processAndWriteSummary = async (content: string, entryName: string, toastrTitle: string) => {
+    const existingSummaries = await lorebookService.readFromLorebook(entryName);
+    if (existingSummaries && existingSummaries.includes(content)) {
+      return;
+    }
+    const world = Object.values(get(store.worldState, '世界', {})).find(
+      (w: any) =>
+        (entryName === '[系统]主世界摘要' && get(w, '元规则.定位') === '主世界') ||
+        (entryName === '[系统]化身世界摘要' && get(w, '元规则.定位') === '当前化身世界'),
+    );
+    let timestamp = new Date().toLocaleString('zh-CN', { hour12: false });
+    if (world) {
+      const currentEpochId = get(world, '元规则.当前纪元ID');
+      if (currentEpochId) {
+        const currentTime = get(world, `历史纪元.${currentEpochId}.当前时间`);
+        timestamp = formatWorldTime(currentTime);
+      }
+    }
+    notificationService.info(toastrTitle, content);
+    const formattedSummary = `【${timestamp}】\n${content}`;
+    await lorebookService.appendToEntry(entryName, formattedSummary, '\n\n---\n\n');
+  };
+
+  while ((match = summaryRegex.exec(fullMessageContent)) !== null) {
+    const worldId = match[1];
+    const summaryContent = match[2].trim();
+    const world = get(store.worldState, `世界.${worldId}`);
+    if (world) {
+      const worldName = get(world, '名称', '未知世界');
+      const location = get(world, '元规则.定位');
+      const entryName = location === '主世界' ? '[系统]主世界摘要' : '[系统]化身世界摘要';
+      await processAndWriteSummary(summaryContent, entryName, `${worldName} 动态`);
+    }
+  }
+  if ((match = mainWorldSummaryRegex.exec(fullMessageContent)) !== null) {
+    await processAndWriteSummary(match[1].trim(), '[系统]主世界摘要', '主世界动态');
+  }
+  if ((match = avatarWorldSummaryRegex.exec(fullMessageContent)) !== null) {
+    await processAndWriteSummary(match[1].trim(), '[系统]化身世界摘要', '化身世界动态');
+  }
+
+  // --- 本世历程处理 ---
   while ((match = processLogRegex.exec(fullMessageContent)) !== null) {
     const block = parseBlock(match[1]);
-    if (!block['序号'] || isNaN(parseInt(block['序号'], 10))) continue;
-
     const newLogEntry: any = {
       ...block,
       序号: parseInt(block['序号'], 10),
       标签: block['标签']
         ? block['标签']
             .replace(/[[\]"]/g, '')
-            .split('|') // 使用 | 作为分隔符
+            .split(',')
             .map(t => t.trim())
             .filter(t => t)
         : [],
     };
-
-    const isDuplicate = store.worldLog.some(log => log.序号 === newLogEntry.序号);
-    if (!isDuplicate) {
+    if (!store.worldLog.some(log => log.序号 === newLogEntry.序号)) {
       store.worldLog.push(newLogEntry);
     }
   }
+  store.worldLog.sort((a, b) => a.序号 - b.序号);
 
-  if (store.worldLog.length > 0) {
-    store.worldLog.sort((a, b) => a.序号 - b.序号);
-    const latestLog = store.worldLog[store.worldLog.length - 1];
+  const latestLog = store.worldLog.length > 0 ? store.worldLog[store.worldLog.length - 1] : null;
+  if (latestLog) {
     const existingLogs = await lorebookService.readFromLorebook('本世历程');
     const newLogContent = Object.entries(latestLog)
-      .map(([key, value]) => `${key}|${Array.isArray(value) ? value.join('|') : value}`)
+      .map(([key, value]) => `${key}|${typeof value === 'object' ? JSON.stringify(value, null, 2) : value}`)
       .join('\n');
-
     if (!existingLogs || !existingLogs.includes(`序号|${latestLog.序号}`)) {
       console.log(`[Actions] Appending new log (序号: ${latestLog.序号}) to "本世历程".`);
       await lorebookService.appendToEntry('本世历程', newLogContent, '\n\n---\n\n');
     }
   }
 
-  // 解析 <往世涟漪>
+  // --- 往世涟漪处理 ---
   if ((match = settlementRegex.exec(fullMessageContent)) !== null) {
     const block = parseBlock(match[1]);
     const settlementData = {
@@ -964,24 +1106,25 @@ async function _processAndSaveLorebookTags(fullMessageContent: string) {
       事件脉络: block['事件脉络'] || '',
       本世概述: block['本世概述'] || '',
       本世成就: block['本世成就'] || '',
-      本世遗珍: block['本世遗珍'] || '',
-      红尘羁绊: block['红尘羁绊'] || '',
-      陨落之因: block['陨落之因'] || '',
-      真我一念: block['真我一念'] || '',
-      涟漪余波: block['涟漪余波'] || '',
+      本世获得物品: block['本世获得物品'] || '',
+      本世人物关系网: block['本世人物关系网'] || '',
+      死亡原因: block['死亡原因'] || '',
+      本世总结: block['本世总结'] || '',
+      本世评价: block['本世评价'] || '',
     };
     store.settlementData = settlementData;
-
     const settlementContent = Object.entries(settlementData)
       .map(([key, value]) => `${key}|${value}`)
       .join('\n');
     await lorebookService.writeToLorebook('往世涟漪', settlementContent, { isEnabled: true, keys: ['往世涟漪'] });
-
     await lorebookService.writeToLorebook('本世历程', '', { isEnabled: true, keys: ['本世历程'] });
     store.worldLog = [];
   }
 }
 
+/**
+ * 提取键值对的辅助函数
+ */
 function parseBlock(block: string): { [key: string]: string } {
   const data: { [key: string]: string } = {};
   const lines = block.trim().split('\n');

@@ -1,6 +1,6 @@
+import { eventBus } from './EventBus';
 import { lorebookService } from './LorebookService';
 import type { WorldLogEntry } from '../types';
-import { eventBus } from './EventBus';
 
 class MemoryService {
   private readonly INSTANT_MEMORY_KEY = '[系统]瞬时记忆';
@@ -25,7 +25,7 @@ class MemoryService {
       await this.updateShortTermMemory(worldLog);
       await this.updateLongTermMemory(worldLog);
       console.log('[MemoryService] All memory tiers updated successfully.');
-      eventBus.emit('memory-updated'); // 发出事件通知UI更新
+      eventBus.emit('memoryUpdated'); // 发出事件通知UI更新
     } catch (error) {
       console.error('[MemoryService] Failed to update memory tiers:', error);
     }
@@ -34,20 +34,19 @@ class MemoryService {
   /**
    * 更新瞬时记忆 (正文)
    */
-  private async updateInstantMemory(worldLog: WorldLogEntry[]): Promise<void> {
+  public async updateInstantMemory(worldLog: WorldLogEntry[]): Promise<void> {
     const logs = worldLog.slice(-this.config.instantMemoryCount);
     if (logs.length === 0) {
       await this.writeMemory(this.INSTANT_MEMORY_KEY, '暂无瞬时记忆。');
       return;
     }
-
-    const content = logs
+  
+    const newContent = logs
       .map(log => {
         // 确保所有字段都以 key|value 的形式正确格式化
         return [
           `序号|${log.序号}`,
           `日期|${log.日期}`,
-          `标题|${log.标题}`,
           `地点|${log.地点}`,
           `人物|${log.人物}`,
           `描述|${log.描述}`,
@@ -59,49 +58,78 @@ class MemoryService {
         ].join('\n');
       })
       .join('\n\n---\n\n');
-
-    await this.writeMemory(this.INSTANT_MEMORY_KEY, content.trim());
+  
+    // 读取现有内容进行比较，只有在内容不同时才写入，避免不必要的操作
+    const existingContent = await lorebookService.readFromLorebook(this.INSTANT_MEMORY_KEY);
+    if (existingContent !== newContent.trim()) {
+      await this.writeMemory(this.INSTANT_MEMORY_KEY, newContent.trim());
+      console.log('[MemoryService] Instant memory updated.');
+    } else {
+      console.log('[MemoryService] Instant memory is already up-to-date. Skipping write.');
+    }
   }
 
   /**
    * 更新短期记忆 (小总结)
    */
-  private async updateShortTermMemory(worldLog: WorldLogEntry[]): Promise<void> {
+  public async updateShortTermMemory(worldLog: WorldLogEntry[]): Promise<void> {
     const logs = worldLog.slice(-this.config.shortTermMemoryCount);
     if (logs.length === 0) {
       await this.writeMemory(this.SHORT_TERM_MEMORY_KEY, '暂无短期记忆。');
       return;
     }
 
-    const content = logs
+    const newContent = logs
       .map(log => {
         // 短期记忆：提取核心信息，保持key|value结构
         return [
           `序号|${log.序号}`,
           `日期|${log.日期}`,
-          `标题|${log.标题}`,
+          `地点|${log.地点}`,
           `人物|${log.人物}`,
           `描述|${log.描述}`,
+          `人物关系|${log.人物关系}`,
+          `自动化系统|${log.自动化系统}`
         ].join('\n');
       })
       .join('\n\n---\n\n');
 
-    await this.writeMemory(this.SHORT_TERM_MEMORY_KEY, content.trim());
+    const existingContent = await lorebookService.readFromLorebook(this.SHORT_TERM_MEMORY_KEY);
+    if (existingContent !== newContent.trim()) {
+      await this.writeMemory(this.SHORT_TERM_MEMORY_KEY, newContent.trim());
+      console.log('[MemoryService] Short-term memory updated.');
+    } else {
+      console.log('[MemoryService] Short-term memory is already up-to-date. Skipping write.');
+    }
   }
 
   /**
    * 更新长期记忆 (大总结)
    */
-  private async updateLongTermMemory(worldLog: WorldLogEntry[]): Promise<void> {
+  public async updateLongTermMemory(worldLog: WorldLogEntry[]): Promise<void> {
     const logs = worldLog.slice(-this.config.longTermMemoryCount);
     if (logs.length === 0) {
       await this.writeMemory(this.LONG_TERM_MEMORY_KEY, '暂无长期记忆。');
       return;
     }
 
-    const content = logs.map(log => `[${log.日期}] ${log.标题}: ${log.描述}`).join('\n');
+    const newContent = logs.map(log => {
+      return [
+        `序号|${log.序号}`,
+        `日期|${log.日期}`,
+        `重要信息|${log.重要信息}`,
+        `暗线与伏笔|${log.暗线与伏笔}`,
+        `天机推演|${(log as any).天机推演 || '无'}`
+      ].join('\n');
+    }).join('\n\n---\n\n');
 
-    await this.writeMemory(this.LONG_TERM_MEMORY_KEY, content);
+    const existingContent = await lorebookService.readFromLorebook(this.LONG_TERM_MEMORY_KEY);
+    if (existingContent !== newContent.trim()) {
+      await this.writeMemory(this.LONG_TERM_MEMORY_KEY, newContent.trim());
+      console.log('[MemoryService] Long-term memory updated.');
+    } else {
+      console.log('[MemoryService] Long-term memory is already up-to-date. Skipping write.');
+    }
   }
 
   /**

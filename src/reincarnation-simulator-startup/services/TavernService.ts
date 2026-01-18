@@ -184,28 +184,28 @@ export async function buildWorld() {
     }
     const messageZero = messages[0];
     const latestState = messageZero?.data ?? {};
-let aiResponse = await TavernHelper.generate({
-  injects: [
-    { role: 'user', content: prompt, position: 'before_char', should_write_to_chat: false, should_scan: true },
-  ],
-  should_stream: false,
-});
+    let aiResponse = await TavernHelper.generate({
+      injects: [
+        { role: 'user', content: prompt, position: 'before_char', should_write_to_chat: false, should_scan: true },
+      ],
+      should_stream: false,
+    });
 
-if (!aiResponse) {
-  toastr.error('天衍未能回应你的创世指令。');
-  console.error('构筑世界失败: AI响应为空。');
-  store.isGenerating = false;
-  return;
-}
+    if (!aiResponse) {
+      toastr.error('天衍未能回应你的创世指令。');
+      console.error('构筑世界失败: AI响应为空。');
+      store.isGenerating = false;
+      return;
+    }
 
-// 在处理响应前，先清理 thinking 标签内的非法字符
-const thinkingMatch = aiResponse.match(/<thinking>([\s\S]*?)<\/thinking>/);
-if (thinkingMatch && thinkingMatch[1] && (thinkingMatch[1].includes('<') || thinkingMatch[1].includes('>'))) {
-  const cleanedThinking = thinkingMatch[1].replace(/<|>/g, '');
-  aiResponse = aiResponse.replace(thinkingMatch[1], cleanedThinking);
-}
+    // 在处理响应前，先清理 thinking 标签内的非法字符
+    const thinkingMatch = aiResponse.match(/<thinking>([\s\S]*?)<\/thinking>/);
+    if (thinkingMatch && thinkingMatch[1] && (thinkingMatch[1].includes('<') || thinkingMatch[1].includes('>'))) {
+      const cleanedThinking = thinkingMatch[1].replace(/<|>/g, '');
+      aiResponse = aiResponse.replace(thinkingMatch[1], cleanedThinking);
+    }
 
-const openingMatch = aiResponse.match(/<开局>([\s\S]*?)<\/开局>/);
+    const openingMatch = aiResponse.match(/<开局>([\s\S]*?)<\/开局>/);
     const updateScriptMatch = aiResponse.match(/<UpdateVariable>([\s\S]*?)<\/UpdateVariable>/i);
 
     if (!openingMatch || !updateScriptMatch) {

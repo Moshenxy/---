@@ -7,9 +7,16 @@
       <div class="dropdown-wrapper">
         <span>{{ getSelectionName('blueprints', store.selections.blueprint) }}</span>
         <div class="custom-options">
-          <div v-for="item in GAME_DATA.blueprints" :key="item.id" @click="handleSelect('blueprint', item.id)" class="custom-option-item">
+          <div
+            v-for="item in GAME_DATA.blueprints"
+            :key="item.id"
+            @click="handleSelect('blueprint', item.id)"
+            class="custom-option-item"
+          >
             <span>{{ item.name }}</span>
-            <button v-if="item.custom" @click.stop.prevent="removeCustomItem('blueprints', item.id)" class="remove-btn">×</button>
+            <button v-if="item.custom" @click.stop.prevent="removeCustomItem('blueprints', item.id)" class="remove-btn">
+              ×
+            </button>
           </div>
         </div>
       </div>
@@ -26,9 +33,16 @@
       <div class="dropdown-wrapper">
         <span>{{ getSelectionName('tones', store.selections.tone) }}</span>
         <div class="custom-options">
-          <div v-for="item in GAME_DATA.tones" :key="item.id" @click="handleSelect('tone', item.id)" class="custom-option-item">
+          <div
+            v-for="item in GAME_DATA.tones"
+            :key="item.id"
+            @click="handleSelect('tone', item.id)"
+            class="custom-option-item"
+          >
             <span>{{ item.name }}</span>
-            <button v-if="item.custom" @click.stop.prevent="removeCustomItem('tones', item.id)" class="remove-btn">×</button>
+            <button v-if="item.custom" @click.stop.prevent="removeCustomItem('tones', item.id)" class="remove-btn">
+              ×
+            </button>
           </div>
         </div>
       </div>
@@ -44,10 +58,17 @@
       但数个纪元前，它曾经历
       <div class="dropdown-wrapper">
         <span>...</span>
-         <div class="custom-options">
-          <div v-for="item in GAME_DATA.tags" :key="item.id" @click="handleSelect('tags', item.id, 3)" class="custom-option-item">
+        <div class="custom-options">
+          <div
+            v-for="item in GAME_DATA.tags"
+            :key="item.id"
+            @click="handleSelect('tags', item.id, 3)"
+            class="custom-option-item"
+          >
             <span>{{ item.name }}</span>
-            <button v-if="item.custom" @click.stop.prevent="removeCustomItem('tags', item.id)" class="remove-btn">×</button>
+            <button v-if="item.custom" @click.stop.prevent="removeCustomItem('tags', item.id)" class="remove-btn">
+              ×
+            </button>
           </div>
         </div>
       </div>
@@ -69,10 +90,17 @@
       如今，大地上仍散落着
       <div class="dropdown-wrapper">
         <span>...</span>
-         <div class="custom-options">
-          <div v-for="item in GAME_DATA.relics" :key="item.id" @click="handleSelect('relics', item.id, 3)" class="custom-option-item">
+        <div class="custom-options">
+          <div
+            v-for="item in GAME_DATA.relics"
+            :key="item.id"
+            @click="handleSelect('relics', item.id, 3)"
+            class="custom-option-item"
+          >
             <span>{{ item.name }}</span>
-            <button v-if="item.custom" @click.stop.prevent="removeCustomItem('relics', item.id)" class="remove-btn">×</button>
+            <button v-if="item.custom" @click.stop.prevent="removeCustomItem('relics', item.id)" class="remove-btn">
+              ×
+            </button>
           </div>
         </div>
       </div>

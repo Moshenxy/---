@@ -64,7 +64,7 @@
           <div
             v-if="isQueueVisible"
             class="command-queue-popup"
-            style="background-color: #0a0f1e; border: 1px solid #d4af37;"
+            style="background-color: #0a0f1e; border: 1px solid #d4af37"
           >
             <div class="popup-header">
               <h3>指令队列</h3>

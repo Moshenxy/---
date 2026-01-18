@@ -29,10 +29,13 @@ const initialState: AppState = {
 export const store = reactive<AppState & { getItemNameById: (id: string) => string | null }>({
   ...initialState,
   getItemNameById(id: string): string | null {
-    const activeWorldId = this.activeView === 'mainWorld'
-      ? get(this.worldState, '玩家.本体.所属世界')
-      : get(this.worldState, '玩家.模拟器.模拟.当前化身ID') ? get(this.worldState, '玩家.模拟器.模拟.当前化身ID') : null;
-      
+    const activeWorldId =
+      this.activeView === 'mainWorld'
+        ? get(this.worldState, '玩家.本体.所属世界')
+        : get(this.worldState, '玩家.模拟器.模拟.当前化身ID')
+          ? get(this.worldState, '玩家.模拟器.模拟.当前化身ID')
+          : null;
+
     if (!activeWorldId) return null;
 
     const database = get(this.worldState, `世界.${activeWorldId}.数据库`);

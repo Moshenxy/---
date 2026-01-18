@@ -40,7 +40,7 @@ class MemoryService {
       await this.writeMemory(this.INSTANT_MEMORY_KEY, '暂无瞬时记忆。');
       return;
     }
-  
+
     const newContent = logs
       .map(log => {
         // 确保所有字段都以 key|value 的形式正确格式化
@@ -58,7 +58,7 @@ class MemoryService {
         ].join('\n');
       })
       .join('\n\n---\n\n');
-  
+
     // 读取现有内容进行比较，只有在内容不同时才写入，避免不必要的操作
     const existingContent = await lorebookService.readFromLorebook(this.INSTANT_MEMORY_KEY);
     if (existingContent !== newContent.trim()) {
@@ -89,7 +89,7 @@ class MemoryService {
           `人物|${log.人物}`,
           `描述|${log.描述}`,
           `人物关系|${log.人物关系}`,
-          `自动化系统|${log.自动化系统}`
+          `自动化系统|${log.自动化系统}`,
         ].join('\n');
       })
       .join('\n\n---\n\n');
@@ -113,15 +113,17 @@ class MemoryService {
       return;
     }
 
-    const newContent = logs.map(log => {
-      return [
-        `序号|${log.序号}`,
-        `日期|${log.日期}`,
-        `重要信息|${log.重要信息}`,
-        `暗线与伏笔|${log.暗线与伏笔}`,
-        `天机推演|${(log as any).天机推演 || '无'}`
-      ].join('\n');
-    }).join('\n\n---\n\n');
+    const newContent = logs
+      .map(log => {
+        return [
+          `序号|${log.序号}`,
+          `日期|${log.日期}`,
+          `重要信息|${log.重要信息}`,
+          `暗线与伏笔|${log.暗线与伏笔}`,
+          `天机推演|${(log as any).天机推演 || '无'}`,
+        ].join('\n');
+      })
+      .join('\n\n---\n\n');
 
     const existingContent = await lorebookService.readFromLorebook(this.LONG_TERM_MEMORY_KEY);
     if (existingContent !== newContent.trim()) {

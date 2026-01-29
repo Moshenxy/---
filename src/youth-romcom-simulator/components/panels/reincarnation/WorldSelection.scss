@@ -1,0 +1,294 @@
+@use '../../../styles/theme/variables' as *;
+@use '../../../styles/theme/mixins' as *;
+
+@keyframes pulse-star {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+    box-shadow: 0 0 8px currentColor;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 1;
+    box-shadow:
+      0 0 16px currentColor,
+      0 0 24px currentColor;
+  }
+}
+
+@keyframes rotate-orbit {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes swirl-background {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.world-selection-container {
+  height: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: #05050a; // Add a dark background to the whole container
+}
+
+.loading-state {
+  @include flex-center;
+  flex-direction: column; // 让内容垂直排列
+  gap: $spacing-md; // 增加间距
+  height: 100%;
+  font-family: $font-family-title;
+  color: $color-gold-pale;
+  font-size: 1.2rem; // 稍微调小字体
+  text-shadow: 0 0 8px $color-gold-pale;
+}
+
+.progress-bar-container {
+  width: 80%;
+  height: 10px;
+  background-color: rgba($color-black-void, 0.5);
+  border-radius: 5px;
+  border: 1px solid rgba($color-gold-liu, 0.3);
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, $color-cyan-tian, $color-gold-liu);
+  transition: width 0.1s linear;
+  border-radius: 5px;
+}
+
+.star-map {
+  flex-grow: 1;
+  position: relative;
+  background: transparent !important; // 移除黑色背景
+  background-size:
+    250% 250%,
+    auto;
+  animation: swirl-background 120s ease-in-out infinite;
+  border-radius: $border-radius-md;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.star-orbits {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+
+  .orbit {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    border: 1px dashed rgba($color-gold-liu, 0.2);
+    border-radius: 50%;
+    transform-origin: center;
+    animation-name: rotate-orbit;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+
+    &.orbit-1 {
+      width: 30%;
+      height: 30%;
+      margin: -15% 0 0 -15%;
+      animation-direction: normal;
+    }
+    &.orbit-2 {
+      width: 55%;
+      height: 55%;
+      margin: -27.5% 0 0 -27.5%;
+      animation-direction: reverse;
+    }
+    &.orbit-3 {
+      width: 80%;
+      height: 80%;
+      margin: -40% 0 0 -40%;
+      animation-direction: normal;
+    }
+  }
+}
+
+.star {
+  position: absolute;
+  border-radius: 50%;
+  cursor: pointer;
+  animation: pulse-star 15s infinite ease-in-out;
+  transition:
+    transform 0.5s ease,
+    box-shadow 0.5s ease;
+
+  &.size-small {
+    width: 8px;
+    height: 8px;
+  }
+  &.size-medium {
+    width: 12px;
+    height: 12px;
+  }
+  &.size-large {
+    width: 16px;
+    height: 16px;
+  }
+
+  &.color-blue {
+    background-color: $color-cyan-tian;
+  }
+  &.color-yellow {
+    background-color: $color-gold-liu;
+  }
+  &.color-red {
+    background-color: $color-red-chi;
+  }
+
+  &.selected {
+    transform: scale(1.8);
+    box-shadow:
+      0 0 20px #fff,
+      0 0 30px currentColor;
+    z-index: 10;
+  }
+}
+
+.world-detail-panel {
+  position: absolute;
+  top: 0;
+  right: -400px;
+  width: 350px;
+  height: 100%;
+  @include frosted-glass(rgba($color-indigo-deep, 0.85), 15px);
+  border-left: 1px solid rgba($color-gold-liu, 0.4);
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+  transition: right 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+  z-index: 20;
+  padding: $spacing-lg;
+  display: flex;
+  flex-direction: column;
+
+  &.visible {
+    right: 0;
+  }
+
+  h4 {
+    font-family: $font-family-title;
+    color: $color-gold-pale;
+    font-size: $font-size-h1;
+    text-align: center;
+    margin-bottom: $spacing-lg;
+    text-shadow: 0 0 8px $color-gold-pale;
+  }
+
+  .detail-item {
+    margin-bottom: $spacing-md;
+    p {
+      margin: 0;
+      color: $color-grey-stone;
+      strong {
+        color: $color-white-moon;
+        font-weight: normal;
+      }
+    }
+  }
+
+  .world-description {
+    flex-grow: 1;
+    overflow-y: auto;
+    @include custom-scrollbar;
+    font-size: $font-size-base;
+    line-height: $line-height-base;
+    color: $color-white-moon;
+    background: rgba($color-black-void, 0.3);
+    padding: $spacing-md;
+    border-radius: $border-radius-sm;
+  }
+
+  .panel-footer {
+    margin-top: $spacing-lg;
+    text-align: center;
+  }
+}
+
+.map-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px; /* Replaced $spacing-md */
+  position: absolute;
+  bottom: 16px; /* Replaced $spacing-md */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  // background: transparent; /* 移除黑色背景 */
+  padding: 8px 16px; /* Replaced $spacing-sm $spacing-md */
+  // border-radius: 12px; /* Replaced $border-radius-lg */
+  // border: 1px solid rgba(224, 216, 192, 0.2); /* Fallback for border */
+  // backdrop-filter: blur(10px);
+
+  .constellation-info {
+    color: #e0d8c0; /* Replaced $color-gold-pale */
+    font-family: 'Noto Serif SC', serif; /* Replaced $font-family-base */
+  }
+
+  .rescan-btn {
+    margin-left: 24px; /* Replaced $spacing-lg */
+    background-color: rgba(4, 30, 66, 0.5); // 增加透明度
+    border: 1px solid rgba(137, 221, 255, 0.3);
+    opacity: 0.7;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background-color: rgba(4, 30, 66, 0.8);
+      opacity: 1;
+      border-color: rgba(137, 221, 255, 0.7);
+    }
+  }
+}
+
+.evolving-overlay {
+  @include flex-center;
+  flex-direction: column;
+  gap: $spacing-lg;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  @include frosted-glass(rgba($color-black-void, 0.8));
+  color: $color-gold-pale;
+  font-size: 1.2rem;
+  z-index: 10;
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba($color-gold-liu, 0.3);
+    border-top-color: $color-gold-liu;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

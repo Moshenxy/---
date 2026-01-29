@@ -1,0 +1,147 @@
+@use '../theme/variables' as *;
+@use '../theme/mixins' as *;
+
+// --- Keyframes for animations ---
+@keyframes rotate-starmap-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes rotate-starmap-fast {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
+}
+
+@keyframes breathe-deep {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.03); }
+}
+
+.imprints-panel-container {
+  padding: $spacing-lg;
+  @include flex-center;
+  flex-direction: column;
+}
+
+.imprints-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $spacing-md;
+  width: 400px;
+  height: 400px;
+  margin: 0 auto;
+  padding: $spacing-xl;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, lighten($color-indigo-deep, 5%) 0%, $color-black-void 70%);
+  box-shadow: 0 0 30px rgba($color-cyan-tian, 0.3), inset 0 0 20px rgba($color-black-void, 0.9);
+  border: 2px solid rgba($color-gold-liu, 0.3);
+
+  // --- Decorative Rings (浑天仪) ---
+  &::before, &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    border-radius: 50%;
+    border-style: solid;
+    border-color: rgba($color-gold-liu, 0.3) transparent;
+  }
+
+  // Outer ring
+  &::before {
+    width: 110%;
+    height: 110%;
+    margin-left: -55%;
+    margin-top: -55%;
+    border-width: 1px;
+    animation: rotate-starmap-slow 120s linear infinite;
+  }
+
+  // Inner ring
+  &::after {
+    width: 95%;
+    height: 95%;
+    margin-left: -47.5%;
+    margin-top: -47.5%;
+    border-width: 2px;
+    animation: rotate-starmap-fast 80s linear infinite;
+  }
+}
+
+.imprint-slot {
+  position: relative;
+  border: none;
+  background: transparent;
+  @include flex-center;
+  z-index: 1;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+
+  // --- Pedestal Style ---
+  &::before {
+    content: '';
+    position: absolute;
+    width: 80%;
+    height: 80%;
+    background: rgba($color-black-void, 0.7);
+    border: 1px solid rgba($color-cyan-tian, 0.4);
+    border-radius: $border-radius-md;
+    box-shadow: inset 0 0 15px rgba($color-black-void, 0.8);
+    transition: all 0.3s ease;
+  }
+
+  &.empty {
+    .empty-text {
+      font-family: $font-family-title;
+      font-size: $font-size-h2;
+      color: rgba($color-grey-stone, 0.4);
+      animation: breathe-deep 5s infinite ease-in-out;
+    }
+  }
+
+  &:not(.empty) {
+    .imprint-name {
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s ease;
+    }
+    
+    &:hover {
+      transform: scale(1.1);
+      .imprint-name {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      &::before {
+        border-color: $color-gold-pale;
+      }
+    }
+  }
+
+  // --- Glow effect based on level ---
+  @for $i from 1 through 9 {
+    &[data-level='#{$i}']::before {
+      $glow-color: hsl(48, 100%, 60% + $i * 2);
+      $shadow-opacity: 0.4 + ($i / 9) * 0.4;
+      box-shadow: 
+        inset 0 0 15px rgba($color-black-void, 0.8),
+        0 0 (5px + $i * 1.5) rgba($glow-color, $shadow-opacity),
+        0 0 (10px + $i * 3) rgba($glow-color, $shadow-opacity - 0.2);
+      border-color: rgba($glow-color, 0.8);
+    }
+  }
+}
+
+.imprint-name {
+  position: absolute;
+  bottom: -25px;
+  width: 120%;
+  text-align: center;
+  font-size: $font-size-small;
+  color: $color-gold-pale;
+  background: rgba($color-black-void, 0.7);
+  padding: 2px 0;
+  border-radius: $border-radius-sm;
+  pointer-events: none;
+}

@@ -16,11 +16,11 @@ import type { Notification } from '../../services/NotificationService';
 import { notificationService } from '../../services/NotificationService';
 
 const props = defineProps<{
- notification: Notification;
+  notification: Notification;
 }>();
 
 const hideNotification = () => {
- notificationService.hide(props.notification.id);
+  notificationService.hide(props.notification.id);
 };
 </script>
 

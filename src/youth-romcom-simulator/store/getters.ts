@@ -30,7 +30,7 @@ export const chapterInfo = computed(() => {
   if (!chapter) return { title: '未知作品', details: '未知章节' };
   return {
     title: chapter.所属作品,
-    details: `第${chapter.册}册 第${chapter.章}章: ${chapter.标题}`
+    details: `第${chapter.册}册 第${chapter.章}章: ${chapter.标题}`,
   };
 });
 
@@ -42,14 +42,16 @@ export const worldTimeStr = computed(() => {
   if (!time) return '未知时间';
   try {
     const date = new Date(time);
-    return date.toLocaleString('zh-CN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    }).replace(/\//g, '-');
+    return date
+      .toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      })
+      .replace(/\//g, '-');
   } catch (e) {
     return '无效时间格式';
   }
@@ -62,7 +64,6 @@ export const combinedNarrative = computed(() => {
   const narrative = store.mainWorldNarrative || '等待故事的展开...';
   return `<div class="narrative-block">${narrative}</div>`;
 });
-
 
 /**
  * 通用变量获取函数

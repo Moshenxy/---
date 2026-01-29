@@ -65,12 +65,7 @@ function formatValue(value: any): string {
     left: -80%;
     width: 60%;
     height: 100%;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba($color-gold-pale, 0.08),
-      transparent
-    );
+    background: linear-gradient(90deg, transparent, rgba($color-gold-pale, 0.08), transparent);
     transform: skewX(-25deg);
     transition: left 0.6s ease;
   }

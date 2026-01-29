@@ -2,11 +2,15 @@
   <div class="detail-tab-content grid-layout">
     <div class="detail-item">
       <strong class="detail-key">名称:</strong>
-      <div class="detail-value"><p>{{ npc.名称 }}</p></div>
+      <div class="detail-value">
+        <p>{{ npc.名称 }}</p>
+      </div>
     </div>
     <div class="detail-item">
       <strong class="detail-key">生日:</strong>
-      <div class="detail-value"><p>{{ formattedBirthDate }} ({{ age }})</p></div>
+      <div class="detail-value">
+        <p>{{ formattedBirthDate }} ({{ age }})</p>
+      </div>
     </div>
     <div class="detail-item">
       <strong class="detail-key">身份:</strong>
@@ -16,21 +20,23 @@
     </div>
     <div class="detail-item">
       <strong class="detail-key">核心动机:</strong>
-       <div class="detail-value">
-        <span v-for="(value, key) in npc.内在世界.核心动机" :key="key" class="tag">
-          {{ key }}: {{ value }}
-        </span>
+      <div class="detail-value">
+        <span v-for="(value, key) in npc.内在世界.核心动机" :key="key" class="tag"> {{ key }}: {{ value }} </span>
       </div>
     </div>
     <div class="detail-item full-width">
       <strong class="detail-key">容貌:</strong>
-      <div class="detail-value"><p>{{ npc.个人信息.容貌 }}</p></div>
+      <div class="detail-value">
+        <p>{{ npc.个人信息.容貌 }}</p>
+      </div>
     </div>
     <div class="detail-item full-width">
       <strong class="detail-key">身材:</strong>
-      <div class="detail-value"><p>{{ npc.个人信息.身材 }}</p></div>
+      <div class="detail-value">
+        <p>{{ npc.个人信息.身材 }}</p>
+      </div>
     </div>
-     <div class="detail-item full-width">
+    <div class="detail-item full-width">
       <strong class="detail-key">核心特质:</strong>
       <div class="detail-value">
         <ul class="history-list">
@@ -72,7 +78,6 @@ const formattedBirthDate = computed(() => {
   const date = new Date(bd);
   return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
 });
-
 </script>
 
 <style lang="scss" scoped>

@@ -2,7 +2,11 @@
   <div class="message-view">
     <div class="chat-list">
       <div class="chat-item" v-for="chat in chatList" :key="chat.id" @click="$emit('view-chat', chat.id)">
-        <div class="avatar" :class="{ 'group-avatar': chat.isGroup }" v-html="getAvatar(chat.name, chat.characterId || chat.id)"></div>
+        <div
+          class="avatar"
+          :class="{ 'group-avatar': chat.isGroup }"
+          v-html="getAvatar(chat.name, chat.characterId || chat.id)"
+        ></div>
         <div class="chat-info">
           <div class="chat-name">{{ chat.name }} <span v-if="chat.isGroup" class="group-tag">群</span></div>
           <div class="last-message">{{ chat.lastMessage }}</div>
@@ -60,16 +64,16 @@ const chatList = computed(() => getters.enrichedChatList.value);
 }
 
 .group-avatar {
-    background-color: #f97316; // A different color for groups
+  background-color: #f97316; // A different color for groups
 }
 
 .group-tag {
-    font-size: 10px;
-    padding: 2px 4px;
-    border-radius: 4px;
-    background-color: #e5e7eb;
-    color: #4b5563;
-    margin-left: 5px;
+  font-size: 10px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  background-color: #e5e7eb;
+  color: #4b5563;
+  margin-left: 5px;
 }
 
 .chat-name {

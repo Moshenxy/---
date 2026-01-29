@@ -15,7 +15,7 @@ const allNpcs = computed(() => {
   const npcs: 角色[] = [];
   for (const charId in worldState.角色列表) {
     if (charId === USER_ID) continue;
-    
+
     const char = worldState.角色列表[charId];
     if (char && typeof char !== 'string') {
       npcs.push(char);

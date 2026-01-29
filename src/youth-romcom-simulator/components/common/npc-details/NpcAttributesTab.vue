@@ -44,9 +44,10 @@ const props = defineProps<{ npc: 角色 }>();
 const attributes = computed(() => {
   if (!props.npc.属性) return [];
   return Object.entries(props.npc.属性).map(([key, value]) => {
-    const levelInfo = 属性等级定义.find((l: typeof 属性等级定义[number]) => l.等级 === value.等级);
+    const levelInfo = 属性等级定义.find((l: (typeof 属性等级定义)[number]) => l.等级 === value.等级);
     const expToNextLevel = levelInfo ? (levelInfo.升级经验 === Infinity ? 'MAX' : levelInfo.升级经验) : 0;
-    const expPercentage = typeof expToNextLevel === 'number' && expToNextLevel > 0 ? (value.经验值 / expToNextLevel) * 100 : 0;
+    const expPercentage =
+      typeof expToNextLevel === 'number' && expToNextLevel > 0 ? (value.经验值 / expToNextLevel) * 100 : 0;
     return {
       key,
       ...value,
@@ -66,7 +67,6 @@ const skills = computed(() => {
     };
   });
 });
-
 </script>
 
 <style lang="scss" scoped>

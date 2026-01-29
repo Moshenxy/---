@@ -26,297 +26,295 @@
 */
 
 .dock-manager {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    background: var(--dock-manager-background-color);
-    overflow: hidden;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: var(--dock-manager-background-color);
+  overflow: hidden;
 }
 
 .dock-manager-overlay {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    z-index: 100;
-    pointer-events: none;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+  pointer-events: none;
 }
 
 .dock-manager-splitter {
-    background: var(--dock-manager-splitter-background-color);
-    z-index: 1;
-    position: absolute;
+  background: var(--dock-manager-splitter-background-color);
+  z-index: 1;
+  position: absolute;
 }
 
 .dock-manager-splitter:hover {
-    background: var(--dock-manager-splitter-hover-background-color);
+  background: var(--dock-manager-splitter-hover-background-color);
 }
 
 .dock-manager-splitter-horizontal {
-    cursor: col-resize;
+  cursor: col-resize;
 }
 
 .dock-manager-splitter-vertical {
-    cursor: row-resize;
+  cursor: row-resize;
 }
 
-
 .panel-component {
-    overflow: hidden;
-    position: absolute;
+  overflow: hidden;
+  position: absolute;
 }
 
 .panel-component-inner {
-    padding-left: 2px;
-    padding-right: 2px;
-    padding-bottom: 2px;
-    height: 100%;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
+  padding-left: 2px;
+  padding-right: 2px;
+  padding-bottom: 2px;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .panel-titlebar {
-    display: flex;
-    background-color: var(--dock-manager-inactive-tab-background-color);
-    color: var(--dock-manager-inactive-tab-color);
-    font: 12px sans-serif;
-    padding: 3px 0px 3px 6px;
-    user-select: none;
-    align-items: center;
+  display: flex;
+  background-color: var(--dock-manager-inactive-tab-background-color);
+  color: var(--dock-manager-inactive-tab-color);
+  font: 12px sans-serif;
+  padding: 3px 0px 3px 6px;
+  user-select: none;
+  align-items: center;
 }
 .panel-titlebar-button {
-    width: 16px;
-    height: 16px;
-    margin-right: 2px;
-    cursor: pointer;
-    flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin-right: 2px;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
 .panel-titlebar-text {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    cursor: default;
-    flex-grow: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: default;
+  flex-grow: 1;
 }
 
 .tab-handle {
-    background: var(--dock-manager-inactive-tab-background-color);
-    color: var(--dock-manager-inactive-tab-color);
-    display: inline-block;
-    padding: 4px 10px;
-    font: 12px sans-serif;
-    cursor: default;
-    user-select: none;
-    border-right: 1px solid var(--dock-manager-border-color);
+  background: var(--dock-manager-inactive-tab-background-color);
+  color: var(--dock-manager-inactive-tab-color);
+  display: inline-block;
+  padding: 4px 10px;
+  font: 12px sans-serif;
+  cursor: default;
+  user-select: none;
+  border-right: 1px solid var(--dock-manager-border-color);
 }
 
 .tab-handle:hover {
-    background: var(--dock-manager-hover-tab-background-color);
-    color: var(--dock-manager-hover-tab-color);
+  background: var(--dock-manager-hover-tab-background-color);
+  color: var(--dock-manager-hover-tab-color);
 }
 
 .tab-handle-close-button {
-    width: 16px;
-    height: 16px;
-    margin-left: 5px;
-    cursor: pointer;
-    vertical-align: middle;
+  width: 16px;
+  height: 16px;
+  margin-left: 5px;
+  cursor: pointer;
+  vertical-align: middle;
 }
 
 .tab-handle-selected {
-    background: var(--dock-manager-active-tab-background-color);
-    color: var(--dock-manager-active-tab-color);
+  background: var(--dock-manager-active-tab-background-color);
+  color: var(--dock-manager-active-tab-color);
 }
 .tab-handle-selected:hover {
-    background: var(--dock-manager-active-tab-background-color);
-    color: var(--dock-manager-active-tab-color);
+  background: var(--dock-manager-active-tab-background-color);
+  color: var(--dock-manager-active-tab-color);
 }
 
-
 .panel-container {
-    width: 100%;
-    height: 100%;
-    background: var(--dock-manager-fill-panel-background-color);
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+  width: 100%;
+  height: 100%;
+  background: var(--dock-manager-fill-panel-background-color);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .tab-page-container {
-    background: var(--dock-manager-fill-panel-background-color);
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
+  background: var(--dock-manager-fill-panel-background-color);
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
 }
 
 .tabs-container {
-    display: flex;
-    flex-shrink: 0;
+  display: flex;
+  flex-shrink: 0;
 }
 
 .tab-host {
-    position: relative;
-    background: var(--dock-manager-inactive-tab-background-color);
-    flex-grow: 1;
-    overflow: hidden;
+  position: relative;
+  background: var(--dock-manager-inactive-tab-background-color);
+  flex-grow: 1;
+  overflow: hidden;
 }
 
 .tab-page-header-container {
-    display: flex;
-    background: var(--dock-manager-inactive-tab-background-color);
-    padding-left: 2px;
+  display: flex;
+  background: var(--dock-manager-inactive-tab-background-color);
+  padding-left: 2px;
 }
 .tab-page-header {
-    white-space: nowrap;
-    position: relative;
+  white-space: nowrap;
+  position: relative;
 }
 
 .tab-page-header-menu-button {
-    width: 16px;
-    height: 16px;
-    cursor: pointer;
-    padding: 4px;
-    border-left: 1px solid var(--dock-manager-border-color);
-    border-right: 1px solid var(--dock-manager-border-color);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  padding: 4px;
+  border-left: 1px solid var(--dock-manager-border-color);
+  border-right: 1px solid var(--dock-manager-border-color);
 }
 
 .panel-content {
-    position: relative;
-    overflow: auto;
-    width: 100%;
-    flex-grow: 1;
+  position: relative;
+  overflow: auto;
+  width: 100%;
+  flex-grow: 1;
 }
 
 .dialog-floating {
-    z-index: 10;
-    position: absolute;
-    background: var(--dock-manager-dialog-background-color);
-    border: 1px solid var(--dock-manager-dialog-border-color);
+  z-index: 10;
+  position: absolute;
+  background: var(--dock-manager-dialog-background-color);
+  border: 1px solid var(--dock-manager-dialog-border-color);
 }
 .dialog-titlebar {
-    background-color: var(--dock-manager-dialog-titlebar-background-color);
-    color: var(--dock-manager-dialog-titlebar-color);
-    font: 12px sans-serif;
-    padding: 3px 0px 3px 6px;
-    user-select: none;
-    display: flex;
-    align-items: center;
+  background-color: var(--dock-manager-dialog-titlebar-background-color);
+  color: var(--dock-manager-dialog-titlebar-color);
+  font: 12px sans-serif;
+  padding: 3px 0px 3px 6px;
+  user-select: none;
+  display: flex;
+  align-items: center;
 }
 .dialog-titlebar-text {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    cursor: move;
-    flex-grow: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: move;
+  flex-grow: 1;
 }
 .dialog-titlebar-button {
-    width: 16px;
-    height: 16px;
-    margin-right: 2px;
-    cursor: pointer;
-    flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin-right: 2px;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 .dialog-content {
-    padding: 5px;
-    overflow: hidden;
+  padding: 5px;
+  overflow: hidden;
 }
 
 .dock-wheel {
-    position: absolute;
-    width: 140px;
-    height: 140px;
-    pointer-events: all;
-    border-radius: 100%;
+  position: absolute;
+  width: 140px;
+  height: 140px;
+  pointer-events: all;
+  border-radius: 100%;
 }
 .dock-wheel-center-S {
-    position: absolute;
-    left: 50px;
-    top: 50px;
-    width: 40px;
-    height: 40px;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='rgba(255,255,255,.5)' class='bi bi-app' viewBox='0 0 16 16'%3e%3cpath d='M11 2a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3zM5 1a4 4 0 0 0-4 4v6a4 4 0 0 0 4 4h6a4 4 0 0 0 4-4V5a4 4 0 0 0-4-4z'/%3e%3c/svg%3e");
-    background-position: center;
-    background-repeat: no-repeat;
-    background-color: rgba(0,0,0,0.5);
-    border-radius: 6px;
-    border: 1px solid white;
+  position: absolute;
+  left: 50px;
+  top: 50px;
+  width: 40px;
+  height: 40px;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='rgba(255,255,255,.5)' class='bi bi-app' viewBox='0 0 16 16'%3e%3cpath d='M11 2a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3zM5 1a4 4 0 0 0-4 4v6a4 4 0 0 0 4 4h6a4 4 0 0 0 4-4V5a4 4 0 0 0-4-4z'/%3e%3c/svg%3e");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 6px;
+  border: 1px solid white;
 }
 .dock-wheel-center-S:hover {
-    background-color: rgba(0,0,255,0.5);
+  background-color: rgba(0, 0, 255, 0.5);
 }
 .dock-wheel-left-S {
-    position: absolute;
-    left: 10px;
-    top: 50px;
-    width: 40px;
-    height: 40px;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='rgba(255,255,255,.5)' class='bi bi-app' viewBox='0 0 16 16'%3e%3cpath d='M11 2a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3zM5 1a4 4 0 0 0-4 4v6a4 4 0 0 0 4 4h6a4 4 0 0 0 4-4V5a4 4 0 0 0-4-4z'/%3e%3c/svg%3e");
-    background-position: center;
-    background-repeat: no-repeat;
-    background-color: rgba(0,0,0,0.5);
-    clip-path: path("M 40,0 L 40,40 L 0,40 L 0,0 z M 20,5 L 20,35 L 5,20 z");
+  position: absolute;
+  left: 10px;
+  top: 50px;
+  width: 40px;
+  height: 40px;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='rgba(255,255,255,.5)' class='bi bi-app' viewBox='0 0 16 16'%3e%3cpath d='M11 2a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3zM5 1a4 4 0 0 0-4 4v6a4 4 0 0 0 4 4h6a4 4 0 0 0 4-4V5a4 4 0 0 0-4-4z'/%3e%3c/svg%3e");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: rgba(0, 0, 0, 0.5);
+  clip-path: path('M 40,0 L 40,40 L 0,40 L 0,0 z M 20,5 L 20,35 L 5,20 z');
 }
 .dock-wheel-left-S:hover {
-    background-color: rgba(0,0,255,0.5);
+  background-color: rgba(0, 0, 255, 0.5);
 }
 .dock-wheel-right-S {
-    position: absolute;
-    left: 90px;
-    top: 50px;
-    width: 40px;
-    height: 40px;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='rgba(255,255,255,.5)' class='bi bi-app' viewBox='0 0 16 16'%3e%3cpath d='M11 2a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3zM5 1a4 4 0 0 0-4 4v6a4 4 0 0 0 4 4h6a4 4 0 0 0 4-4V5a4 4 0 0 0-4-4z'/%3e%3c/svg%3e");
-    background-position: center;
-    background-repeat: no-repeat;
-    background-color: rgba(0,0,0,0.5);
-    clip-path: path("M 0,0 L 0,40 L 40,40 L 40,0 z M 20,5 L 20,35 L 35,20 z");
+  position: absolute;
+  left: 90px;
+  top: 50px;
+  width: 40px;
+  height: 40px;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='rgba(255,255,255,.5)' class='bi bi-app' viewBox='0 0 16 16'%3e%3cpath d='M11 2a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3zM5 1a4 4 0 0 0-4 4v6a4 4 0 0 0 4 4h6a4 4 0 0 0 4-4V5a4 4 0 0 0-4-4z'/%3e%3c/svg%3e");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: rgba(0, 0, 0, 0.5);
+  clip-path: path('M 0,0 L 0,40 L 40,40 L 40,0 z M 20,5 L 20,35 L 35,20 z');
 }
 .dock-wheel-right-S:hover {
-    background-color: rgba(0,0,255,0.5);
+  background-color: rgba(0, 0, 255, 0.5);
 }
 .dock-wheel-top-S {
-    position: absolute;
-    left: 50px;
-    top: 10px;
-    width: 40px;
-    height: 40px;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='rgba(255,255,255,.5)' class='bi bi-app' viewBox='0 0 16 16'%3e%3cpath d='M11 2a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3zM5 1a4 4 0 0 0-4 4v6a4 4 0 0 0 4 4h6a4 4 0 0 0 4-4V5a4 4 0 0 0-4-4z'/%3e%3c/svg%3e");
-    background-position: center;
-    background-repeat: no-repeat;
-    background-color: rgba(0,0,0,0.5);
-    clip-path: path("M 0,40 L 40,40 L 40,0 L 0,0 z M 5,20 L 35,20 L 20,5 z");
+  position: absolute;
+  left: 50px;
+  top: 10px;
+  width: 40px;
+  height: 40px;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='rgba(255,255,255,.5)' class='bi bi-app' viewBox='0 0 16 16'%3e%3cpath d='M11 2a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3zM5 1a4 4 0 0 0-4 4v6a4 4 0 0 0 4 4h6a4 4 0 0 0 4-4V5a4 4 0 0 0-4-4z'/%3e%3c/svg%3e");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: rgba(0, 0, 0, 0.5);
+  clip-path: path('M 0,40 L 40,40 L 40,0 L 0,0 z M 5,20 L 35,20 L 20,5 z');
 }
 .dock-wheel-top-S:hover {
-    background-color: rgba(0,0,255,0.5);
+  background-color: rgba(0, 0, 255, 0.5);
 }
 .dock-wheel-down-S {
-    position: absolute;
-    left: 50px;
-    top: 90px;
-    width: 40px;
-    height: 40px;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='rgba(255,255,255,.5)' class='bi bi-app' viewBox='0 0 16 16'%3e%3cpath d='M11 2a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3zM5 1a4 4 0 0 0-4 4v6a4 4 0 0 0 4 4h6a4 4 0 0 0 4-4V5a4 4 0 0 0-4-4z'/%3e%3c/svg%3e");
-    background-position: center;
-    background-repeat: no-repeat;
-    background-color: rgba(0,0,0,0.5);
-    clip-path: path("M 0,0 L 40,0 L 40,40 L 0,40 z M 5,20 L 35,20 L 20,35 z");
+  position: absolute;
+  left: 50px;
+  top: 90px;
+  width: 40px;
+  height: 40px;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='rgba(255,255,255,.5)' class='bi bi-app' viewBox='0 0 16 16'%3e%3cpath d='M11 2a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3zM5 1a4 4 0 0 0-4 4v6a4 4 0 0 0 4 4h6a4 4 0 0 0 4-4V5a4 4 0 0 0-4-4z'/%3e%3c/svg%3e");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: rgba(0, 0, 0, 0.5);
+  clip-path: path('M 0,0 L 40,0 L 40,40 L 0,40 z M 5,20 L 35,20 L 20,35 z');
 }
 .dock-wheel-down-S:hover {
-    background-color: rgba(0,0,255,0.5);
+  background-color: rgba(0, 0, 255, 0.5);
 }
 
 .dock-wheel-dock-indicator {
-    position: absolute;
-    background: blue;
-    opacity: 0.3;
-    pointer-events: none;
-    border: 1px solid blue;
-    border-radius: 3px;
-    box-sizing: border-box;
+  position: absolute;
+  background: blue;
+  opacity: 0.3;
+  pointer-events: none;
+  border: 1px solid blue;
+  border-radius: 3px;
+  box-sizing: border-box;
 }

@@ -24,32 +24,30 @@ serviceLocator.register('inputModalActions', inputModalActions);
 serviceLocator.register('store', store);
 serviceLocator.register('actions', actions);
 
-
 // 3. 监听 store.isReady 状态，确保数据加载完毕后再初始化依赖数据的服务
 const unwatch = watch(
   () => store.isReady,
-  (isReady) => {
+  isReady => {
     if (isReady) {
       console.log('[Startup] Store is ready, proceeding with service initialization.');
       initializeDependentServices();
       unwatch(); // 初始化完成后停止监听，避免重复执行
     }
   },
-  { immediate: true } // 立即执行一次，以防 isReady 已经为 true
+  { immediate: true }, // 立即执行一次，以防 isReady 已经为 true
 );
-
 
 /**
  * 初始化依赖于 worldState 的服务
  */
 async function initializeDependentServices() {
-    if (!store.worldState) {
-        console.error('[Startup] worldState is null after store is ready. Aborting dependent service initialization.');
-        return;
-    }
+  if (!store.worldState) {
+    console.error('[Startup] worldState is null after store is ready. Aborting dependent service initialization.');
+    return;
+  }
   await npcService.initializeWorldAndLocationData();
   await entityIndexService.buildIndex(store.worldState);
-  
+
   console.log('All services initialized.');
   handleRerollRestore();
 
@@ -68,7 +66,6 @@ async function initializeDependentServices() {
     { deep: true },
   );
 }
-
 
 function handleRerollRestore() {
   const shouldRestore = localStorage.getItem('reincarnation-simulator-restore-input');

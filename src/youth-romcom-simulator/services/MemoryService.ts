@@ -32,8 +32,9 @@ class MemoryService {
       await this.writeMemory(this.INSTANT_MEMORY_KEY, '暂无瞬时记忆。');
       return;
     }
-  
-    const newContent = logs.map(log => {
+
+    const newContent = logs
+      .map(log => {
         return [
           `序号|${log.序号}`,
           `日期|${log.日期}`,
@@ -46,8 +47,9 @@ class MemoryService {
           `暗线与伏笔|${log.暗线与伏笔 || '无'}`,
           `自动化系统|${log.自动化系统 || '无'}`,
         ].join('\n');
-      }).join('\n\n---\n\n');
-  
+      })
+      .join('\n\n---\n\n');
+
     await this.writeMemory(this.INSTANT_MEMORY_KEY, newContent.trim());
     console.log('[MemoryService] Instant memory updated.');
   }
@@ -59,7 +61,8 @@ class MemoryService {
       return;
     }
 
-    const newContent = logs.map(log => {
+    const newContent = logs
+      .map(log => {
         const coreInteraction = log.重要信息?.match(/【核心互动】(.*?)(【|$)/)?.[1] || '无';
         const relationChange = log.重要信息?.match(/【关系变动】(.*?)(【|$)/)?.[1] || '无';
         return [
@@ -70,7 +73,8 @@ class MemoryService {
           `核心互动|${coreInteraction}`,
           `关系变动|${relationChange}`,
         ].join('\n');
-      }).join('\n\n---\n\n');
+      })
+      .join('\n\n---\n\n');
 
     await this.writeMemory(this.SHORT_TERM_MEMORY_KEY, newContent.trim());
     console.log('[MemoryService] Short-term memory updated.');
@@ -83,14 +87,12 @@ class MemoryService {
       return;
     }
 
-    const newContent = logs.map(log => {
-      const coreConflict = log.重要信息?.match(/【核心冲突】(.*?)(【|$)/)?.[1] || '无';
-      return [
-        `日期|${log.日期}`,
-        `描述|${log.描述}`,
-        `核心冲突|${coreConflict}`,
-      ].join('\n');
-    }).join('\n\n---\n\n');
+    const newContent = logs
+      .map(log => {
+        const coreConflict = log.重要信息?.match(/【核心冲突】(.*?)(【|$)/)?.[1] || '无';
+        return [`日期|${log.日期}`, `描述|${log.描述}`, `核心冲突|${coreConflict}`].join('\n');
+      })
+      .join('\n\n---\n\n');
 
     await this.writeMemory(this.LONG_TERM_MEMORY_KEY, newContent.trim());
     console.log('[MemoryService] Long-term memory updated.');

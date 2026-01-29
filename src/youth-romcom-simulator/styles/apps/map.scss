@@ -59,7 +59,7 @@
     z-index: 21;
     transition: left 0.3s ease-in-out;
   }
-  
+
   &.filter-sidebar-open .filter-sidebar-handle {
     left: 220px; // Match new sidebar width
   }
@@ -187,7 +187,7 @@
   backdrop-filter: blur(5px);
   padding: 8px 12px;
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   font-size: 14px;
   color: #4b5563;
 
@@ -260,39 +260,96 @@
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     z-index: 5;
   }
-  
+
   .location-text {
     position: relative;
     z-index: 2;
     color: #fff;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
   }
 
   // Type-based styling
-  &.type-国家 { background-color: #dc2626; border: 1px solid darken(#dc2626, 10%); }
-  &.type-城市 { background-color: #2563eb; border: 1px solid darken(#2563eb, 10%); }
-  &.type-区域 { background-color: #65a30d; border: 1px solid darken(#65a30d, 10%); }
-  &.type-学校 { background-color: #16a34a; border: 1px solid darken(#16a34a, 10%); }
-  &.type-商业区 { background-color: #f59e0b; border: 1px solid darken(#f59e0b, 10%); }
-  &.type-户外区域 { background-color: #0d9488; border: 1px solid darken(#0d9488, 10%); }
-  &.type-交通枢纽 { background-color: #64748b; border: 1px solid darken(#64748b, 10%); }
-  &.type-公共设施 { background-color: #7c3aed; border: 1px solid darken(#7c3aed, 10%); }
-  &.type-名胜古迹 { background-color: #c026d3; border: 1px solid darken(#c026d3, 10%); }
-  &.type-生活区域 { background-color: #0891b2; border: 1px solid darken(#0891b2, 10%); }
-  &.type-特殊地点 { background-color: #475569; border: 1px solid darken(#475569, 10%); }
-  &.type-建筑 { background-color: #9333ea; border: 1px solid darken(#9333ea, 10%); }
-  &.type-教室 { background-color: #f97316; border: 1px solid darken(#f97316, 10%); }
-  &.type-功能室 { background-color: #ea580c; border: 1px solid darken(#ea580c, 10%); }
-  &.type-社团活动室 { background-color: #db2777; border: 1px solid darken(#db2777, 10%); }
-  &.type-运动设施 { background-color: #0ea5e9; border: 1px solid darken(#0ea5e9, 10%); }
-  &.type-店铺 { background-color: #f59e0b; border: 1px solid darken(#f59e0b, 10%); }
-  &.type-娱乐场所 { background-color: #d946ef; border: 1px solid darken(#d946ef, 10%); }
-  &.type-教育机构 { background-color: #059669; border: 1px solid darken(#059669, 10%); }
+  &.type-国家 {
+    background-color: #dc2626;
+    border: 1px solid darken(#dc2626, 10%);
+  }
+  &.type-城市 {
+    background-color: #2563eb;
+    border: 1px solid darken(#2563eb, 10%);
+  }
+  &.type-区域 {
+    background-color: #65a30d;
+    border: 1px solid darken(#65a30d, 10%);
+  }
+  &.type-学校 {
+    background-color: #16a34a;
+    border: 1px solid darken(#16a34a, 10%);
+  }
+  &.type-商业区 {
+    background-color: #f59e0b;
+    border: 1px solid darken(#f59e0b, 10%);
+  }
+  &.type-户外区域 {
+    background-color: #0d9488;
+    border: 1px solid darken(#0d9488, 10%);
+  }
+  &.type-交通枢纽 {
+    background-color: #64748b;
+    border: 1px solid darken(#64748b, 10%);
+  }
+  &.type-公共设施 {
+    background-color: #7c3aed;
+    border: 1px solid darken(#7c3aed, 10%);
+  }
+  &.type-名胜古迹 {
+    background-color: #c026d3;
+    border: 1px solid darken(#c026d3, 10%);
+  }
+  &.type-生活区域 {
+    background-color: #0891b2;
+    border: 1px solid darken(#0891b2, 10%);
+  }
+  &.type-特殊地点 {
+    background-color: #475569;
+    border: 1px solid darken(#475569, 10%);
+  }
+  &.type-建筑 {
+    background-color: #9333ea;
+    border: 1px solid darken(#9333ea, 10%);
+  }
+  &.type-教室 {
+    background-color: #f97316;
+    border: 1px solid darken(#f97316, 10%);
+  }
+  &.type-功能室 {
+    background-color: #ea580c;
+    border: 1px solid darken(#ea580c, 10%);
+  }
+  &.type-社团活动室 {
+    background-color: #db2777;
+    border: 1px solid darken(#db2777, 10%);
+  }
+  &.type-运动设施 {
+    background-color: #0ea5e9;
+    border: 1px solid darken(#0ea5e9, 10%);
+  }
+  &.type-店铺 {
+    background-color: #f59e0b;
+    border: 1px solid darken(#f59e0b, 10%);
+  }
+  &.type-娱乐场所 {
+    background-color: #d946ef;
+    border: 1px solid darken(#d946ef, 10%);
+  }
+  &.type-教育机构 {
+    background-color: #059669;
+    border: 1px solid darken(#059669, 10%);
+  }
 
   &.has-event {
     animation: pulse 2s infinite;
   }
-  
+
   .character-cluster-icon {
     position: absolute;
     top: 50%;
@@ -338,7 +395,13 @@
 }
 
 @keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
-  70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(245, 158, 11, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+  }
 }

@@ -9,7 +9,7 @@ export interface EntityMetadata {
   name: string;
   type: 'character' | 'location' | 'dbItem' | 'skill' | 'artifice' | 'talent';
   // 简化了 worldId, epochId 等字段
-  category?: string; 
+  category?: string;
   path?: string;
 }
 
@@ -43,7 +43,7 @@ class EntityIndexService {
         });
       }
     }
-    
+
     // TODO: 索引地点、数据库物品等。
     // 目前这些数据源的结构尚不明确，暂时留空。
 

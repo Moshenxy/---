@@ -21,7 +21,7 @@
       </button>
     </div>
     <div class="status-right">
-       <div class="info-display world-time">{{ worldTimeStr }}</div>
+      <div class="info-display world-time">{{ worldTimeStr }}</div>
     </div>
   </div>
 </template>

@@ -57,12 +57,11 @@ function selectNpc(npc: 角色) {
 }
 
 watch(filteredNpcs, () => {
-    if (selectedNpc.value && !filteredNpcs.value.includes(selectedNpc.value)) {
-        selectedNpc.value = null;
-        selectedNpcId.value = null;
-    }
+  if (selectedNpc.value && !filteredNpcs.value.includes(selectedNpc.value)) {
+    selectedNpc.value = null;
+    selectedNpcId.value = null;
+  }
 });
-
 </script>
 
 <style lang="scss" scoped>

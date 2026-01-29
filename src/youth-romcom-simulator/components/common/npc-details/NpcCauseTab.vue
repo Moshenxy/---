@@ -14,10 +14,9 @@ import type { 角色 } from '../../../types';
 import RelationsDisplay from '../RelationsDisplay.vue';
 
 defineProps<{
-  npc: 角色,
-  npcId: string | null
+  npc: 角色;
+  npcId: string | null;
 }>();
-
 </script>
 
 <style lang="scss" scoped>

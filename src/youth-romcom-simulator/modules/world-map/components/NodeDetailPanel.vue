@@ -106,7 +106,9 @@ const associatedFactions = computed((): Faction[] => {
 
   const factionsSource = mapState.worldData.内容.文明.势力;
   // 兼容势力数据源既可能是数组也可能是对象的情况
-  const factionsArray = Array.isArray(factionsSource) ? factionsSource : Object.values(factionsSource);
+  const factionsArray = Array.isArray(factionsSource)
+    ? factionsSource
+    : Object.values(factionsSource);
 
   // 临时逻辑：如果势力的核心目标或描述中包含地名，则认为其关联
   const filtered = factionsArray.filter(faction => {
@@ -225,62 +227,14 @@ onMounted(() => {
   background: transparent;
   z-index: 10;
 }
-.resize-handle.top {
-  top: -5px;
-  left: 0;
-  right: 0;
-  height: 10px;
-  cursor: ns-resize;
-}
-.resize-handle.right {
-  top: 0;
-  right: -5px;
-  bottom: 0;
-  width: 10px;
-  cursor: ew-resize;
-}
-.resize-handle.bottom {
-  bottom: -5px;
-  left: 0;
-  right: 0;
-  height: 10px;
-  cursor: ns-resize;
-}
-.resize-handle.left {
-  top: 0;
-  left: -5px;
-  bottom: 0;
-  width: 10px;
-  cursor: ew-resize;
-}
-.resize-handle.top-left {
-  top: -5px;
-  left: -5px;
-  width: 10px;
-  height: 10px;
-  cursor: nwse-resize;
-}
-.resize-handle.top-right {
-  top: -5px;
-  right: -5px;
-  width: 10px;
-  height: 10px;
-  cursor: nesw-resize;
-}
-.resize-handle.bottom-left {
-  bottom: -5px;
-  left: -5px;
-  width: 10px;
-  height: 10px;
-  cursor: nesw-resize;
-}
-.resize-handle.bottom-right {
-  bottom: -5px;
-  right: -5px;
-  width: 10px;
-  height: 10px;
-  cursor: nwse-resize;
-}
+.resize-handle.top { top: -5px; left: 0; right: 0; height: 10px; cursor: ns-resize; }
+.resize-handle.right { top: 0; right: -5px; bottom: 0; width: 10px; cursor: ew-resize; }
+.resize-handle.bottom { bottom: -5px; left: 0; right: 0; height: 10px; cursor: ns-resize; }
+.resize-handle.left { top: 0; left: -5px; bottom: 0; width: 10px; cursor: ew-resize; }
+.resize-handle.top-left { top: -5px; left: -5px; width: 10px; height: 10px; cursor: nwse-resize; }
+.resize-handle.top-right { top: -5px; right: -5px; width: 10px; height: 10px; cursor: nesw-resize; }
+.resize-handle.bottom-left { bottom: -5px; left: -5px; width: 10px; height: 10px; cursor: nesw-resize; }
+.resize-handle.bottom-right { bottom: -5px; right: -5px; width: 10px; height: 10px; cursor: nwse-resize; }
 
 .panel-header {
   display: flex;

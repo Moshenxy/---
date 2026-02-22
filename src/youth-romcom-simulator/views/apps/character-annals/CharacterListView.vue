@@ -34,7 +34,9 @@ const filteredCharacters = computed(() => {
   if (!searchTerm.value) {
     return getters.allCharacters.value;
   }
-  return getters.allCharacters.value.filter(char => char.name.toLowerCase().includes(searchTerm.value.toLowerCase()));
+  return getters.allCharacters.value.filter(char =>
+    char.name.toLowerCase().includes(searchTerm.value.toLowerCase())
+  );
 });
 
 function selectCharacter(characterId: string) {

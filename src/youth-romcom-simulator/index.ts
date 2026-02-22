@@ -1,10 +1,13 @@
-import { watch } from 'vue';
 import 'golden-layout/dist/css/goldenlayout-base.css';
 import 'golden-layout/dist/css/themes/goldenlayout-dark-theme.css';
+import { watch } from 'vue';
+import './core/vue-loader';
 import { commandService } from './services/CommandService';
+import { diarySynthesisService } from './services/DiarySynthesisService';
 import { entityIndexService } from './services/EntityIndexService';
 import { inputModalActions, inputModalState } from './services/InputModalService';
 import { logSyncService } from './services/LogSyncService';
+import { lorebookService } from './services/LorebookService';
 import { memoryService } from './services/MemoryService';
 import { npcService } from './services/NpcService';
 import { saveLoadService } from './services/saveLoadService';
@@ -12,59 +15,36 @@ import { serviceLocator } from './services/service-locator';
 import { tavernService } from './services/tavern';
 import { actions, store } from './store';
 import './styles/main.scss';
-import './core/vue-loader';
 
-// 1. 立即开始加载核心数据
-actions.loadAllData();
+// 初始化核心服务
+async function initializeServices() {
+  // 注册所有服务
+  serviceLocator.register('saveLoadService', saveLoadService);
+  serviceLocator.register('inputModalState', inputModalState);
+  serviceLocator.register('inputModalActions', inputModalActions);
+  serviceLocator.register('store', store);
+  serviceLocator.register('actions', actions);
+  serviceLocator.register('diarySynthesisService', diarySynthesisService);
 
-// 2. 注册核心服务
-serviceLocator.register('saveLoadService', saveLoadService);
-serviceLocator.register('inputModalState', inputModalState);
-serviceLocator.register('inputModalActions', inputModalActions);
-serviceLocator.register('store', store);
-serviceLocator.register('actions', actions);
-
-// 3. 监听 store.isReady 状态，确保数据加载完毕后再初始化依赖数据的服务
-const unwatch = watch(
-  () => store.isReady,
-  isReady => {
-    if (isReady) {
-      console.log('[Startup] Store is ready, proceeding with service initialization.');
-      initializeDependentServices();
-      unwatch(); // 初始化完成后停止监听，避免重复执行
-    }
-  },
-  { immediate: true }, // 立即执行一次，以防 isReady 已经为 true
-);
-
-/**
- * 初始化依赖于 worldState 的服务
- */
-async function initializeDependentServices() {
-  if (!store.worldState) {
-    console.error('[Startup] worldState is null after store is ready. Aborting dependent service initialization.');
-    return;
-  }
   await npcService.initializeWorldAndLocationData();
+  // 等待 worldState 加载完毕
+  if (!store.worldState) {
+    // Wait for worldState to be loaded
+    await new Promise(resolve => {
+      const unwatch = watch(
+        () => store.worldState,
+        newValue => {
+          if (newValue) {
+            unwatch();
+            resolve(true);
+          }
+        },
+      );
+    });
+  }
   await entityIndexService.buildIndex(store.worldState);
-
-  console.log('All services initialized.');
-  handleRerollRestore();
-
-  // 启动自动日志同步服务
-  logSyncService.startPolling(15000);
-
-  // 监听 worldLog 的变化，自动更新记忆系统
-  watch(
-    () => store.worldLog,
-    (newLog, oldLog) => {
-      if (newLog.length > (oldLog?.length || 0)) {
-        console.log('[Auto-Memory] World log updated, triggering memory update.');
-        memoryService.updateMemory(newLog);
-      }
-    },
-    { deep: true },
-  );
+  diarySynthesisService.initialize();
+  // 其他需要异步初始化的服务可以放在这里
 }
 
 function handleRerollRestore() {
@@ -79,6 +59,32 @@ function handleRerollRestore() {
     localStorage.removeItem('reincarnation-simulator-restore-input');
   }
 }
+
+// 在服务初始化后执行
+initializeServices().then(() => {
+  console.log('All services initialized.');
+  handleRerollRestore();
+
+  // 启动自动日志同步服务
+  logSyncService.startPolling(15000);
+
+  // 监听 worldLog 的变化，自动更新记忆系统
+  // The diary watch logic is now replaced by the WeeklyReviewService
+  // and other more direct update mechanisms.
+  // 启动导演场记轮询，以替代旧的watch机制
+  let lastDirectorLogContent = '';
+  setInterval(async () => {
+    // 强制刷新缓存以获取最新内容
+    const currentLogContent = await lorebookService.readFromLorebook('导演场记', true);
+    
+    // 检查内容是否存在且发生了变化
+    if (currentLogContent && currentLogContent !== lastDirectorLogContent) {
+      console.log('[Auto-Memory Polling] Detected change in "导演场记", processing...');
+      await memoryService.processDirectorLog();
+      lastDirectorLogContent = currentLogContent;
+    }
+  }, 5000); // 每5秒检查一次
+});
 
 // 这几个服务实例只需要被导入以确保其构造函数被执行
 saveLoadService;

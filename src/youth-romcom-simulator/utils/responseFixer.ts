@@ -18,25 +18,53 @@ export function ensureIntegrity(text: string): string {
 
   let fixedText = text.trim();
 
+  // New: Generic tag name normalization by removing all hyphens from any tag.
+  fixedText = fixedText.replace(/(<\/?)([^>]+)(>)/g, (match, opening, tagName, closing) => {
+    // This removes all hyphens from the captured tag name.
+    const cleanedTagName = tagName.replace(/-/g, '');
+    return `${opening}${cleanedTagName}${closing}`;
+  });
+
   // 1. Ensure <thinking> tag exists at the beginning
   if (!fixedText.startsWith('<thinking>')) {
     fixedText = '<thinking></thinking>\n' + fixedText;
   }
 
-  // 2. Auto-close other tags using a regex-based replacement
-  // This regex finds a start tag, and captures all content until the next start tag or the end of the string.
-  const blockRegex = /(<([a-zA-Z\u4e00-\u9fa5][^>\s/]*)(?:[^>]*)>)([\s\S]*?)(?=<[a-zA-Z\u4e00-\u9fa5][^>\s/]*>|$)/g;
+  // 2. Define all valid top-level tags from the format requirements
+  const topLevelTags = ['thinking', 'gametxt', '日记片段', '导演场记', '日记', '周刊', 'UpdateVariable'];
 
-  fixedText = fixedText.replace(blockRegex, (match, startTag, tagName, content) => {
-    const closingTag = `</${tagName}>`;
+  // 3. Auto-close only the defined top-level tags
+  for (const tagName of topLevelTags) {
+    const startTag = `<${tagName}>`;
+    const endTag = `</${tagName}>`;
+    const startIndex = fixedText.indexOf(startTag);
 
-    // Simple check if content already contains the closing tag.
-    if (content.includes(closingTag)) {
-      return match; // The block is already well-formed.
+    if (startIndex !== -1) {
+      const endIndex = fixedText.indexOf(endTag, startIndex);
+
+      if (endIndex === -1) {
+        // Tag is opened but not closed. Let's find where it should end.
+        let nextTagIndex = -1;
+        for (const nextTag of topLevelTags) {
+          const tempIndex = fixedText.indexOf(`<${nextTag}>`, startIndex + 1);
+          if (tempIndex !== -1 && (nextTagIndex === -1 || tempIndex < nextTagIndex)) {
+            nextTagIndex = tempIndex;
+          }
+        }
+
+        if (nextTagIndex !== -1) {
+          // Found the start of the next top-level tag. Insert the closing tag before it.
+          const content = fixedText.substring(startIndex + startTag.length, nextTagIndex).trimEnd();
+          fixedText =
+            fixedText.substring(0, startIndex + startTag.length) + content + endTag + fixedText.substring(nextTagIndex);
+        } else {
+          // No other top-level tags after it, so close it at the end of the string.
+          const content = fixedText.substring(startIndex + startTag.length).trimEnd();
+          fixedText = fixedText.substring(0, startIndex + startTag.length) + content + endTag;
+        }
+      }
     }
-
-    return `${startTag}${content.trimEnd()}${closingTag}`;
-  });
+  }
 
   // Post-processing step for the specific <UpdateVariable><Analysis> case
   const analysisBlockRegex = /<Analysis>[\s\S]*?<\/Analysis>/;
@@ -44,22 +72,15 @@ export function ensureIntegrity(text: string): string {
 
   if (analysisMatch) {
     const analysisBlock = analysisMatch[0];
-    // This pattern specifically finds the incorrect sequence of a closing UpdateVariable
-    // followed immediately by the full Analysis block.
     const faultyPattern = `</UpdateVariable>${analysisBlock}`;
 
     if (fixedText.includes(faultyPattern)) {
-      // By replacing the entire faulty pattern with just the analysis block,
-      // we effectively "move" the analysis block and "delete" the extra closing tag
-      // in a single operation.
       fixedText = fixedText.replace(faultyPattern, analysisBlock);
     }
   }
 
   // Final cleanup for specific, known AI formatting errors
-  // Handles <可选化身></可选化身>
   fixedText = fixedText.replace(/<可选化身><\/可选化身>/g, '');
-  // Handles <化身></化身>
   fixedText = fixedText.replace(/<化身><\/化身>/g, '');
 
   return fixedText;

@@ -110,40 +110,6 @@ async function appendToEntry(entryName: string, newContent: string, separator = 
   }
 }
 
-import { parseWorldLoreForMap } from '../modules/world-map/services/WorldMapParser';
-import type { Epoch, WorldDefinition } from '../types/world';
-
-async function loadAndParseWorldData(worldName = '主世界'): Promise<Epoch | null> {
-  try {
-    const content = await readFromLorebook(worldName);
-    if (!content) {
-      console.warn(`[LorebookService] 未能读取到名为 "${worldName}" 的世界书条目内容。`);
-      return null;
-    }
-
-    const worldData = parseWorldLoreForMap(content) as WorldDefinition | null;
-
-    if (worldData && worldData.历史纪元 && worldData.元规则) {
-      // 优先使用当前纪元ID
-      const currentEpochId = worldData.元规则.当前纪元ID;
-      if (currentEpochId && worldData.历史纪元[currentEpochId]) {
-        return worldData.历史纪元[currentEpochId];
-      }
-      // 降级方案：返回第一个可扮演的纪元
-      const firstPlayableEpoch = Object.values(worldData.历史纪元).find(epoch => epoch.可扮演);
-      if (firstPlayableEpoch) {
-        return firstPlayableEpoch;
-      }
-    }
-
-    console.warn(`[LorebookService] 在 "${worldName}" 的世界数据中未能找到激活的纪元信息。`);
-    return null;
-  } catch (error) {
-    console.error(`[LorebookService] 解析世界数据 "${worldName}" 时出错:`, error);
-    return null;
-  }
-}
-
 export const lorebookService = {
   getEntries,
   readFromLorebook,
@@ -151,7 +117,6 @@ export const lorebookService = {
   appendToEntry,
   findEntryByComment,
   setEntryEnabled,
-  loadAndParseWorldData, // 导出新方法
 };
 
 async function setEntryEnabled(entryName: string, isEnabled: boolean): Promise<void> {

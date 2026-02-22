@@ -1,6 +1,7 @@
 import { ComponentContainer, GoldenLayout, LayoutConfig } from 'golden-layout';
 import { Component, defineComponent, h, render } from 'vue';
 import MainView from '../MainView.vue';
+import TimelinePanel from '../components/panels/TimelinePanel.vue';
 import { panelRegistry } from './panelRegistry';
 import { eventBus } from './EventBus';
 
@@ -17,6 +18,7 @@ class DockManagerService {
 
     // Pre-register all possible panel components
     this.registerComponent('main-view', MainView);
+    this.registerComponent('timeline-panel', TimelinePanel);
     for (const world in panelRegistry) {
       for (const panel in panelRegistry[world]) {
         const componentName = `${world}-${panel}`.toLowerCase();
@@ -24,6 +26,7 @@ class DockManagerService {
         this.registerComponent(componentName, panelInfo.component);
       }
     }
+
 
     window.addEventListener('resize', () => this.updateLayout());
 
@@ -71,7 +74,7 @@ class DockManagerService {
       if ((componentState as any)?.title) {
         container.setTitle((componentState as any).title);
       }
-
+      
       // Add a destroy listener to notify LayoutService
       (container as any).on('destroy', () => {
         const panelId = (componentState as any)?.panelId;

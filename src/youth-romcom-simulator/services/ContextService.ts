@@ -1,7 +1,13 @@
-import { get } from 'lodash';
-import { AppState, Character, World, WorldEpoch, WorldState } from '../types';
+import dayjs from 'dayjs';
+import { AppState, DiaryFragment, Npc, 主角, 游戏世界状态 } from '../types';
 import { InformationRipple } from '../types/evolution';
-import { entityIndexService } from './EntityIndexService';
+import { debugService } from './DebugService';
+import { diarySynthesisService } from './DiarySynthesisService';
+import { lorebookService } from './LorebookService';
+import { memoryRetrievalService } from './MemoryRetrievalService';
+import { storylineService } from './StorylineService';
+
+type TimeSegment = '早晨' | '上学路' | '午前' | '午休' | '午后' | '放学后' | '傍晚' | '夜';
 
 export interface UserIntent {
   actionType: 'combat' | 'social' | 'exploration' | 'inventory' | 'creation' | 'default';
@@ -11,14 +17,14 @@ export interface UserIntent {
     locations: string[];
     dbItems: string[];
   };
-  triggeredRipples: InformationRipple[]; // 新增：被叙事引力捕获的涟漪
-  loadFullPlayerData?: (keyof WorldState['玩家']['本体'])[];
+  triggeredRipples: InformationRipple[];
+  loadFullPlayerData?: (keyof (主角 | Npc))[];
 }
 
-/**
- * 负责在与AI交互前，根据当前情景智能地构建一个最小化的、临时的上下文对象。
- */
 class ContextService {
+  private lastProcessedCardDrawTime: { 日期: string; 片段: string } | null = null;
+  private hasIssuedDrawCommandForTime = false;
+
   public analyzeUserIntent(
     userInput: string,
     worldState: AppState['worldState'],
@@ -33,458 +39,484 @@ class ContextService {
       },
       triggeredRipples: [],
     };
-
     if (!worldState) return intent;
-
-    // 1. 主动场景分析：预加载核心场景实体
-    const activeWorld = Object.values(worldState.世界 || {}).find(w =>
-      ['主世界', '当前化身世界'].includes(get(w, '定义.元规则.定位', '')),
-    );
-    const avatarId = get(worldState, '玩家.模拟器.模拟.当前化身ID');
-    const currentPlayer = avatarId ? get(activeWorld, `角色.${avatarId}`) : get(worldState, '玩家.本体');
-
-    if (currentPlayer && activeWorld) {
-      const currentLocationId = currentPlayer.当前位置;
-      if (currentLocationId) {
-        intent.explicitEntities.locations.push(currentLocationId);
-
-        // 自动添加父级地点
-        let parentId = entityIndexService.findById(currentLocationId)?.parentId;
-        while (parentId && parentId !== 'WORLD_ORIGIN') {
-          intent.explicitEntities.locations.push(parentId);
-          parentId = entityIndexService.findById(parentId)?.parentId;
-        }
-
-        // 自动添加同地点NPC
-        const worldChars = get(activeWorld, '角色', {});
-        for (const charId in worldChars) {
-          if (get(worldChars, `${charId}.当前位置`) === currentLocationId) {
-            intent.explicitEntities.characters.push(charId);
-          }
-        }
-      }
-    }
-
-    // 2. 意图分析 (Action Type) - 抽象化权重匹配
-    const intentScores: Record<UserIntent['actionType'], number> = {
-      combat: 0,
-      inventory: 0,
-      social: 0,
-      exploration: 0,
-      creation: 0,
-      default: 1, // 基础分
-    };
-
-    const patterns: { type: UserIntent['actionType']; regex: RegExp; weight: number }[] = [
-      { type: 'combat', regex: /(攻击|战斗|防御|躲闪|释放|技能|杀|击败|对决|戒备|危险|威胁)/, weight: 3 },
-      { type: 'inventory', regex: /(背包|物品|整理|装备|使用|查看|烙印|道具|储物|空间)/, weight: 2 },
-      { type: 'social', regex: /(对话|交谈|说服|询问|关系|告诉|回答|问|交流|打听|请求|命令)/, weight: 2 },
-      { type: 'social', regex: /["“].*["”]/, weight: 1.5 }, // 引号通常意味着对话
-      { type: 'exploration', regex: /(探索|前往|调查|寻找|去|观察|看|感知|探查|追踪|周围|环境)/, weight: 2 },
-      { type: 'creation', regex: /(创造|合成|炼制|打造|制作|修复|附魔)/, weight: 3 },
+    const patterns: { type: UserIntent['actionType']; regex: RegExp }[] = [
+      { type: 'social', regex: /(对话|交谈|说服|询问|关系|告诉|回答|问)/ },
+      { type: 'exploration', regex: /(探索|前往|调查|寻找|去|观察|看)/ },
+      { type: 'inventory', regex: /(背包|物品|整理|装备|使用|查看)/ },
     ];
-
-    patterns.forEach(({ type, regex, weight }) => {
+    for (const { type, regex } of patterns) {
       if (regex.test(userInput)) {
-        intentScores[type] += weight;
-      }
-    });
-
-    // 找出得分最高的意图
-    let maxScore = 0;
-    let bestIntent: UserIntent['actionType'] = 'default';
-
-    for (const [type, score] of Object.entries(intentScores)) {
-      if (score > maxScore) {
-        maxScore = score;
-        bestIntent = type as UserIntent['actionType'];
+        intent.actionType = type;
+        break;
       }
     }
-    intent.actionType = bestIntent;
-
-    // 2. 实体提取与全局索引查询
-    // A simple regex to find potential entities (could be improved)
-    const potentialNames = userInput.match(/[\u4e00-\u9fa5a-zA-Z]+/g) || [];
-
-    for (const name of potentialNames) {
-      const results = entityIndexService.findByName(name);
-      if (results) {
-        for (const meta of results) {
-          switch (meta.type) {
-            case 'character':
-              intent.explicitEntities.characters.push(meta.id);
-              break;
-            case 'location':
-              intent.explicitEntities.locations.push(meta.id);
-              break;
-            case 'dbItem':
-            case 'skill':
-            case 'artifice':
-            case 'talent':
-              intent.explicitEntities.dbItems.push(meta.id);
-              break;
-            case 'imprint':
-              if (meta.source === 'player') {
-                if (!intent.loadFullPlayerData) intent.loadFullPlayerData = [];
-                intent.loadFullPlayerData.push('已解锁烙印');
-              }
-              break;
-          }
-
-          // 自动跨世界/纪元查询检测
-          const activeWorldId = Object.keys(worldState.世界).find(wId =>
-            ['主世界', '当前化身世界'].includes(get(worldState, `世界.${wId}.定义.元规则.定位`) || ''),
-          );
-          if (meta.worldId !== activeWorldId && meta.worldId !== '_player') {
-            if (!intent.crossContextQuery) {
-              intent.crossContextQuery = { worldId: meta.worldId, items: [], locations: [] };
-            }
-            if (meta.type === 'location') {
-              intent.crossContextQuery.locations?.push(meta.id);
-            } else {
-              intent.crossContextQuery.items?.push(meta.id);
-            }
-          }
+    if (worldState.角色列表) {
+      for (const charId in worldState.角色列表) {
+        const char = worldState.角色列表[charId];
+        if (typeof char === 'object' && char.名称 && userInput.includes(char.名称)) {
+          intent.explicitEntities.characters.push(charId);
         }
       }
     }
-
-    // 3. 叙事引力牵引
-    if (currentPlayer) {
-      for (const ripple of availableRipples) {
-        const influence = ripple.sphereOfInfluence;
-        let isTriggered = false;
-        // 检查位置重叠
-        if (currentPlayer.当前位置 && influence.locationIds.includes(currentPlayer.当前位置)) {
-          isTriggered = true;
-        }
-        // TODO: 检查势力、任务等其他重叠因素
-
-        if (isTriggered) {
-          console.log(`[EvoSys-Gravity] Ripple ${ripple.id} was triggered by narrative gravity.`, ripple);
-          intent.triggeredRipples.push(ripple);
-          // 将涟漪内容中可能提及的实体也加入上下文
-          const rippleEntities = this.extractEntitiesFromText(ripple.content, worldState);
-          intent.explicitEntities.characters.push(...rippleEntities.characters);
-          intent.explicitEntities.locations.push(...rippleEntities.locations);
-          intent.explicitEntities.dbItems.push(...rippleEntities.dbItems);
-        }
-      }
-    }
-
-    // 4. 玩家数据策略
-    if (intent.actionType === 'inventory') {
-      if (!intent.loadFullPlayerData) intent.loadFullPlayerData = [];
-      intent.loadFullPlayerData.push('背包', '已解锁烙印');
-    }
-
     console.log('[ContextService] User Intent Analyzed:', intent);
     return intent;
   }
 
-  private extractEntitiesFromText(text: string, worldState: AppState['worldState']): UserIntent['explicitEntities'] {
-    const entities: UserIntent['explicitEntities'] = { characters: [], locations: [], dbItems: [] };
-    if (!worldState) return entities;
-
-    const potentialNames = text.match(/[\u4e00-\u9fa5a-zA-Z]+/g) || [];
-    for (const name of potentialNames) {
-      const results = entityIndexService.findByName(name);
-      if (results) {
-        for (const meta of results) {
-          switch (meta.type) {
-            case 'character':
-              entities.characters.push(meta.id);
-              break;
-            case 'location':
-              entities.locations.push(meta.id);
-              break;
-            case 'dbItem':
-              entities.dbItems.push(meta.id);
-              break;
-          }
-        }
-      }
-    }
-    return entities;
-  }
-
-  /**
-   * 从当前场景和玩家输入中，解析出最关键的实体ID。
-   */
-  public identifyCoreEntities(
-    userInput: string,
-    currentCharacterId: string,
-    worldState: AppState['worldState'],
-  ): string[] {
-    const entities = new Set<string>([currentCharacterId]);
-    if (!worldState || !worldState.世界) return Array.from(entities);
-
-    const activeWorld = Object.values(worldState.世界).find(
-      w => get(w, '定义.元规则.定位') === '主世界' || get(w, '定义.元规则.定位') === '当前化身世界',
-    );
-    if (!activeWorld) return Array.from(entities);
-
-    const allCharacters = get(activeWorld, '角色', {}) as { [id: string]: Character };
-    const currentUser = get(allCharacters, currentCharacterId) || get(worldState, '玩家.本体');
-    if (!currentUser) return Array.from(entities);
-
-    const currentLocationId = currentUser.当前位置;
-
-    // 1. 自动包含当前地点的所有NPC
-    for (const charId in allCharacters) {
-      if (allCharacters[charId].当前位置 === currentLocationId) {
-        entities.add(charId);
-      }
-    }
-
-    // 2. 自动包含与主角关系最密切和最敌对的NPC
-    const causalNet = get(activeWorld, '因果之网', {});
-    const playerRelations = get(causalNet, currentCharacterId, {});
-
-    const sortedRelations = Object.entries(playerRelations)
-      .map(([id, rel]: [string, any]) => ({
-        id,
-        intimacy: get(rel, '情感层.亲近感', 0),
-        conflict: get(rel, '利益层.利益冲突', 0),
-      }))
-      .sort((a, b) => b.intimacy - a.intimacy);
-
-    if (sortedRelations.length > 0) {
-      entities.add(sortedRelations[0].id); // 最高亲近感
-      const mostHostile = sortedRelations.sort((a, b) => b.conflict - a.conflict)[0];
-      if (mostHostile) entities.add(mostHostile.id); // 最高冲突
-    }
-
-    // 3. 根据用户输入中的名称进行匹配
-    for (const id in allCharacters) {
-      const character = allCharacters[id];
-      if (character && character.姓名 && userInput.includes(character.姓名)) {
-        entities.add(id);
-      }
-    }
-
-    return Array.from(entities);
-  }
-
-  /**
-   * 构建一个只包含核心信息的精简上下文对象。
-   * @param intent - 分析出的用户意图。
-   * @param worldState - 完整的世界状态。
-   * @param userId - 玩家本体ID。
-   * @returns 精简后的上下文对象。
-   */
-  public buildLeanContext(
+  public async buildLeanContext(
     intent: UserIntent,
-    userInput: string, //  <-- 添加 userInput 参数
+    userInput: string,
+    lastNarrative: string,
     worldState: AppState['worldState'],
     userId: string,
-  ): { stat_data: Partial<AppState['worldState']> } {
-    if (!worldState) return { stat_data: {} };
-
-    const leanState: any = {
-      玩家: {
-        本体: {},
-        模拟器: get(worldState, '玩家.模拟器'),
-        往世道标: get(worldState, '玩家.往世道标'),
-      },
-      世界: {},
-    };
-
-    // 1. 玩家数据加载 (基于意图)
-    const playerFullData = get(worldState, '玩家.本体', {}) as Character;
-    // 基础信息始终加载
-    const playerLeanData: any = { ...playerFullData };
-    // 默认精简庞大的列表
-    if (playerFullData.背包) {
-      playerLeanData.背包 = this.simplifyIdMap(playerFullData.背包);
-    }
-    if (playerFullData.已解锁烙印) {
-      playerLeanData.已解锁烙印 = this.simplifyIdMap(playerFullData.已解锁烙印);
+    diaryFragments: DiaryFragment[],
+  ): Promise<{ sceneContext: object; worldContext: object }> {
+    if (!worldState || typeof worldState.主角 !== 'object') {
+      console.error('[ContextService] World state or protagonist not found or invalid.');
+      return { sceneContext: {}, worldContext: {} };
     }
 
-    // 按需完整加载
-    if (intent.loadFullPlayerData) {
-      intent.loadFullPlayerData.forEach((key: any) => {
-        if (playerFullData[key]) {
-          playerLeanData[key] = playerFullData[key];
-        }
-      });
-    }
-    leanState.玩家.本体 = playerLeanData;
+    const combinedInput = `${userInput} ${lastNarrative}`;
+    const dateFilter = this.parseRelativeDate(combinedInput, worldState);
 
-    // 2. 识别核心角色列表
-    const coreEntities = Array.from(new Set([userId, ...intent.explicitEntities.characters]));
+    const allStages = await storylineService.getFlattenedStages();
+    const protagonist = worldState.主角;
+    const protagonistId = userId;
 
-    // 3. 处理焦点世界数据
-    const activeWorldEntry = Object.entries(get(worldState, '世界', {}) as { [id: string]: World }).find(
-      ([, w]) => get(w, '定义.元规则.定位') === '主世界' || get(w, '定义.元规则.定位') === '当前化身世界',
+    const { anchorCharacterNames, anchorLocationNames } = await this.parseDirectorLogForAnchors();
+    const locationContext = this.buildLocationContext(worldState, protagonist, anchorLocationNames);
+    const sceneContext = this.buildSceneContext(worldState, protagonist, locationContext);
+
+    const { presentCharacters, absentCharacterSummaries, presentCharacterIds } = await this.buildCharacterContext(
+      intent,
+      combinedInput,
+      worldState,
+      protagonist,
+      protagonistId,
+      anchorCharacterNames,
     );
 
-    if (activeWorldEntry) {
-      const [worldId, activeWorld] = activeWorldEntry;
-      const epochId = get(activeWorld, '定义.元规则.当前纪元ID');
+    const relationshipContext = this.buildRelationshipContext(worldState, presentCharacterIds, protagonistId);
+    const directiveContext = await this.buildDirectiveContext(worldState, presentCharacterIds, allStages);
+    const memoryContext = await this.buildMemoryContext(
+      worldState,
+      combinedInput,
+      diaryFragments,
+      allStages,
+      userId,
+      dateFilter,
+    );
+    const cardContext = this.buildCardContext(worldState);
 
-      // 3.1 加载世界规则 (去除庞大内容)
-      if (epochId) {
-        const activeEpoch = get(activeWorld, ['定义', '历史纪元', epochId]) as WorldEpoch;
-        if (activeEpoch) {
-          const leanEpoch = { ...activeEpoch };
-          // 默认移除庞大的内容模块，后续按需注入
-          delete (leanEpoch as any).内容;
-          leanEpoch.世界大事 = get(activeEpoch, '世界大事', {});
+    const worldContext = {
+      主角: protagonist,
+      在场人物: presentCharacters,
+      非在场人物摘要: absentCharacterSummaries,
+      关系网络: relationshipContext,
+      地点: locationContext,
+      导演指令: directiveContext,
+      卡牌系统: cardContext,
+      ...memoryContext,
+    };
 
-          // 按需注入空间实体 (Location Injection)
-          // 根据 intent.explicitEntities.locations 中的ID，从原 activeEpoch.内容.空间实体 中查找
-          const allLocations = get(activeEpoch, '内容.空间实体', {});
-          const leanLocations: Record<string, any> = {};
+    debugService.setLastContext({ ...sceneContext, ...worldContext });
 
-          if (intent.explicitEntities.locations.length > 0) {
-            for (const locId of intent.explicitEntities.locations) {
-              const loc = (allLocations as Record<string, any>)[locId];
-              if (loc) {
-                leanLocations[locId] = loc;
-                // 自动包含父级实体 (向上递归查找)
-                let parentId = get(loc, '所属.ID');
-                while (parentId && parentId !== 'WORLD_ORIGIN') {
-                  const parent = (allLocations as Record<string, any>)[parentId];
-                  if (parent) {
-                    // 避免重复添加
-                    if (!leanLocations[parentId]) {
-                      leanLocations[parentId] = parent;
-                    }
-                    parentId = get(parent, '所属.ID');
-                  } else {
-                    break;
-                  }
-                }
-              }
-            }
+    return { sceneContext, worldContext };
+  }
+
+  private buildSceneContext(worldState: AppState['worldState'], protagonist: 主角 | Npc, locationContext: any): object {
+    if (!worldState) {
+      return { 地点: '未知', 时间: '', 天气: '晴天', 氛围: '未知' };
+    }
+
+    const locationId = protagonist?.位置;
+    const currentLocation = locationId ? locationContext[locationId] : undefined;
+
+    return {
+      地点: currentLocation?.名称 || '未知',
+      时间: `${worldState.世界状态.时间.日期} ${worldState.世界状态.时间.当前片段}`,
+      天气: worldState.世界状态.天气,
+      氛围: currentLocation?.场景特质?.map((t: any) => t.特质名称).join(', ') || '无特殊氛围',
+    };
+  }
+
+  private buildLocationContext(
+    worldState: AppState['worldState'],
+    protagonist: 主角 | Npc | undefined,
+    anchorLocationNames: string[] = [],
+  ): object {
+    const locationContext: any = {};
+    if (!worldState?.地点) return locationContext;
+
+    const allLocations = worldState.地点;
+    const anchorLocationIds = Object.entries(allLocations)
+      .filter(([, loc]) => anchorLocationNames.includes(loc.名称))
+      .map(([id]) => id);
+
+    const fullDetailLocationIds = new Set<string>(anchorLocationIds);
+
+    if (protagonist?.位置) {
+      fullDetailLocationIds.add(protagonist.位置);
+      const parentIds = this.getAllParentLocationIds(protagonist.位置, allLocations);
+      parentIds.forEach(id => fullDetailLocationIds.add(id));
+    }
+
+    for (const locationId in allLocations) {
+      const location = allLocations[locationId];
+      if (fullDetailLocationIds.has(locationId)) {
+        locationContext[locationId] = location;
+      } else {
+        locationContext[locationId] = {
+          名称: location.名称,
+          层级类型: location.层级类型,
+        };
+      }
+    }
+    return locationContext;
+  }
+
+  private async buildCharacterContext(
+    intent: UserIntent,
+    combinedInput: string,
+    worldState: AppState['worldState'],
+    protagonist: 主角 | Npc | undefined,
+    protagonistId: string | undefined,
+    anchorCharacterNames: string[] = [],
+  ): Promise<{ presentCharacters: any; absentCharacterSummaries: any; presentCharacterIds: Set<string> }> {
+    const presentCharacters: any = {};
+    const absentCharacterSummaries: any = {};
+    const presentCharacterIds = new Set<string>();
+
+    const clothingStyleGuide = await this.loadClothingStyles();
+
+    if (worldState && worldState.角色列表) {
+      const allChars = worldState.角色列表;
+      const anchorCharIds = Object.entries(allChars)
+        .filter(([, char]) => typeof char === 'object' && anchorCharacterNames.includes(char.名称))
+        .map(([id]) => id);
+
+      const sceneLocation = protagonist?.位置;
+      const explicitChars = new Set(intent.explicitEntities.characters);
+
+      const fullDetailCharIds = new Set<string>(anchorCharIds);
+      if (protagonistId) fullDetailCharIds.add(protagonistId);
+      explicitChars.forEach(id => fullDetailCharIds.add(id));
+
+      for (const charId in allChars) {
+        const char = allChars[charId];
+        if (typeof char === 'object' && char && char.位置 === sceneLocation) {
+          fullDetailCharIds.add(charId);
+          presentCharacterIds.add(charId);
+        }
+      }
+
+      for (const charId in allChars) {
+        const char = allChars[charId];
+        if (typeof char !== 'object' || !char) continue;
+
+        const charWithStyle = { ...char };
+        const styleGuide = clothingStyleGuide?.[charId] || clothingStyleGuide?.DEFAULT;
+        if (styleGuide) {
+          const finalStyle: any = {
+            通用偏好: styleGuide.通用偏好,
+            特殊情境: styleGuide.特殊情境,
+          };
+
+          const season = this.getCurrentSeason(new Date(worldState.世界状态.时间.日期));
+          const weather = worldState.世界状态.天气;
+
+          if (styleGuide.季节偏好?.[season]) {
+            finalStyle.季节偏好 = { [season]: styleGuide.季节偏好[season] };
+          }
+          if (styleGuide.天气应对?.[weather]) {
+            finalStyle.天气应对 = { [weather]: styleGuide.天气应对[weather] };
           }
 
-          // 如果有提取到地点，注入到 leanEpoch
-          if (Object.keys(leanLocations).length > 0) {
-            (leanEpoch as any).内容 = { 空间实体: leanLocations };
-          }
+          (charWithStyle as any).服装风格 = finalStyle;
+        }
 
-          if (!leanState.世界[worldId]) leanState.世界[worldId] = {};
-          leanState.世界[worldId].定义 = {
-            元规则: get(activeWorld, '定义.元规则'),
-            历史纪元: { [epochId]: leanEpoch },
+        if (fullDetailCharIds.has(charId)) {
+          presentCharacters[charId] = charWithStyle;
+          if (char.位置 === sceneLocation) presentCharacterIds.add(charId);
+        } else {
+          absentCharacterSummaries[charId] = {
+            名称: char.名称,
+            身份: char.身份,
+            位置: char.位置,
+            核心标识: (char as Npc).人格内核?.标识符,
+          };
+        }
+      }
+    }
+
+    return { presentCharacters, absentCharacterSummaries, presentCharacterIds };
+  }
+
+  private buildRelationshipContext(
+    worldState: AppState['worldState'],
+    presentCharacterIds: Set<string>,
+    protagonistId?: string,
+  ): object {
+    const relationshipContext: any = {};
+    if (!worldState?.关系) return relationshipContext;
+
+    const fullCausalNet = worldState.关系;
+    const idsToProcess = new Set(presentCharacterIds);
+    if (protagonistId) {
+      idsToProcess.add(protagonistId);
+    }
+
+    for (const subjectId of idsToProcess) {
+      const subjectRelations = fullCausalNet[subjectId];
+      if (!subjectRelations) continue;
+      relationshipContext[subjectId] = {};
+      for (const objectId of idsToProcess) {
+        if (subjectRelations[objectId]) {
+          relationshipContext[subjectId][objectId] = subjectRelations[objectId];
+        }
+      }
+    }
+    return relationshipContext;
+  }
+
+  private async buildDirectiveContext(
+    worldState: AppState['worldState'],
+    presentCharacterIds: Set<string>,
+    allStages: any[] | null,
+  ): Promise<object> {
+    if (!worldState) return {};
+    const directiveContext: any = {};
+
+    try {
+      if (allStages) {
+        const actionableEvent = await storylineService.getActionableStoryline(worldState);
+        let foreshadowedEvents: any[] = [];
+
+        if (actionableEvent) {
+          directiveContext.待触发主线 = {
+            ...actionableEvent,
+            导演指导:
+              '【剧情触发指令】这是一个必须发生的核心事件。请在本回合或接下来的几个回合内，严格按照以上剧本（包含NPC剧本、关键情节等）进行演绎，确保剧情向此事件发展。你可以根据`默认演化`中的描述来理解在无干预情况下的标准剧情走向。',
+          };
+          const actionableEventIndex = allStages.findIndex(s => s.id === actionableEvent.id);
+          if (actionableEventIndex !== -1) {
+            foreshadowedEvents = allStages.slice(actionableEventIndex + 1, actionableEventIndex + 4);
+          }
+        } else {
+          const history = worldState.叙事记录?.历史事件 || [];
+          const firstUncompletedIndex = allStages.findIndex(s => s.id && !history.includes(s.id));
+          if (firstUncompletedIndex !== -1) {
+            foreshadowedEvents = allStages.slice(firstUncompletedIndex, firstUncompletedIndex + 3);
+          }
+        }
+
+        if (foreshadowedEvents.length > 0) {
+          directiveContext.未来主线预告 = foreshadowedEvents.map((event: any) => ({
+            ...event,
+            导演指导:
+              '【叙事铺垫指引】这是一个未来可能发生的事件，请将其作为背景信息。你不能直接表演其中的`关键情节`，但可以利用剧本中的所有信息（如人物关系、心态、关键道具等）在当前的叙事中进行合理的铺垫。例如，可以在对话中提及未来的关键人物，或让角色对未来的关键地点产生兴趣。',
+          }));
+        }
+      }
+    } catch (error) {
+      console.error('[ContextService] Failed to process main story data:', error);
+    }
+
+    // 日历与随机事件注入
+    try {
+      const calendarContent = await lorebookService.readFromLorebook('[数据]日历-固定事件');
+      if (calendarContent) {
+        const calendarData = JSON.parse(calendarContent);
+        const currentMonth = new Date(worldState.世界状态.时间.日期).getMonth() + 1;
+        const currentDay = new Date(worldState.世界状态.时间.日期).getDate();
+        const monthKey = String(currentMonth).padStart(2, '0');
+
+        const fixedEvents = calendarData.events?.[monthKey] || {};
+        
+        const upcomingEvents = [];
+        for (let i = 0; i < 7; i++) {
+          const checkDate = new Date(worldState.世界状态.时间.日期);
+          checkDate.setDate(currentDay + i);
+          const checkDayKey = String(checkDate.getDate()).padStart(2, '0');
+          if (fixedEvents[checkDayKey]) {
+            upcomingEvents.push({
+              日期: `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(
+                2,
+                '0',
+              )}-${checkDayKey}`,
+              事件: fixedEvents[checkDayKey].join(' | '),
+            });
+          }
+        }
+
+        if (upcomingEvents.length > 0) {
+          directiveContext.日历事件 = {
+            指导: '【背景氛围素材】以下是近期将发生的日历事件，请在叙事中适当融入相关的节日氛围或活动暗示，以增强世界的真实感。',
+            事件列表: upcomingEvents,
+          };
+        }
+      }
+      
+      const randomEventsContent = await lorebookService.readFromLorebook('[数据]日历-随机事件');
+      if (randomEventsContent) {
+          const randomEventsData = JSON.parse(randomEventsContent);
+          const randomPool = randomEventsData.pool || [];
+           const availableRandomEvents = randomPool
+          .slice(0, 2)
+          .map((event: any) => ({ 类型: event.type, 标题: event.content, 内容: event.detail }));
+        if (availableRandomEvents.length > 0) {
+          directiveContext.可用随机事件 = {
+            指导: '【叙事填充素材】当没有明确的主线任务时，你可以从以下随机事件中选择一个进行演绎，以丰富日常剧情。请选择与当前场景和人物心情最匹配的事件。',
+            事件列表: availableRandomEvents,
           };
         }
       }
 
-      // 3.2 加载角色数据 (基于意图的粒度控制)
-      const worldChars = get(worldState.世界[worldId], '角色', {}) as { [id: string]: Character };
-      const leanChars: any = {};
+    } catch (error) {
+      console.error('[ContextService] Failed to process calendar data:', error);
+    }
 
-      // 自动识别同地点角色
-      const avatarId = get(worldState, '玩家.模拟器.模拟.当前化身ID');
-      const currentPlayer = (avatarId ? get(worldChars, avatarId) : playerFullData) as Character;
+    if (worldState.命运卡牌系统 && worldState.命运卡牌系统.下次抽卡时间) {
+      const cardDrawTime = worldState.命运卡牌系统.下次抽卡时间;
+      if (cardDrawTime && cardDrawTime.日期 && cardDrawTime.片段) {
+        if (
+          !this.lastProcessedCardDrawTime ||
+          this.lastProcessedCardDrawTime.日期 !== cardDrawTime.日期 ||
+          this.lastProcessedCardDrawTime.片段 !== cardDrawTime.片段
+        ) {
+          this.hasIssuedDrawCommandForTime = false;
+          this.lastProcessedCardDrawTime = { ...cardDrawTime };
+        }
 
-      // 自动识别并加载与场景相关的核心实体
-      const sceneEntities = this.identifyCoreEntities(userInput, userId, worldState);
-      coreEntities.push(...sceneEntities);
+        const timeToDraw = storylineService.isTimeReached(
+          dayjs(worldState.世界状态.时间.日期),
+          worldState.世界状态.时间.当前片段 as TimeSegment,
+          {
+            trigger_time: cardDrawTime,
+          },
+        );
 
-      const allActiveCharIds = Array.from(new Set(coreEntities));
-
-      for (const charId of allActiveCharIds) {
-        const char = get(worldChars, charId) || (charId === userId ? playerFullData : null);
-        if (char) {
-          // 根据意图决定加载粒度
-          if (
-            intent.actionType === 'combat' ||
-            intent.actionType === 'inventory' ||
-            char.当前位置 === currentPlayer?.当前位置
-          ) {
-            leanChars[charId] = char; // 全量加载
-          } else {
-            leanChars[charId] = {
-              // 精简加载
-              姓名: char.姓名,
-              身份: char.身份,
-              当前位置: char.当前位置,
-              相貌: char.相貌,
-              心流: char.心流,
-              当前状态: char.当前状态,
-            };
-          }
+        if (timeToDraw && !this.hasIssuedDrawCommandForTime) {
+          directiveContext.系统指令 = directiveContext.系统指令 || [];
+          directiveContext.系统指令.push({
+            指令类型: '触发抽卡',
+            描述: '命运的齿-轮再次转动，你感到似乎有什么新的可能性即将到来。是时候进行一次命运抽卡了。',
+          });
+          this.hasIssuedDrawCommandForTime = true;
         }
       }
-      leanState.世界[worldId].角色 = leanChars;
+    }
 
-      // 3.3 加载因果之网 (仅限核心角色之间)
-      const fullCausalNet = get(activeWorld, '因果之网', {});
-      leanState.世界[worldId].因果之网 = {};
-      const activeCharIds = Object.keys(leanChars);
-      if (!activeCharIds.includes(userId)) {
-        activeCharIds.push(userId); // 确保玩家本体始终在关系网内
-      }
-
-      for (const subjectId of activeCharIds) {
-        const relations = get(fullCausalNet, subjectId);
-        if (relations) {
-          if (!leanState.世界[worldId].因果之网) leanState.世界[worldId].因果之网 = {};
-          leanState.世界[worldId].因果之网[subjectId] = {};
-          for (const objectId in relations) {
-            if (activeCharIds.includes(objectId)) {
-              leanState.世界[worldId].因果之网[subjectId][objectId] = relations[objectId];
-            }
-          }
-        }
-      }
-
-      // 3.4 数据库按需加载 (包含 intent 中明确提及的物品)
-      const referencedDbIds = new Set<string>([...intent.explicitEntities.dbItems]);
-      const fullDatabase = get(activeWorld, '数据库', {});
-      // 遍历 leanChars 和 playerLeanData 收集引用 (简化版)
-      [playerLeanData, ...Object.values(leanChars)].forEach((char: any) => {
-        if (char.背包) Object.keys(char.背包).forEach(id => referencedDbIds.add(id));
-        if (char.已装备烙印) char.已装备烙印.forEach((id: string) => id && referencedDbIds.add(id));
+    const synthesisRequest = diarySynthesisService.getSynthesisRequest();
+    if (synthesisRequest) {
+      directiveContext.系统指令 = directiveContext.系统指令 || [];
+      directiveContext.系统指令.push({
+        指令类型: synthesisRequest.includes('日记') ? '请求合成日记' : '请求合成周刊',
+        描述: synthesisRequest,
       });
+    }
 
-      if (referencedDbIds.size > 0 && fullDatabase) {
-        if (!leanState.世界[worldId].数据库) leanState.世界[worldId].数据库 = {};
-        for (const category in fullDatabase) {
-          if (category === '$meta') continue;
-          const categoryStore = get(fullDatabase, category, {});
-          for (const itemId of referencedDbIds) {
-            if (get(categoryStore, itemId)) {
-              if (!leanState.世界[worldId].数据库[category]) leanState.世界[worldId].数据库[category] = {};
-              leanState.世界[worldId].数据库[category][itemId] = get(categoryStore, itemId);
-            }
-          }
-        }
+    return directiveContext;
+  }
+
+  private async buildMemoryContext(
+    worldState: 游戏世界状态,
+    combinedInput: string,
+    diaryFragments: DiaryFragment[],
+    allStages: any[] | null,
+    userId: string,
+    dateFilter?: (date: string) => boolean,
+  ): Promise<object> {
+    if (!worldState) return {};
+
+    const memoryContext: any = {};
+
+    const memories = memoryRetrievalService.getRelevantMemories(
+      combinedInput,
+      worldState,
+      diaryFragments,
+      userId,
+      dateFilter,
+    );
+
+    if (memories.length > 0) {
+      if (dateFilter) {
+        memoryContext.指定日期记忆 = {
+          指导: `【精确记忆检索】根据用户的日期提示，检索到以下记忆片段。`,
+          事件列表: memories,
+        };
+      } else {
+        memoryContext.相关记忆 = {
+          指导: '【相关性记忆检索】根据你的输入，系统从记忆库中检索到了以下最相关的历史事件日志。',
+          事件列表: memories,
+        };
       }
     }
 
-    // 4. 跨上下文查询 (Cross Context Query)
-    if (intent.crossContextQuery) {
-      const { worldId, items, locations } = intent.crossContextQuery;
-      const targetWorld = get(worldState.世界, worldId);
-      if (targetWorld) {
-        if (!leanState.世界[worldId]) leanState.世界[worldId] = {};
+    if (!dateFilter && worldState.叙事记录?.历史事件 && worldState.叙事记录.历史事件.length > 0 && allStages) {
+      const recentHistoryIds = worldState.叙事记录.历史事件.slice(-3);
+      const recentEventsDetails = recentHistoryIds
+        .map(id => allStages.find(s => (s.id || s.stage_id) === id))
+        .filter(Boolean);
 
-        // 注入跨世界物品
-        if (items && items.length > 0) {
-          const targetDb = get(targetWorld, '数据库', {});
-          if (!leanState.世界[worldId].数据库) leanState.世界[worldId].数据库 = {};
-          for (const category in targetDb) {
-            if (category === '$meta') continue;
-            const store = targetDb[category as keyof typeof targetDb] as any;
-            items.forEach(itemId => {
-              if (store[itemId]) {
-                if (!leanState.世界[worldId].数据库[category]) leanState.世界[worldId].数据库[category] = {};
-                leanState.世界[worldId].数据库[category][itemId] = store[itemId];
-              }
-            });
-          }
-        }
+      if (recentEventsDetails.length > 0) {
+        memoryContext.短期记忆 = {
+          指导: '【短期记忆模块】以下是最近发生的3件关键主线事件的完整日志。这是确保叙事连贯性的核心参考。',
+          事件列表: recentEventsDetails,
+        };
       }
     }
 
-    console.log('[ContextService] Built Lean Context V4:', { stat_data: leanState });
-    return { stat_data: leanState };
+    return memoryContext;
+  }
+
+  private async parseDirectorLogForAnchors(): Promise<{
+    anchorCharacterNames: string[];
+    anchorLocationNames: string[];
+  }> {
+    const anchorCharacterNames: string[] = [];
+    const anchorLocationNames: string[] = [];
+    try {
+      const directorLogContent = await lorebookService.readFromLorebook('[导演场记]');
+      if (directorLogContent) {
+        const anchorSectionRegex = /【下回合锚点预告】\s*([\s\S]*)/;
+        const match = directorLogContent.match(anchorSectionRegex);
+        if (match && match[1]) {
+          const content = match[1];
+          const charRegex = /触发人物：(.*?)\n/;
+          const locRegex = /触发地点：(.*?)\n/;
+
+          const charMatch = content.match(charRegex);
+          if (charMatch && charMatch[1]) {
+            anchorCharacterNames.push(...charMatch[1].split('、').map(s => s.trim()));
+          }
+
+          const locMatch = content.match(locRegex);
+          if (locMatch && locMatch[1]) {
+            anchorLocationNames.push(...locMatch[1].split('、').map(s => s.trim()));
+          }
+        }
+      }
+    } catch (error) {
+      console.error('[ContextService] Failed to parse director log for anchors:', error);
+    }
+    return { anchorCharacterNames, anchorLocationNames };
+  }
+
+  private getAllParentLocationIds(locationId: string, allLocations: Record<string, any>): string[] {
+    const parents: string[] = [];
+    let currentId: string | undefined = locationId;
+    for (let i = 0; i < 10 && currentId; i++) {
+      const location: any = allLocations[currentId];
+      if (location && location.所属 && location.所属.ID) {
+        const parentId: string = location.所属.ID;
+        parents.push(parentId);
+        currentId = parentId;
+      } else {
+        break;
+      }
+    }
+    return parents;
   }
 
   private simplifyIdMap(map: any) {
@@ -492,10 +524,129 @@ class ContextService {
     const simple: any = {};
     for (const key in map) {
       if (key === '$meta') continue;
-      // 只保留键名，或者保留数量 (如果是背包)
       simple[key] = typeof map[key] === 'number' ? map[key] : true;
     }
     return simple;
+  }
+
+  private parseRelativeDate(userInput: string, worldState: 游戏世界状态): ((date: string) => boolean) | undefined {
+    const currentDate = dayjs(worldState.世界状态.时间.日期);
+    const chineseNumMap: { [key: string]: number } = {
+      一: 1,
+      二: 2,
+      三: 3,
+      四: 4,
+      五: 5,
+      六: 6,
+      七: 7,
+      八: 8,
+      九: 9,
+      十: 10,
+    };
+
+    const daysAgoMatch = userInput.match(/((\d+)|[一二三四五六七八九十])天前/);
+    const weeksAgoMatch = userInput.match(/((\d+)|[一二三四五六七八九十])周前/);
+    const shangZhouMatch = userInput.match(/^(上+)周/);
+    const monthsAgoMatch = userInput.match(/((\d+)|[一二三四五六七八九十])个月前/);
+    const specificMonthMatch = userInput.match(/((\d+)|[一二三四五六七八九十])月(的时候)?/);
+
+    if (daysAgoMatch) {
+      const numStr = daysAgoMatch[1];
+      const num = parseInt(numStr, 10) || chineseNumMap[numStr];
+      if (num) {
+        const target = currentDate.subtract(num, 'day').format('YYYY-MM-DD');
+        return (d: string) => d === target;
+      }
+    } else if (shangZhouMatch) {
+      const num = shangZhouMatch[1].length;
+      const targetWeekStart = currentDate.subtract(num, 'week').startOf('week');
+      const targetWeekEnd = currentDate.subtract(num, 'week').endOf('week');
+      return (d: string) => dayjs(d).isAfter(targetWeekStart) && dayjs(d).isBefore(targetWeekEnd);
+    } else if (weeksAgoMatch) {
+      const numStr = weeksAgoMatch[1];
+      const num = parseInt(numStr, 10) || chineseNumMap[numStr];
+      if (num) {
+        const targetWeekStart = currentDate.subtract(num, 'week').startOf('week');
+        const targetWeekEnd = currentDate.subtract(num, 'week').endOf('week');
+        return (d: string) => dayjs(d).isAfter(targetWeekStart) && dayjs(d).isBefore(targetWeekEnd);
+      }
+    } else if (monthsAgoMatch) {
+      const numStr = monthsAgoMatch[1];
+      const num = parseInt(numStr, 10) || chineseNumMap[numStr];
+      if (num) {
+        const targetMonth = currentDate.subtract(num, 'month');
+        const target = targetMonth.format('YYYY-MM');
+        return (d: string) => d.startsWith(target);
+      }
+    } else if (userInput.includes('去年')) {
+      const target = currentDate.subtract(1, 'year').format('YYYY');
+      return (d: string) => d.startsWith(target);
+    } else if (specificMonthMatch) {
+      const numStr = specificMonthMatch[1];
+      const monthNum = parseInt(numStr, 10) || chineseNumMap[numStr];
+      if (monthNum && monthNum > 0 && monthNum <= 12) {
+        let targetMonth = currentDate.month(monthNum - 1);
+        if (targetMonth.isAfter(currentDate)) {
+          targetMonth = targetMonth.subtract(1, 'year');
+        }
+        const target = targetMonth.format('YYYY-MM');
+        return (d: string) => d.startsWith(target);
+      }
+    } else if (userInput.includes('上旬') || userInput.includes('月初')) {
+      const prefix = currentDate.format('YYYY-MM');
+      return (d: string) => d.startsWith(prefix) && parseInt(d.slice(-2), 10) <= 10;
+    } else if (userInput.includes('中旬') || userInput.includes('月中')) {
+      const prefix = currentDate.format('YYYY-MM');
+      return (d: string) => d.startsWith(prefix) && parseInt(d.slice(-2), 10) > 10 && parseInt(d.slice(-2), 10) <= 20;
+    } else if (userInput.includes('下旬') || userInput.includes('月末')) {
+      const prefix = currentDate.format('YYYY-MM');
+      return (d: string) => d.startsWith(prefix) && parseInt(d.slice(-2), 10) > 20;
+    } else if (userInput.includes('昨天')) {
+      const target = currentDate.subtract(1, 'day').format('YYYY-MM-DD');
+      return (d: string) => d === target;
+    } else if (userInput.includes('前天')) {
+      const target = currentDate.subtract(2, 'day').format('YYYY-MM-DD');
+      return (d: string) => d === target;
+    }
+
+    return undefined;
+  }
+
+  private buildCardContext(worldState: AppState['worldState']): object {
+    const cardContext: any = {
+      背包详情: [],
+      已激活详情: [],
+    };
+    if (!worldState?.主角 || typeof worldState.主角 === 'string') {
+      return cardContext;
+    }
+
+    // 根据新的数据结构，直接从主角和叙事记录中获取完整的卡牌对象
+    cardContext.背包详情 = worldState.主角.卡牌背包 || [];
+    cardContext.已激活详情 = worldState.叙事记录.当前激活卡牌 || [];
+
+    return cardContext;
+  }
+
+  private async loadClothingStyles(): Promise<Record<string, any> | null> {
+    try {
+      const content = await lorebookService.readFromLorebook('[数据]服装风格指南');
+      if (content) {
+        const data = JSON.parse(content);
+        return data.character_styles || null;
+      }
+    } catch (e) {
+      console.error('Failed to load or parse [数据]服装风格指南', e);
+    }
+    return null;
+  }
+
+  private getCurrentSeason(date: Date): '春' | '夏' | '秋' | '冬' {
+    const month = date.getMonth() + 1;
+    if (month >= 3 && month <= 5) return '春';
+    if (month >= 6 && month <= 8) return '夏';
+    if (month >= 9 && month <= 11) return '秋';
+    return '冬';
   }
 }
 

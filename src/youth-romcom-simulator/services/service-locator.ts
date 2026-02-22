@@ -1,6 +1,7 @@
 import type { saveLoadService } from './saveLoadService';
 import type { inputModalActions, inputModalState } from './InputModalService';
 import type { store, actions } from '../store';
+import type { diarySynthesisService } from './DiarySynthesisService';
 
 // 从导出的服务实例中推断其类型
 export type SaveLoadService = typeof saveLoadService;
@@ -8,6 +9,7 @@ export type InputModalActions = typeof inputModalActions;
 export type InputModalState = typeof inputModalState;
 export type Store = typeof store;
 export type Actions = typeof actions;
+export type DiarySynthesisService = typeof diarySynthesisService;
 
 interface ServiceRegistry {
   saveLoadService: SaveLoadService;
@@ -15,6 +17,7 @@ interface ServiceRegistry {
   inputModalState: InputModalState;
   store: Store;
   actions: Actions;
+  diarySynthesisService: DiarySynthesisService;
 }
 
 const registry: Partial<ServiceRegistry> = {};

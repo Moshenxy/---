@@ -11,8 +11,11 @@ const LOREBOOK_KEYS_TO_BACKUP: string[] = [
   '[系统]长期记忆',
   '[系统]短期记忆',
   '[系统]瞬时记忆',
-  '本世历程',
-  // 根据需要可以添加更多需要备份的世界书条目
+  '日记',
+  '日记片段-禁开',
+  '周刊',
+  '日记片段',
+  '导演场记',
 ];
 
 export interface SaveSlot {
@@ -21,8 +24,9 @@ export interface SaveSlot {
   timestamp: string | null;
   data: any | null;
   entryUid?: number;
-  worldLogDate?: string | null;
-  worldLogTitle?: string | null;
+  diaryDate?: string | null;
+  diaryTimeSegment?: string | null;
+  diaryTitle?: string | null;
 }
 
 class SaveLoadService {
@@ -69,8 +73,9 @@ class SaveLoadService {
           try {
             slot.data = JSON.parse(entry.content);
             slot.timestamp = slot.data.timestamp;
-            slot.worldLogDate = slot.data.worldLogDate;
-            slot.worldLogTitle = slot.data.worldLogTitle;
+            slot.diaryDate = slot.data.diaryDate;
+            slot.diaryTimeSegment = slot.data.diaryTimeSegment;
+            slot.diaryTitle = slot.data.diaryTitle;
             slot.entryUid = entry.uid;
           } catch (e) {
             console.error(`解析存档 ${slot.id} 失败:`, e);
@@ -116,15 +121,20 @@ class SaveLoadService {
       }
 
       const store = serviceLocator.get('store');
-      const lastLogEntry = store.worldLog.length > 0 ? store.worldLog[store.worldLog.length - 1] : null;
+      const latestFragment = await this._getLatestFragment();
+      const worldTime = store.worldState?.世界状态?.时间;
+
+      // 核心修正：在保存前，清空UpdateVariable标签内的内容，但保留标签本身
+      const cleanedMessage = messageZero.message.replace(/(<\s*UpdateVariable\b[^>]*>)[\s\S]*?(<\s*\/\s*UpdateVariable\s*>)/g, '$1$2');
 
       const saveData = {
         timestamp,
         mvu_data: messageZero.data,
-        message_content: messageZero.message,
+        message_content: cleanedMessage, // 使用清洗后的消息
         lorebook_backup: lorebookBackup,
-        worldLogDate: lastLogEntry?.日期,
-        worldLogTitle: lastLogEntry?.标题,
+        diaryDate: worldTime?.日期,
+        diaryTimeSegment: worldTime?.当前片段,
+        diaryTitle: latestFragment?.标题,
       };
 
       const comment = `${SAVE_SLOT_PREFIX}${slotId}`;
@@ -193,6 +203,28 @@ class SaveLoadService {
     }
   }
 
+  private async _getLatestFragment(): Promise<{ 标题: string } | null> {
+    try {
+      const messages = await TavernHelper.getChatMessages('0');
+      if (!messages || messages.length === 0) return null;
+
+      const lastAiMessage = [...messages].reverse().find(m => m.name !== 'You' && m.name !== '{{user}}' && m.message && m.message.includes('<日记片段>'));
+      if (!lastAiMessage) return null;
+
+      const fragmentMatch = lastAiMessage.message.match(/<日记片段>([\s\S]+?)<\/日记片段>/);
+      if (!fragmentMatch || !fragmentMatch[1]) return null;
+      
+      const titleMatch = fragmentMatch[1].match(/标题\|(.+)/);
+      if(!titleMatch || !titleMatch[1]) return null;
+
+      return { 标题: titleMatch[1].trim() };
+
+    } catch (error) {
+      console.error('Failed to get latest fragment:', error);
+      return null;
+    }
+  }
+
   async deleteSave(slot: SaveSlot) {
     if (!slot.entryUid) {
       toastr.warning('这是一个空槽位，无需删除。');
@@ -254,7 +286,7 @@ class SaveLoadService {
     const url = URL.createObjectURL(dataBlob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `[综漫-春物]存档-${slot.name}-${new Date().toISOString()}.json`;
+    link.download = `[轮回模拟器]存档-${slot.name}-${new Date().toISOString()}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

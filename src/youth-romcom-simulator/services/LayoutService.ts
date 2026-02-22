@@ -1,7 +1,7 @@
 import { eventBus } from './EventBus';
 
-const NORMAL_LAYOUT_KEY = 'reincarnation-simulator-layout-state-v3-normal';
-const FULLSCREEN_LAYOUT_KEY = 'reincarnation-simulator-layout-state-v3-fullscreen';
+const NORMAL_LAYOUT_KEY = 'youth-romcom-simulator-layout-state-v1-normal';
+const FULLSCREEN_LAYOUT_KEY = 'youth-romcom-simulator-layout-state-v1-fullscreen';
 
 export interface PanelState {
   world: string;

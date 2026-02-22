@@ -1,52 +1,55 @@
-import type { Component } from 'vue';
-import AvatarCharacterPanel from '../components/panels/avatar/AvatarCharacterPanel.vue';
-import AvatarInventoryPanel from '../components/panels/avatar/AvatarInventoryPanel.vue';
-import AvatarTasksPanel from '../components/panels/avatar/AvatarTasksPanel.vue';
-import CharacterPanel from '../components/panels/CharacterPanel.vue';
-import ImprintsPanel from '../components/panels/ImprintsPanel.vue';
-import InventoryPanel from '../components/panels/InventoryPanel.vue';
-import NpcDirectoryPanel from '../components/panels/NpcDirectoryPanel.vue';
-import ReincarnationPanel from '../components/panels/ReincarnationPanel.vue';
-import RippleDetailPanel from '../components/panels/RippleDetailPanel.vue';
-import SkillsPanel from '../components/panels/SkillsPanel.vue';
-import SystemPanel from '../components/panels/SystemPanel.vue';
-import WorldDetailsPanel from '../components/panels/WorldDetailsPanel.vue';
-import AvatarWorldMapView from '../modules/world-map/components/AvatarWorldMapView.vue';
-import WorldMapView from '../modules/world-map/components/WorldMapView.vue';
+import { defineAsyncComponent, type Component } from 'vue';
 
 export interface PanelInfo {
   component: Component;
   title: string;
 }
 
+// 定义一个更扁平化的面板注册表类型
 type PanelRegistry = Record<string, Record<string, PanelInfo>>;
 
+/**
+ * Panel Registry v2.0 - 适配 `综漫-春物` 单一世界观
+ * @description 移除了 `mainWorld`, `avatarWorld`, `reincarnation` 等多世界概念，
+ *              聚焦于当前世界的核心功能面板。
+ */
 export const panelRegistry: PanelRegistry = {
-  mainWorld: {
-    character: { component: CharacterPanel, title: '角色本体' },
-    inventory: { component: InventoryPanel, title: '本体背包' },
-    skills: { component: SkillsPanel, title: '本体技艺' },
-    imprints: { component: ImprintsPanel, title: '轮回烙印' },
-    worldDetails: { component: WorldDetailsPanel, title: '主世界详情' },
-    sandbox: { component: WorldMapView, title: '世界沙盘' },
+  // 代表当前世界的核心面板
+  world: {
+    inventory: {
+      component: defineAsyncComponent(() => import('../components/panels/InventoryPanel.vue')),
+      title: '背包',
+    },
+    skills: {
+      component: defineAsyncComponent(() => import('../components/panels/SkillsPanel.vue')),
+      title: '技能',
+    },
+    worldDetails: {
+      component: defineAsyncComponent(() => import('../components/panels/WorldDetailsPanel.vue')),
+      title: '世界设定',
+    },
+    destiny: {
+      component: defineAsyncComponent(() => import('../components/panels/DestinyCardPanel.vue')),
+      title: '命运卡牌',
+    },
   },
-  avatarWorld: {
-    character: { component: AvatarCharacterPanel, title: '化身详情' },
-    inventory: { component: AvatarInventoryPanel, title: '化身背包' },
-    tasks: { component: AvatarTasksPanel, title: '本世任务' },
-    worldDetails: { component: WorldDetailsPanel, title: '化身世界详情' },
-    sandbox: { component: AvatarWorldMapView, title: '化身世界沙盘' },
-  },
-  reincarnation: {
-    main: { component: ReincarnationPanel, title: '轮回' },
-  },
-  allWorlds: {
-    npcDirectory: { component: NpcDirectoryPanel, title: '众生名录' },
-  },
-  ripples: {
-    detail: { component: RippleDetailPanel, title: '往世涟漪详情' },
-  },
+  // 代表全局通用的系统级面板
   system: {
-    saveLoad: { component: SystemPanel, title: '系统' },
+    npcDirectory: {
+      component: defineAsyncComponent(() => import('../components/panels/NpcDirectoryPanel.vue')),
+      title: '众生名录',
+    },
+    saveLoad: {
+      component: defineAsyncComponent(() => import('../components/panels/SystemPanel.vue')),
+      title: '系统',
+    },
+    debug: {
+      component: defineAsyncComponent(() => import('../components/panels/DebugPanel.vue')),
+      title: '调试面板',
+    },
+    review: {
+      component: defineAsyncComponent(() => import('../components/panels/ReincarnationPanel.vue')),
+      title: '回顾',
+    },
   },
 };

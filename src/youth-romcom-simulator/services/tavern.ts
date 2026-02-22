@@ -20,15 +20,11 @@ class TavernService {
    * @param prompt - 发送给AI的完整提示
    * @param variables - （可选）一个用于临时覆盖本次调用上下文变量的对象
    */
-  async generateAiResponse(prompt: string, variables?: any): Promise<string> {
+  async generateAiResponse(prompt: string): Promise<string> {
     const generateConfig: any = {
       injects: [{ role: 'user', content: prompt, position: 'in_chat', should_scan: true }],
       should_stream: false,
     };
-
-    if (variables) {
-      generateConfig.variables = variables;
-    }
 
     const aiResponse = await TavernHelper.generate(generateConfig);
     if (typeof aiResponse !== 'string') {

@@ -52,7 +52,9 @@ export interface DisplayStoryStage extends RawStoryStage {
 
 class StorylineService {
   private masterTimeline: RawStoryArc[] | null = null;
-  private flattenedStages: (RawStoryStage & { arcId: string; arcTitle: string; trigger_time: { date: string, segment: string } })[] | null = null;
+  private flattenedStages:
+    | (RawStoryStage & { arcId: string; arcTitle: string; trigger_time: { date: string; segment: string } })[]
+    | null = null;
   private fixedEvents: Record<string, string[]> | null = null;
 
   /**
@@ -121,7 +123,7 @@ class StorylineService {
           const rawTriggerTime = stage.trigger_time || stage.触发条件 || stage.trigger_conditions;
           let date = 'N/A';
           let segment = 'N/A';
-          
+
           if (rawTriggerTime) {
             const conditions = rawTriggerTime.必须全部满足 || rawTriggerTime.must_all;
             if (conditions && Array.isArray(conditions)) {
@@ -137,7 +139,8 @@ class StorylineService {
                   }
                 }
               }
-            } else if (rawTriggerTime.date) { // Fallback for simple object
+            } else if (rawTriggerTime.date) {
+              // Fallback for simple object
               date = rawTriggerTime.date;
               segment = rawTriggerTime.segment || 'N/A';
             }
@@ -172,7 +175,6 @@ class StorylineService {
     await this.loadMasterTimeline();
     return this.masterTimeline;
   }
-
 
   /**
    * (核心功能) 获取当前第一个可执行的主线剧情阶段
@@ -306,7 +308,11 @@ class StorylineService {
     return true;
   }
 
-  private _parseNaturalLanguageCondition(condition: string, history: string[], worldState: AppState['worldState']): boolean {
+  private _parseNaturalLanguageCondition(
+    condition: string,
+    history: string[],
+    worldState: AppState['worldState'],
+  ): boolean {
     if (!worldState) return false;
 
     // 解析 "完成事件 EVENT_ID"
@@ -350,7 +356,7 @@ class StorylineService {
     }
 
     const startIndex = lastCompletedStageIndex + 1;
-    const endIndex = startIndex + 4; 
+    const endIndex = startIndex + 4;
 
     const displayStages = allStages.slice(startIndex, endIndex);
 

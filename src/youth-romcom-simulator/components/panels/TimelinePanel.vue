@@ -31,7 +31,9 @@
           </div>
           <div v-if="selectedDay.events.length > 0" class="detail-section">
             <h4>本日主线</h4>
-            <p class="stage-summary">{{ selectedDay.events[0].阶段摘要 || selectedDay.events[0].summary || '无摘要' }}</p>
+            <p class="stage-summary">
+              {{ selectedDay.events[0].阶段摘要 || selectedDay.events[0].summary || '无摘要' }}
+            </p>
             <StorylineStageDetail :stage="selectedDay.events[0]" />
           </div>
         </div>
@@ -160,14 +162,13 @@ export default defineComponent({
       }
     };
 
-
     const selectDay = (day: CalendarDay) => {
       selectedDay.value = day;
       if (day.events.length > 0 || day.fixedEvents) {
         isDrawerOpen.value = true;
       }
     };
-    
+
     const toggleDrawer = () => {
       isDrawerOpen.value = !isDrawerOpen.value;
     };
@@ -250,7 +251,7 @@ export default defineComponent({
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 2px;
-    
+
     .day-header {
       text-align: center;
       font-weight: bold;
@@ -266,11 +267,11 @@ export default defineComponent({
       min-height: 50px; /* Reduced height */
       cursor: pointer;
       transition: background-color 0.2s;
-      
+
       &:hover {
         background-color: rgba($color-gold-pale, 0.05);
       }
-      
+
       &.selected {
         background-color: rgba($color-gold-pale, 0.1);
         border-color: $color-gold-pale;
@@ -308,7 +309,7 @@ export default defineComponent({
       background-color: $color-cyan-tian;
     }
   }
-   
+
   .details-drawer {
     position: absolute;
     bottom: 0;
@@ -326,7 +327,7 @@ export default defineComponent({
       top: 120px; /* Adjust this value to align below the weekday header */
     }
   }
-  
+
   .drawer-handle {
     flex-shrink: 0;
     height: 40px;
@@ -352,7 +353,7 @@ export default defineComponent({
     padding: 0 $spacing-md $spacing-md;
     @include custom-scrollbar;
   }
-   
+
   .no-selection-message {
     text-align: center;
     color: $color-grey-stone;
@@ -361,7 +362,7 @@ export default defineComponent({
     justify-content: center;
     align-items: center;
   }
-  
+
   .day-details {
     .detail-section {
       margin-bottom: $spacing-lg;

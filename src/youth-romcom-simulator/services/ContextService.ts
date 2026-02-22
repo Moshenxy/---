@@ -332,7 +332,7 @@ class ContextService {
         const monthKey = String(currentMonth).padStart(2, '0');
 
         const fixedEvents = calendarData.events?.[monthKey] || {};
-        
+
         const upcomingEvents = [];
         for (let i = 0; i < 7; i++) {
           const checkDate = new Date(worldState.世界状态.时间.日期);
@@ -340,10 +340,7 @@ class ContextService {
           const checkDayKey = String(checkDate.getDate()).padStart(2, '0');
           if (fixedEvents[checkDayKey]) {
             upcomingEvents.push({
-              日期: `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(
-                2,
-                '0',
-              )}-${checkDayKey}`,
+              日期: `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}-${checkDayKey}`,
               事件: fixedEvents[checkDayKey].join(' | '),
             });
           }
@@ -356,12 +353,12 @@ class ContextService {
           };
         }
       }
-      
+
       const randomEventsContent = await lorebookService.readFromLorebook('[数据]日历-随机事件');
       if (randomEventsContent) {
-          const randomEventsData = JSON.parse(randomEventsContent);
-          const randomPool = randomEventsData.pool || [];
-           const availableRandomEvents = randomPool
+        const randomEventsData = JSON.parse(randomEventsContent);
+        const randomPool = randomEventsData.pool || [];
+        const availableRandomEvents = randomPool
           .slice(0, 2)
           .map((event: any) => ({ 类型: event.type, 标题: event.content, 内容: event.detail }));
         if (availableRandomEvents.length > 0) {
@@ -371,7 +368,6 @@ class ContextService {
           };
         }
       }
-
     } catch (error) {
       console.error('[ContextService] Failed to process calendar data:', error);
     }

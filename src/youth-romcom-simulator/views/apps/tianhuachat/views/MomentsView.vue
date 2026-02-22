@@ -16,7 +16,12 @@
         <button @click="toggleCommentInput(moment.ID)">💬 {{ moment.评论.length }}</button>
       </div>
       <div v-if="activeCommentInput === moment.ID" class="comment-input-area">
-        <input type="text" v-model="commentText" placeholder="发表你的评论..." @keypress.enter="submitComment(moment.ID)">
+        <input
+          type="text"
+          v-model="commentText"
+          placeholder="发表你的评论..."
+          @keypress.enter="submitComment(moment.ID)"
+        />
         <button @click="submitComment(moment.ID)">发送</button>
       </div>
     </div>

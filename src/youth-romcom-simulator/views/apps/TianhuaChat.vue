@@ -5,10 +5,10 @@
         <h1>{{ currentViewName }}</h1>
       </div>
       <div class="app-content">
-        <component 
-          :is="activeView" 
-          @view-chat="openChat" 
-          @view-new-friends="viewState = 'newFriends'" 
+        <component
+          :is="activeView"
+          @view-chat="openChat"
+          @view-new-friends="viewState = 'newFriends'"
           @view-group-list="viewState = 'groupList'"
           @view-contact-detail="openContactDetail"
         />
@@ -19,10 +19,19 @@
         <button @click="activeTab = 'moments'" :class="{ active: activeTab === 'moments' }">空间</button>
       </div>
     </div>
-    <ChatView v-else-if="viewState === 'chat' && currentConversationId" :conversation-id="currentConversationId" @back="closeChat" />
+    <ChatView
+      v-else-if="viewState === 'chat' && currentConversationId"
+      :conversation-id="currentConversationId"
+      @back="closeChat"
+    />
     <NewFriendsView v-else-if="viewState === 'newFriends'" @back="viewState = 'main'" />
     <GroupListView v-else-if="viewState === 'groupList'" @back="viewState = 'main'" @view-chat="openChat" />
-    <ContactDetailView v-else-if="viewState === 'contactDetail' && currentContactId" :contact-id="currentContactId" @back="viewState = 'main'" @view-chat="openChat" />
+    <ContactDetailView
+      v-else-if="viewState === 'contactDetail' && currentContactId"
+      :contact-id="currentContactId"
+      @back="viewState = 'main'"
+      @view-chat="openChat"
+    />
   </div>
 </template>
 
@@ -64,8 +73,8 @@ function closeChat() {
 }
 
 function openContactDetail(contactId: string) {
-    currentContactId.value = contactId;
-    viewState.value = 'contactDetail';
+  currentContactId.value = contactId;
+  viewState.value = 'contactDetail';
 }
 </script>
 

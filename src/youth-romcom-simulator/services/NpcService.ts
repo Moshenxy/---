@@ -60,7 +60,7 @@ async function initializeWorldAndLocationData(): Promise<{ id: string; name: str
     id: worldName,
     name: worldName,
   }));
-  
+
   console.log('[NpcService] Initialized worlds from character data.', worldInfoList);
   return worldInfoList;
 }
@@ -85,8 +85,8 @@ function getParentLocationName(id: string): string {
 
 function getNpcNameById(id: string): string {
   if (id === USER_ID) {
-      const protagonist = store.worldState?.主角;
-      return typeof protagonist === 'object' ? protagonist.名称 || id : id;
+    const protagonist = store.worldState?.主角;
+    return typeof protagonist === 'object' ? protagonist.名称 || id : id;
   }
   const character = get(store.worldState, `角色列表.${id}`) as Npc | '待初始化' | undefined;
   if (typeof character === 'object' && character !== null) {
@@ -104,10 +104,10 @@ function getNpcId(npc: Npc | 主角): string | null {
       return id;
     }
   }
-  
+
   const protagonist = store.worldState?.主角;
-  if(typeof protagonist === 'object' && protagonist === npc) {
-      return USER_ID;
+  if (typeof protagonist === 'object' && protagonist === npc) {
+    return USER_ID;
   }
 
   return null;

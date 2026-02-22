@@ -125,7 +125,10 @@ class SaveLoadService {
       const worldTime = store.worldState?.世界状态?.时间;
 
       // 核心修正：在保存前，清空UpdateVariable标签内的内容，但保留标签本身
-      const cleanedMessage = messageZero.message.replace(/(<\s*UpdateVariable\b[^>]*>)[\s\S]*?(<\s*\/\s*UpdateVariable\s*>)/g, '$1$2');
+      const cleanedMessage = messageZero.message.replace(
+        /(<\s*UpdateVariable\b[^>]*>)[\s\S]*?(<\s*\/\s*UpdateVariable\s*>)/g,
+        '$1$2',
+      );
 
       const saveData = {
         timestamp,
@@ -208,17 +211,18 @@ class SaveLoadService {
       const messages = await TavernHelper.getChatMessages('0');
       if (!messages || messages.length === 0) return null;
 
-      const lastAiMessage = [...messages].reverse().find(m => m.name !== 'You' && m.name !== '{{user}}' && m.message && m.message.includes('<日记片段>'));
+      const lastAiMessage = [...messages]
+        .reverse()
+        .find(m => m.name !== 'You' && m.name !== '{{user}}' && m.message && m.message.includes('<日记片段>'));
       if (!lastAiMessage) return null;
 
       const fragmentMatch = lastAiMessage.message.match(/<日记片段>([\s\S]+?)<\/日记片段>/);
       if (!fragmentMatch || !fragmentMatch[1]) return null;
-      
+
       const titleMatch = fragmentMatch[1].match(/标题\|(.+)/);
-      if(!titleMatch || !titleMatch[1]) return null;
+      if (!titleMatch || !titleMatch[1]) return null;
 
       return { 标题: titleMatch[1].trim() };
-
     } catch (error) {
       console.error('Failed to get latest fragment:', error);
       return null;

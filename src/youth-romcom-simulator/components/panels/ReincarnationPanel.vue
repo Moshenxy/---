@@ -8,7 +8,6 @@
 
 <script setup lang="ts">
 import DiaryPanel from './DiaryPanel.vue';
-
 </script>
 
 <style lang="scss" scoped>
@@ -20,7 +19,6 @@ import DiaryPanel from './DiaryPanel.vue';
   flex-direction: column;
   height: 100%;
 }
-
 
 .tab-content {
   flex-grow: 1;

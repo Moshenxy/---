@@ -56,96 +56,107 @@ function checkForChangesAndNotify(oldState: any, newState: any) {
       }
     }
   }
-  
+
   const oldUser = get(oldState, '主角', {});
   const newUser = get(newState, '主角', {});
-  if(oldUser && newUser) {
-      const compareAndNotify = (path: string, name: string) => {
-        const oldVal = get(oldUser, path);
-        const newVal = get(newUser, path);
-        if (JSON.stringify(oldVal) !== JSON.stringify(newVal)) {
-          notificationService.info('属性变化', `${name} 发生了变化。`);
-        }
-      };
-
-      if (oldUser.属性 && newUser.属性) {
-          const allAttributes = new Set([...Object.keys(oldUser.属性), ...Object.keys(newUser.属性)]);
-          for (const attr of allAttributes) {
-              compareAndNotify(`属性.${attr}`, `属性[${attr}]`);
-          }
+  if (oldUser && newUser) {
+    const compareAndNotify = (path: string, name: string) => {
+      const oldVal = get(oldUser, path);
+      const newVal = get(newUser, path);
+      if (JSON.stringify(oldVal) !== JSON.stringify(newVal)) {
+        notificationService.info('属性变化', `${name} 发生了变化。`);
       }
+    };
+
+    if (oldUser.属性 && newUser.属性) {
+      const allAttributes = new Set([...Object.keys(oldUser.属性), ...Object.keys(newUser.属性)]);
+      for (const attr of allAttributes) {
+        compareAndNotify(`属性.${attr}`, `属性[${attr}]`);
+      }
+    }
   }
 }
 
 function parseBlock(block: string): { [key: string]: any } {
-    const data: { [key: string]: any } = {};
-    const lines = block.trim().split('\n');
-    let currentKey: string | null = null;
-    let isParsingMultiLine = false;
-    let multiLineContent: any = null;
+  const data: { [key: string]: any } = {};
+  const lines = block.trim().split('\n');
+  let currentKey: string | null = null;
+  let isParsingMultiLine = false;
+  let multiLineContent: any = null;
 
-    for (const line of lines) {
-        if (line.trim() === '---') {
-            isParsingMultiLine = false;
-            currentKey = null;
-            continue;
-        }
-
-        if (!isParsingMultiLine) {
-            const separatorIndex = line.indexOf('|');
-            if (separatorIndex !== -1) {
-                const key = line.substring(0, separatorIndex).trim();
-                const value = line.substring(separatorIndex + 1).trim();
-                data[key] = value;
-                currentKey = key;
-
-                if (['【表·世界日志】', '【里·导演剪辑室】', '【校园BBS】', '【下回合展望】', '【一周热点追击】', '【本周人物风云榜】', '【关系蛛网变动】', '【世界线收束与发散】'].includes(key)) {
-                    isParsingMultiLine = true;
-                    multiLineContent = {};
-                    data[key] = multiLineContent;
-                } else if (['人物弧光', 'NPC表演分析', '镜头语言分析', '世界演化'].includes(key)) {
-                    isParsingMultiLine = true;
-                    multiLineContent = [];
-                    data[key] = multiLineContent;
-                }
-            }
-        } else if (currentKey) {
-            const trimmedLine = line.trim();
-            if (trimmedLine.startsWith('- ')) {
-                const itemContent = trimmedLine.substring(2).trim();
-                if (Array.isArray(data[currentKey])) {
-                    data[currentKey].push(itemContent);
-                } else if (typeof data[currentKey] === 'object') {
-                    const itemSeparatorIndex = itemContent.indexOf(':');
-                    if (itemSeparatorIndex !== -1) {
-                        const itemKey = itemContent.substring(0, itemSeparatorIndex).trim();
-                        const itemValue = itemContent.substring(itemSeparatorIndex + 1).trim();
-                        if (!data[currentKey][currentKey]) {
-                            data[currentKey][currentKey] = [];
-                        }
-                        data[currentKey][currentKey].push({[itemKey]: itemValue});
-                    }
-                }
-            } else if (trimmedLine) {
-                 if (typeof data[currentKey] === 'object' && !Array.isArray(data[currentKey])) {
-                    const itemSeparatorIndex = trimmedLine.indexOf(':');
-                     if (itemSeparatorIndex !== -1) {
-                        const itemKey = trimmedLine.substring(0, itemSeparatorIndex).trim();
-                        const itemValue = trimmedLine.substring(itemSeparatorIndex + 1).trim();
-                        data[currentKey][itemKey] = itemValue;
-                     }
-                 }
-            }
-        }
+  for (const line of lines) {
+    if (line.trim() === '---') {
+      isParsingMultiLine = false;
+      currentKey = null;
+      continue;
     }
-    return data;
+
+    if (!isParsingMultiLine) {
+      const separatorIndex = line.indexOf('|');
+      if (separatorIndex !== -1) {
+        const key = line.substring(0, separatorIndex).trim();
+        const value = line.substring(separatorIndex + 1).trim();
+        data[key] = value;
+        currentKey = key;
+
+        if (
+          [
+            '【表·世界日志】',
+            '【里·导演剪辑室】',
+            '【校园BBS】',
+            '【下回合展望】',
+            '【一周热点追击】',
+            '【本周人物风云榜】',
+            '【关系蛛网变动】',
+            '【世界线收束与发散】',
+          ].includes(key)
+        ) {
+          isParsingMultiLine = true;
+          multiLineContent = {};
+          data[key] = multiLineContent;
+        } else if (['人物弧光', 'NPC表演分析', '镜头语言分析', '世界演化'].includes(key)) {
+          isParsingMultiLine = true;
+          multiLineContent = [];
+          data[key] = multiLineContent;
+        }
+      }
+    } else if (currentKey) {
+      const trimmedLine = line.trim();
+      if (trimmedLine.startsWith('- ')) {
+        const itemContent = trimmedLine.substring(2).trim();
+        if (Array.isArray(data[currentKey])) {
+          data[currentKey].push(itemContent);
+        } else if (typeof data[currentKey] === 'object') {
+          const itemSeparatorIndex = itemContent.indexOf(':');
+          if (itemSeparatorIndex !== -1) {
+            const itemKey = itemContent.substring(0, itemSeparatorIndex).trim();
+            const itemValue = itemContent.substring(itemSeparatorIndex + 1).trim();
+            if (!data[currentKey][currentKey]) {
+              data[currentKey][currentKey] = [];
+            }
+            data[currentKey][currentKey].push({ [itemKey]: itemValue });
+          }
+        }
+      } else if (trimmedLine) {
+        if (typeof data[currentKey] === 'object' && !Array.isArray(data[currentKey])) {
+          const itemSeparatorIndex = trimmedLine.indexOf(':');
+          if (itemSeparatorIndex !== -1) {
+            const itemKey = trimmedLine.substring(0, itemSeparatorIndex).trim();
+            const itemValue = trimmedLine.substring(itemSeparatorIndex + 1).trim();
+            data[currentKey][itemKey] = itemValue;
+          }
+        }
+      }
+    }
+  }
+  return data;
 }
 
 // 专为日记片段设计的、更健壮的解析器
 function parseDiaryFragment(block: string): Partial<DiaryFragment> {
   const fragment: Partial<DiaryFragment> = {};
   const sections = block.split('\n---\n');
-  
+
   // 解析第一部分的 key|value
   const headerLines = sections[0]?.trim().split('\n') || [];
   for (const line of headerLines) {
@@ -178,7 +189,7 @@ function parseDiaryFragment(block: string): Partial<DiaryFragment> {
 
     const header = headerMatch[1];
     const content = section.substring(headerMatch[0].length).trim();
-    
+
     switch (header) {
       case '事件概要': {
         const summaryMatch = content.match(/^概要\|(.+)/s);
@@ -246,7 +257,7 @@ async function loadDiaryFromLorebook() {
 
     const uniqueLogsMap = new Map<string, DiaryEntry>();
     for (const log of allLogs) {
-      if(log.日期) {
+      if (log.日期) {
         uniqueLogsMap.set(log.日期, log);
       }
     }
@@ -296,20 +307,20 @@ async function loadDiaryFragmentsFromLorebook() {
 }
 
 async function loadDirectorLogsFromLorebook() {
-    try {
-        const logContent = await lorebookService.readFromLorebook('导演场记');
-        if (!logContent || !logContent.trim()) {
-            store.directorLogs = [];
-            return;
-        }
-        const logBlocks = logContent.split('\n\n---\n\n');
-        const allLogs = logBlocks.map(block => parseBlock(block) as unknown as DirectorLog);
-        store.directorLogs = allLogs.sort((a, b) => parseInt(a.剧本ID, 10) - parseInt(b.剧本ID, 10));
-        console.log(`[Store] Loaded ${store.directorLogs.length} director logs.`);
-    } catch (error) {
-        console.error('Error loading director logs from lorebook:', error);
-        store.directorLogs = [];
+  try {
+    const logContent = await lorebookService.readFromLorebook('导演场记');
+    if (!logContent || !logContent.trim()) {
+      store.directorLogs = [];
+      return;
     }
+    const logBlocks = logContent.split('\n\n---\n\n');
+    const allLogs = logBlocks.map(block => parseBlock(block) as unknown as DirectorLog);
+    store.directorLogs = allLogs.sort((a, b) => parseInt(a.剧本ID, 10) - parseInt(b.剧本ID, 10));
+    console.log(`[Store] Loaded ${store.directorLogs.length} director logs.`);
+  } catch (error) {
+    console.error('Error loading director logs from lorebook:', error);
+    store.directorLogs = [];
+  }
 }
 
 async function fetchCoreData() {
@@ -370,7 +381,7 @@ async function fetchCoreData() {
           }
         }
       }
-      
+
       checkForChangesAndNotify(oldState, store.worldState);
 
       const gameTextContent = fullMessageContent?.match(/<gametxt>([\s\S]*?)<\/gametxt>/i)?.[1].trim();
@@ -378,7 +389,7 @@ async function fetchCoreData() {
       if (gameTextContent) {
         store.mainWorldNarrative = gameTextContent;
       }
-      
+
       if (fullMessageContent && currentMessageId !== lastProcessedMessageId) {
         lastProcessedMessageId = currentMessageId;
         // await memoryService.updateMemory(store.diary); // FIXME: This method does not exist on MemoryService
@@ -474,7 +485,7 @@ async function updateLastPatchFromHistory() {
         const patchContent = jsonPatchMatch[1].trim();
         store.lastGeneratedPatch = patchContent;
       } else {
-         store.lastGeneratedPatch = null;
+        store.lastGeneratedPatch = null;
       }
     }
   } catch (error) {
@@ -514,14 +525,18 @@ async function handleAction(actionText: string, isReroll = false) {
     );
 
     console.log('[Actions] Generating AI response with modular context.');
-    
+
     const buildXmlTag = (tagName: string, content: any) => {
-      if (!content || (Array.isArray(content) && content.length === 0) || (typeof content === 'object' && Object.keys(content).length === 0)) {
+      if (
+        !content ||
+        (Array.isArray(content) && content.length === 0) ||
+        (typeof content === 'object' && Object.keys(content).length === 0)
+      ) {
         return '';
       }
       return `<${tagName}>\n${JSON.stringify(content, null, 2)}\n</${tagName}>\n\n`;
     };
-    
+
     const worldContextData = worldContext as any;
 
     const synthesisRequest = diarySynthesisService.getSynthesisRequest();
@@ -575,7 +590,6 @@ ${actionText}
     for (const event of actionReactions) {
       worldEvolutionService.propagateRipples(event, store.worldState);
     }
-
   } catch (error) {
     console.error('处理动作时出错:', error);
     const errorMessage = error instanceof Error ? error.message : String(error);

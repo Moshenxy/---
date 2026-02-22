@@ -37,11 +37,11 @@ class BbsService {
       // Since it's appended, we process the whole content every time to be safe.
       // The duplication is handled by the parsing logic.
       if (currentLogContent) {
-         if (currentLogContent !== this.lastLogContent) {
-            console.log('[BBS Service] Detected change in "导演场记" lorebook entry. Re-parsing all posts...');
-            this.lastLogContent = currentLogContent;
-            this.parseDirectorLogForBbs(currentLogContent);
-         }
+        if (currentLogContent !== this.lastLogContent) {
+          console.log('[BBS Service] Detected change in "导演场记" lorebook entry. Re-parsing all posts...');
+          this.lastLogContent = currentLogContent;
+          this.parseDirectorLogForBbs(currentLogContent);
+        }
       }
     } catch (error) {
       console.error('[BBS Service] Error fetching "导演场记" from lorebook:', error);
@@ -56,7 +56,7 @@ class BbsService {
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
-      
+
       // Find the most recent script ID before a BBS section
       if (line.startsWith('剧本ID|')) {
         currentScriptId = line.replace('剧本ID|', '').trim();

@@ -31,17 +31,17 @@ export class StarMapService {
     this.camera = new THREE.PerspectiveCamera(75, this.container.clientWidth / this.container.clientHeight, 0.1, 1000);
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     this.stars = new THREE.Group();
-    
+
     this.init();
-    
+
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = true; // Smooths out the camera movement
     this.controls.dampingFactor = 0.05;
     this.controls.autoRotate = true;
     this.controls.autoRotateSpeed = 0.1;
-    this.controls.minDistance = 5;   // Allow zooming in closer
-    this.controls.maxDistance = 200;  // Allow zooming out further
-    this.controls.enablePan = true;   // Enable panning with right-click
+    this.controls.minDistance = 5; // Allow zooming in closer
+    this.controls.maxDistance = 200; // Allow zooming out further
+    this.controls.enablePan = true; // Enable panning with right-click
     this.controls.panSpeed = 0.5;
 
     this.animate();
@@ -128,7 +128,7 @@ export class StarMapService {
         }
       `,
       uniforms: {
-        u_time: { value: 0.0 }
+        u_time: { value: 0.0 },
       },
       side: THREE.BackSide,
     });
@@ -179,7 +179,7 @@ export class StarMapService {
 
       const core = star.children[0] as THREE.Mesh<THREE.SphereGeometry, THREE.MeshBasicMaterial>;
       const halo = star.children[1] as THREE.Mesh<THREE.SphereGeometry, THREE.MeshBasicMaterial>;
-      
+
       if (core && halo) {
         core.material.color.lerp(newColor, 0.1);
         halo.material.color.lerp(newColor, 0.1);
@@ -188,63 +188,63 @@ export class StarMapService {
   }
 
   private createSingleStar(world: WorldData, selectableIds: Set<number>) {
-      const coreGeometry = new THREE.SphereGeometry(0.3, 16, 16);
-      const haloGeometry = new THREE.SphereGeometry(0.5, 16, 16);
-      
-      const phi = Math.acos(-1 + (2 * Math.random()));
-      const theta = Math.sqrt(this.starObjects.length * Math.PI) * phi;
-      const radius = 30;
+    const coreGeometry = new THREE.SphereGeometry(0.3, 16, 16);
+    const haloGeometry = new THREE.SphereGeometry(0.5, 16, 16);
 
-      const x = radius * Math.cos(theta) * Math.sin(phi);
-      const y = radius * Math.sin(theta) * Math.sin(phi);
-      const z = radius * Math.cos(phi);
+    const phi = Math.acos(-1 + 2 * Math.random());
+    const theta = Math.sqrt(this.starObjects.length * Math.PI) * phi;
+    const radius = 30;
 
-      const isSelectable = selectableIds.has(world.id);
-      const energyLevel = world.energyLevel || 1;
-      const timeFlow = world.timeFlow || 1;
+    const x = radius * Math.cos(theta) * Math.sin(phi);
+    const y = radius * Math.sin(theta) * Math.sin(phi);
+    const z = radius * Math.cos(phi);
 
-      const baseColor = this.getColorForEnergyLevel(energyLevel);
-      const starColor = isSelectable ? baseColor : new THREE.Color(0x444444);
+    const isSelectable = selectableIds.has(world.id);
+    const energyLevel = world.energyLevel || 1;
+    const timeFlow = world.timeFlow || 1;
 
-      // Star Core
-      const coreMaterial = new THREE.MeshBasicMaterial({ color: starColor });
-      const core = new THREE.Mesh(coreGeometry, coreMaterial);
+    const baseColor = this.getColorForEnergyLevel(energyLevel);
+    const starColor = isSelectable ? baseColor : new THREE.Color(0x444444);
 
-      // Star Halo
-      const haloMaterial = new THREE.MeshBasicMaterial({
-        color: starColor,
-        transparent: true,
-        opacity: 0.4,
-        blending: THREE.AdditiveBlending,
-      });
-      const halo = new THREE.Mesh(haloGeometry, haloMaterial);
-      
-      const haloScale = 1.5;
-      halo.scale.set(haloScale, haloScale, haloScale);
-      
-      const starGroup: StarObject = new THREE.Group();
-      starGroup.add(core);
-      starGroup.add(halo);
-      
-      starGroup.position.set(x, y, z);
-      
-      // Store world data in the group for picking
-      starGroup.userData = { world }; // Store data on the group itself
-      core.userData = { world }; // Also on core for raycasting
-      halo.userData = { world };
+    // Star Core
+    const coreMaterial = new THREE.MeshBasicMaterial({ color: starColor });
+    const core = new THREE.Mesh(coreGeometry, coreMaterial);
 
-      // Store orbit data
-      starGroup.orbitSpeed = Math.log1p(timeFlow) * 0.015; // Directly tie speed to timeFlow
-      starGroup.orbitRadius = Math.sqrt(x*x + z*z);
-      starGroup.orbitAngle = Math.atan2(z, x);
+    // Star Halo
+    const haloMaterial = new THREE.MeshBasicMaterial({
+      color: starColor,
+      transparent: true,
+      opacity: 0.4,
+      blending: THREE.AdditiveBlending,
+    });
+    const halo = new THREE.Mesh(haloGeometry, haloMaterial);
 
-      this.stars.add(starGroup);
-      this.starObjects.push(starGroup);
+    const haloScale = 1.5;
+    halo.scale.set(haloScale, haloScale, haloScale);
+
+    const starGroup: StarObject = new THREE.Group();
+    starGroup.add(core);
+    starGroup.add(halo);
+
+    starGroup.position.set(x, y, z);
+
+    // Store world data in the group for picking
+    starGroup.userData = { world }; // Store data on the group itself
+    core.userData = { world }; // Also on core for raycasting
+    halo.userData = { world };
+
+    // Store orbit data
+    starGroup.orbitSpeed = Math.log1p(timeFlow) * 0.015; // Directly tie speed to timeFlow
+    starGroup.orbitRadius = Math.sqrt(x * x + z * z);
+    starGroup.orbitAngle = Math.atan2(z, x);
+
+    this.stars.add(starGroup);
+    this.starObjects.push(starGroup);
   }
 
   private animate() {
     requestAnimationFrame(this.animate.bind(this));
-    
+
     // Update shader time uniform
     if (this.skybox && this.skybox.material instanceof THREE.ShaderMaterial) {
       this.skybox.material.uniforms.u_time.value += 0.01;
@@ -273,7 +273,7 @@ export class StarMapService {
     window.removeEventListener('resize', this.onWindowResize.bind(this));
     this.renderer.dispose();
     if (this.container && this.renderer.domElement) {
-        this.container.removeChild(this.renderer.domElement);
+      this.container.removeChild(this.renderer.domElement);
     }
   }
 

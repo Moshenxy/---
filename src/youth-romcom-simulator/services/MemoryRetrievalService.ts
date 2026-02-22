@@ -70,9 +70,9 @@ class MemoryRetrievalService {
     } else if (dateFilter && candidateLogs.length > 0) {
       return candidateLogs;
     } else if (!dateFilter) {
-       return scoredLogs.sort((a, b) => b.relevanceScore - a.relevanceScore).slice(0, this.config.topN);
+      return scoredLogs.sort((a, b) => b.relevanceScore - a.relevanceScore).slice(0, this.config.topN);
     }
-    
+
     return [];
   }
 
@@ -213,7 +213,12 @@ class MemoryRetrievalService {
   /**
    * 计算核心特质共鸣分数
    */
-  private getCoreTraitScore(logText: string, logEntities: Set<string>, worldState: 游戏世界状态, userId: string): number {
+  private getCoreTraitScore(
+    logText: string,
+    logEntities: Set<string>,
+    worldState: 游戏世界状态,
+    userId: string,
+  ): number {
     let score = 0;
     for (const entityId of logEntities) {
       let character: 角色 | '待初始化' | undefined;

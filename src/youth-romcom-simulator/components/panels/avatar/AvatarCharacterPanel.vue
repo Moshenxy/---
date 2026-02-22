@@ -14,7 +14,10 @@
           <!-- 世界专属属性 -->
           <div class="world-attributes-section">
             <h5 class="section-title">世界专属</h5>
-            <ul v-if="worldSpecificAttributes && Object.keys(worldSpecificAttributes).length > 0" class="attributes-list">
+            <ul
+              v-if="worldSpecificAttributes && Object.keys(worldSpecificAttributes).length > 0"
+              class="attributes-list"
+            >
               <li v-for="(value, key) in worldSpecificAttributes" :key="key" class="attribute-item">
                 <span class="label">{{ key }}</span>
                 <span class="value">{{ formatAttribute(value) }}</span>
@@ -22,7 +25,7 @@
             </ul>
             <div v-else class="empty-state">无</div>
           </div>
-          
+
           <!-- 战斗参数 -->
           <div class="combat-attributes-section">
             <h5 class="section-title">战斗参数</h5>

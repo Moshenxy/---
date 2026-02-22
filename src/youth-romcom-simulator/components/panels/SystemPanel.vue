@@ -3,10 +3,12 @@
     <div class="panel-tabs">
       <button :class="{ active: activeTab === 'saveLoad' }" @click="activeTab = 'saveLoad'">存档管理</button>
       <button :class="{ active: activeTab === 'memory' }" @click="activeTab = 'memory'">记忆系统</button>
+      <button :class="{ active: activeTab === 'debug' }" @click="activeTab = 'debug'">调试</button>
     </div>
     <div class="panel-content">
       <SaveLoadPanel v-show="activeTab === 'saveLoad'" />
       <MemoryPanel v-show="activeTab === 'memory'" />
+      <DebugPanel v-show="activeTab === 'debug'" />
     </div>
   </div>
 </template>
@@ -15,6 +17,7 @@
 import { ref } from 'vue';
 import MemoryPanel from './MemoryPanel.vue';
 import SaveLoadPanel from './SaveLoadPanel.vue';
+import DebugPanel from './DebugPanel.vue';
 
 const activeTab = ref('saveLoad');
 </script>

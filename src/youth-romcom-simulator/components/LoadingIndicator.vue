@@ -2,7 +2,7 @@
   <div class="loading-overlay">
     <div class="loading-content">
       <div v-if="error" class="error-container">
-        <h3 class="error-title">天机紊乱</h3>
+        <h3 class="error-title">次元紊乱</h3>
         <p class="error-message">{{ error }}</p>
         <p class="error-tip">请检查网络连接或稍后再试。</p>
       </div>
@@ -11,7 +11,7 @@
         <div class="progress-bar-container">
           <div class="progress-bar" :style="{ width: progress + '%' }"></div>
         </div>
-        <span class="progress-text"><span class="highlight">轮回</span>回应中... {{ Math.floor(progress) }}%</span>
+        <span class="progress-text">思考中...</span>
       </div>
     </div>
   </div>
@@ -25,14 +25,18 @@ const props = defineProps<{
 }>();
 
 const tips = [
-  '开局不利？尝试在不同的世界寻找机缘，或许能固化改变命运的烙印。',
-  '灵魂本源是宝贵的资源，用它来继承天赋或装备，能让你在下一次轮回中走得更远。',
-  '高能级的世界往往伴随着高风险，但其产出的轮回烙印也更为强大。',
-  '如何重新演化天机？在“轮回”面板中，点击“重演天机”，即可发现新的世界。',
-  '与NPC建立良好的关系，可能会在不经意间触发隐藏的命运节点。',
-  '诸天万界，每一个选择都可能引发蝴蝶效应，谨慎行事。',
-  '有时候，放弃也是一种智慧。当世的终结，或许是下一世更好的开端。',
-  '留意世界日志中的摘要，那里面隐藏着后台世界的风起云涌。',
+  '正在确认二次元通道的链接稳定性...',
+  '雪之下雪乃正在暗中观察一只流浪猫。',
+  '由比滨结衣正在尝试制作某种形状不可名状的曲奇。',
+  '一色彩羽正在寻找可以帮忙搬运学生会杂物的“老好人学长”。',
+  '平冢静老师的相亲似乎又失败了，正在拉面店独自喝着闷酒。',
+  '比企谷八幡正在自动贩卖机前犹豫，今天要不要再来一罐MAX咖啡。',
+  '户塚彩加正在网球部被过度友好的男同学们包围着。',
+  '霞之丘诗羽学姐正在取材，请注意不要成为她下一本小说里的反派。',
+  '英梨梨的截稿日似乎又要到了，美术室里传来了悲鸣。',
+  '一个粉色头发的社恐吉他手正躲在楼梯拐角的纸箱里。',
+  '学生会长白银御行因睡眠不足，眼神变得更加凶恶了。',
+  '藤原书记又发明了新的桌游，学生会室充满了混沌的气息。',
 ];
 
 const randomTip = ref('');
@@ -49,19 +53,16 @@ onUnmounted(() => {
   stopProgress();
 });
 
-watch(
-  () => props.error,
-  newError => {
-    if (newError) {
-      stopProgress();
-    }
-  },
-);
+watch(() => props.error, (newError) => {
+  if (newError) {
+    stopProgress();
+  }
+});
 
 function startProgress() {
   // 随机选择一条提示
   randomTip.value = tips[Math.floor(Math.random() * tips.length)];
-
+  
   // 启动进度条
   progress.value = 0;
   progressInterval = window.setInterval(() => {
@@ -114,57 +115,51 @@ function stopProgress() {
 
   .tip {
     font-family: $font-family-main;
-    font-size: $font-size-large;
-    color: $color-gold-pale;
-    line-height: 1.6;
-    text-shadow: 0 0 5px $color-gold-pale;
+    font-size: 15px;
+    color: #a9a9a9;
+    line-height: 1.7;
+    font-style: italic;
   }
 
   .progress-bar-container {
     width: 100%;
-    height: 12px;
-    background-color: rgba($color-black-void, 0.5);
-    border-radius: 6px;
-    border: 1px solid rgba($color-gold-liu, 0.4);
-    overflow: hidden;
+    height: 4px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    margin-top: 5px;
   }
 
   .progress-bar {
     height: 100%;
-    background: linear-gradient(90deg, $color-cyan-tian, $color-gold-liu);
+    background-color: #a9a9a9;
     transition: width 0.2s linear;
-    border-radius: 6px;
+    border-radius: 2px;
   }
 
   .progress-text {
-    font-family: $font-family-title;
-    font-size: $font-size-base;
-    color: $color-grey-stone;
-
-    .highlight {
-      color: $color-gold-pale;
-      font-weight: bold;
-      text-shadow: 0 0 5px rgba($color-gold-liu, 0.7);
+    font-family: $font-family-main;
+    font-size: 13px;
+    color: #6c757d;
+    margin-top: 10px;
+      }
+    
+      .error-container {
+        .error-title {
+          color: $color-red-chi;
+          font-family: $font-family-title;
+          font-size: $font-size-h1;
+          margin-bottom: $spacing-md;
+          text-shadow: 0 0 8px rgba($color-red-chi, 0.6);
+        }
+        .error-message {
+          color: $color-white-moon;
+          font-size: $font-size-base;
+          margin-bottom: $spacing-lg;
+        }
+        .error-tip {
+          color: $color-grey-stone;
+          font-size: $font-size-small;
+        }
+      }
     }
-  }
-
-  .error-container {
-    .error-title {
-      color: $color-red-chi;
-      font-family: $font-family-title;
-      font-size: $font-size-h1;
-      margin-bottom: $spacing-md;
-      text-shadow: 0 0 8px rgba($color-red-chi, 0.6);
-    }
-    .error-message {
-      color: $color-white-moon;
-      font-size: $font-size-base;
-      margin-bottom: $spacing-lg;
-    }
-    .error-tip {
-      color: $color-grey-stone;
-      font-size: $font-size-small;
-    }
-  }
-}
-</style>
+    </style>

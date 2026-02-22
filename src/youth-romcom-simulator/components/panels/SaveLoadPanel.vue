@@ -15,9 +15,9 @@
           <div class="slot-info">
             <span class="slot-name">{{ slot.name }}</span>
             <span class="slot-timestamp">{{ slot.timestamp ? formatTimestamp(slot.timestamp) : '空槽位' }}</span>
-            <div v-if="slot.worldLogDate || slot.worldLogTitle" class="slot-world-log">
-              <span class="log-date">{{ slot.worldLogDate }}</span>
-              <span class="log-title">{{ slot.worldLogTitle }}</span>
+            <div v-if="slot.diaryDate || slot.diaryTimeSegment || slot.diaryTitle" class="slot-diary">
+              <span class="log-date">{{ slot.diaryDate }} {{ slot.diaryTimeSegment }}</span>
+              <span class="log-title">{{ slot.diaryTitle }}</span>
             </div>
           </div>
           <div class="slot-actions">
@@ -34,9 +34,9 @@
           <div class="slot-info">
             <span class="slot-name">{{ slot.name }}</span>
             <span class="slot-timestamp">{{ slot.timestamp ? formatTimestamp(slot.timestamp) : '空槽位' }}</span>
-            <div v-if="slot.worldLogDate || slot.worldLogTitle" class="slot-world-log">
-              <span class="log-date">{{ slot.worldLogDate }}</span>
-              <span class="log-title">{{ slot.worldLogTitle }}</span>
+            <div v-if="slot.diaryDate || slot.diaryTimeSegment || slot.diaryTitle" class="slot-diary">
+              <span class="log-date">{{ slot.diaryDate }} {{ slot.diaryTimeSegment }}</span>
+              <span class="log-title">{{ slot.diaryTitle }}</span>
             </div>
           </div>
           <div class="slot-actions">
@@ -56,9 +56,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from 'vue';
-import { saveLoadService, SaveSlot } from '../../services/saveLoadService';
 import * as toastr from 'toastr';
+import { defineComponent, onMounted, ref } from 'vue';
+import { saveLoadService, SaveSlot } from '../../services/saveLoadService';
 
 export default defineComponent({
   name: 'SaveLoadPanel',
@@ -247,15 +247,16 @@ export default defineComponent({
   font-size: $font-size-small;
 }
 
-.slot-world-log {
+.slot-diary {
   margin-top: $spacing-xs;
   padding-top: $spacing-xs;
   border-top: 1px solid rgba($color-gold-liu, 0.1);
   font-size: $font-size-small;
-  color: $color-grey-stone;
+  color: $color-white-moon;
 
   .log-date {
     font-style: italic;
+    color: $color-grey-stone;
   }
 
   .log-title {

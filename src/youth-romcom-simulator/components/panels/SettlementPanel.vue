@@ -79,7 +79,7 @@ function closeSettlement() {
   color: #e0e0e0;
   border-radius: 12px;
   border: 1px solid #444;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   display: flex;
   flex-direction: column;
 }
@@ -88,7 +88,7 @@ function closeSettlement() {
   padding: 1.5rem;
   border-bottom: 1px solid #444;
   text-align: center;
-
+  
   h2 {
     margin: 0;
     font-size: 2rem;
@@ -113,7 +113,7 @@ function closeSettlement() {
   background: #2b2b2b;
   padding: 1.5rem;
   border-radius: 8px;
-
+  
   h3 {
     margin-top: 0;
     margin-bottom: 1rem;
@@ -122,7 +122,7 @@ function closeSettlement() {
     border-bottom: 1px solid #444;
     padding-bottom: 0.5rem;
   }
-
+  
   p {
     margin: 0;
     font-size: 0.95rem;
@@ -149,7 +149,7 @@ function closeSettlement() {
   padding: 1.5rem;
   border-top: 1px solid #444;
   text-align: center;
-
+  
   button {
     padding: 0.75rem 2.5rem;
     border: 1px solid #00aaff;
@@ -159,7 +159,7 @@ function closeSettlement() {
     font-size: 1.1rem;
     cursor: pointer;
     transition: all 0.3s ease;
-
+    
     &:hover {
       background: #00aaff;
       color: #1a1a1a;

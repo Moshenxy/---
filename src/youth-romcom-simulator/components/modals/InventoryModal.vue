@@ -50,9 +50,7 @@ defineEmits(['close']);
     border-radius: 6px;
     cursor: pointer;
     font-size: 14px;
-    transition:
-      background-color 0.2s ease,
-      color 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
 
     &:hover {
       background-color: $theme-secondary-bg;

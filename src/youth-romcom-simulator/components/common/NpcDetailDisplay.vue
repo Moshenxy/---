@@ -1,19 +1,14 @@
 <template>
   <div class="npc-detail-display">
     <div class="tabs">
-      <button
-        v-for="tab in tabs"
-        :key="tab.id"
-        :class="{ active: activeTab === tab.id }"
-        @click="activeTab = tab.id as Tab"
-      >
+      <button v-for="tab in tabs" :key="tab.id" :class="{ active: activeTab === tab.id }" @click="activeTab = tab.id as Tab">
         {{ tab.name }}
       </button>
     </div>
     <div class="tab-content">
       <template v-if="npc">
         <NpcArchiveTab v-if="activeTab === 'archive'" :npc="npc" />
-        <NpcAttributesTab v-if="activeTab === 'attributes'" :npc="npc" />
+        <NpcPowerTab v-if="activeTab === 'power'" :npc="npc" />
         <NpcCauseTab v-if="activeTab === 'cause'" :npc="npc" :npc-id="npcId" />
       </template>
       <div v-else class="placeholder">
@@ -25,23 +20,23 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import type { 角色 } from '../../types';
+import type { Npc } from '../../types';
 import NpcArchiveTab from './npc-details/NpcArchiveTab.vue';
-import NpcAttributesTab from './npc-details/NpcAttributesTab.vue';
+import NpcPowerTab from './npc-details/NpcPowerTab.vue';
 import NpcCauseTab from './npc-details/NpcCauseTab.vue';
 
 defineProps<{
-  npc: 角色 | null;
+  npc: Npc | null;
   npcId: string | null;
 }>();
 
-type Tab = 'archive' | 'attributes' | 'cause';
+type Tab = 'archive' | 'power' | 'cause';
 
 const activeTab = ref<Tab>('archive');
 
 const tabs = [
   { id: 'archive', name: '【档案】' },
-  { id: 'attributes', name: '【能力】' },
+  { id: 'power', name: '【权能】' },
   { id: 'cause', name: '【因果】' },
 ];
 </script>

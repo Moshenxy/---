@@ -97,8 +97,8 @@ function updateConfig() {
 
 async function forceUpdate() {
   toastr.info('正在手动更新所有记忆层级...');
-  console.log('[MemoryPanel] Forcing update with worldLog:', JSON.stringify(store.worldLog, null, 2));
-  await memoryService.updateMemory(store.worldLog);
+  console.log('[MemoryPanel] Forcing update via processDirectorLog...');
+  await memoryService.processDirectorLog();
   await fetchMemoryContent(true); // Force refresh after manual update
   toastr.success('记忆层级更新完毕');
 }

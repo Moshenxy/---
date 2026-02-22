@@ -1,30 +1,8 @@
 <template>
   <div class="action-panel">
-    <div class="button-row">
+    <div class="button-container">
       <button
-        v-for="option in mainOptions"
-        :key="option.id"
-        class="action-button"
-        :disabled="option.disabled && option.disabled()"
-        @click="option.action"
-      >
-        {{ option.text }}
-      </button>
-    </div>
-    <div class="button-row">
-      <button
-        v-for="option in avatarOptions"
-        :key="option.id"
-        class="action-button"
-        :disabled="option.disabled && option.disabled()"
-        @click="option.action"
-      >
-        {{ option.text }}
-      </button>
-    </div>
-    <div class="button-row">
-      <button
-        v-for="option in commonOptions"
+        v-for="option in options"
         :key="option.id"
         class="action-button"
         :disabled="option.disabled && option.disabled()"
@@ -49,9 +27,7 @@ interface MenuOption {
 
 defineProps<{
   commandCount: number;
-  mainOptions: MenuOption[];
-  avatarOptions: MenuOption[];
-  commonOptions: MenuOption[];
+  options: MenuOption[];
 }>();
 
 defineEmits(['toggle-history', 'toggle-commands']);
@@ -73,8 +49,9 @@ defineEmits(['toggle-history', 'toggle-commands']);
   box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.2);
 }
 
-.button-row {
+.button-container {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   gap: $spacing-md;
 }

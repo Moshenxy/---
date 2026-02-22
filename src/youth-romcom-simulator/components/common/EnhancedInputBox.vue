@@ -1,7 +1,7 @@
 <template>
   <div class="enhanced-input-box-container">
     <div class="input-wrapper">
-      <button class="action-button activator" @click="$emit('toggle-action-panel')">∇</button>
+      <button class="action-button activator" @click="$emit('toggle-history')">历史</button>
       <textarea
         :value="inputValue"
         @input="onInput"
@@ -27,7 +27,7 @@ defineProps({
   },
 });
 
-const emit = defineEmits(['submit-action', 'toggle-action-panel']);
+const emit = defineEmits(['submit-action', 'toggle-history']);
 
 const inputValue = computed(() => inputModalState.inputValue);
 const commands = computed(() => commandService.getCommands());

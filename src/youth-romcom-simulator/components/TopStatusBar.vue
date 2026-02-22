@@ -1,9 +1,9 @@
 <template>
   <div class="top-status">
     <div class="status-left">
-      <div class="info-display chapter-info">
-        <span class="chapter-title">{{ chapterInfo.title }}</span>
-        <span class="chapter-details">{{ chapterInfo.details }}</span>
+      <div class="chapter-info">
+        <span class="work-title">{{ chapterInfo.workTitle }}</span>
+        <span class="chapter-title">{{ chapterInfo.fullChapterTitle }}</span>
       </div>
     </div>
     <div class="status-center">
@@ -21,22 +21,66 @@
       </button>
     </div>
     <div class="status-right">
-      <div class="info-display world-time">{{ worldTimeStr }}</div>
+      <ActionPointDisplay :当前="actionPoints.当前" :上限="actionPoints.上限" />
+      <div class="date-time-info">
+        <span class="date-time">{{ worldTimeInfo.date }} {{ worldTimeInfo.timeSegment }}</span>
+        <span class="day-weather">{{ worldTimeInfo.dayOfWeek }} | {{ worldTimeInfo.weather }}</span>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { uiState, uiActions } from '../store/ui';
+import ActionPointDisplay from './common/ActionPointDisplay.vue';
 import { usePanelManager } from '../services/usePanelManager';
-import { actions } from '../store';
-import { chapterInfo, worldTimeStr } from '../store/getters';
+import { actions, store } from '../store';
+import { getVariable } from '../store/getters';
+import { uiActions, uiState } from '../store/ui';
 
 const isBrowserFullscreen = computed(() => uiState.isBrowserFullscreen);
 const { openPanel } = usePanelManager();
 
 import { inputModalActions, inputModalState } from '../services/InputModalService';
+
+const chapterInfo = computed(() => {
+  const chapter = getVariable('世界状态.章节').value;
+  if (!chapter) {
+    return {
+      workTitle: '未知作品',
+      fullChapterTitle: '未知章节',
+    };
+  }
+  return {
+    workTitle: chapter.所属作品 || '未知作品',
+    fullChapterTitle: `第${chapter.册 ?? '?'}册 第${chapter.章 ?? '?'}章: ${chapter.标题 || '未知标题'}`,
+  };
+});
+
+const worldTimeInfo = computed(() => {
+  const worldState = store.worldState?.世界状态;
+  if (!worldState || !worldState.时间 || !worldState.时间.日期) {
+    return {
+      date: '----年--月--日',
+      timeSegment: '未知',
+      dayOfWeek: '星期?',
+      weather: '未知',
+    };
+  }
+  const date = new Date(worldState.时间.日期);
+  const dateOptions: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  };
+
+  return {
+    date: date.toLocaleDateString('zh-CN', dateOptions).replace(/\//g, '-'),
+    timeSegment: worldState.时间.当前片段 || '未知',
+    dayOfWeek: `星期${worldState.时间.星期}` || '星期?',
+    weather: worldState.天气 || '未知',
+  };
+});
 
 const toggleFullscreen = () => {
   uiActions.toggleBrowserFullscreen();
@@ -61,6 +105,17 @@ const fullscreenTitle = computed(() => {
 
 const fullscreenIcon = computed(() => {
   return isBrowserFullscreen.value ? 'fas fa-compress' : 'fas fa-expand';
+});
+
+const actionPoints = computed(() => {
+  const ap = getVariable('世界状态.行动点').value;
+  if (!ap) {
+    return { 当前: 0, 上限: 0 };
+  }
+  return {
+    当前: ap.当前 ?? 0,
+    上限: ap.上限 ?? 0,
+  };
 });
 </script>
 
@@ -102,16 +157,47 @@ const fullscreenIcon = computed(() => {
   display: flex;
   align-items: center;
   gap: $spacing-md;
+  color: $color-grey-stone; // Default secondary text color
+}
+
+.chapter-info,
+.date-time-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.status-left {
+  align-items: flex-start;
+  .work-title {
+    font-size: $font-size-small;
+    color: $color-grey-stone;
+  }
+  .chapter-title {
+    font-size: $font-size-base;
+    font-weight: bold;
+    color: $color-white-moon;
+  }
+}
+
+.status-right {
+  align-items: flex-end;
+  .date-time {
+    font-size: $font-size-base;
+    font-weight: bold;
+    color: $color-white-moon;
+  }
+  .day-weather {
+    font-size: $font-size-small;
+    color: $color-grey-stone;
+  }
 }
 
 .status-left {
   justify-content: flex-start;
-  flex: 1.5; /* Give left side a bit more space */
 }
 
 .status-right {
   justify-content: flex-end;
-  flex: 1;
 }
 
 .status-center {
@@ -120,42 +206,7 @@ const fullscreenIcon = computed(() => {
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: $spacing-md;
-}
-
-.info-display {
-  padding: $spacing-xs $spacing-lg;
-  background: rgba($color-black-void, 0.5);
-  border: 1px solid rgba($color-gold-liu, 0.2);
-  border-radius: $border-radius-sm;
-  color: $color-grey-stone;
-  font-size: $font-size-small;
-  white-space: nowrap;
-  min-width: 150px;
-  text-align: center;
-}
-
-.chapter-info {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: $spacing-xs;
-  color: $color-gold-pale;
-  text-align: left;
-}
-
-.chapter-title {
-  font-weight: bold;
-  font-size: $font-size-base;
-}
-
-.chapter-details {
-  font-size: $font-size-small;
-  color: $color-grey-stone;
-}
-
-.world-time {
-  font-family: monospace;
+  gap: $spacing-xl;
 }
 
 .view-toggle-btn {

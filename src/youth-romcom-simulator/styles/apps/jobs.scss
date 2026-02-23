@@ -38,7 +38,7 @@
         background-color: #fff;
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-
+        
         .job-item-header {
           display: flex;
           justify-content: space-between;
@@ -60,7 +60,7 @@
 
         .job-item-body {
           padding: 15px;
-
+          
           .job-description {
             font-size: 0.9rem;
             color: #495057;
@@ -76,7 +76,7 @@
 
           .job-requirements {
             font-size: 0.85rem;
-
+            
             strong {
               display: block;
               margin-bottom: 5px;
@@ -91,7 +91,7 @@
             }
           }
         }
-
+        
         .job-item-footer {
           padding: 10px 15px;
           text-align: right;

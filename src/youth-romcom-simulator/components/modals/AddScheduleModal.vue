@@ -70,26 +70,23 @@ const isEditing = computed(() => !!props.scheduleToEdit);
 const locationLevels = ref<any[][]>([locationService.locations]);
 const selectedLocations = ref<(string | null)[]>([]);
 
-watch(
-  () => props.scheduleToEdit,
-  newVal => {
+watch(() => props.scheduleToEdit, (newVal) => {
     if (newVal && newVal.地点ID) {
-      // This is a simplified path reconstruction. A full implementation
-      // would require a lookup in the locationService to build the parent path.
-      selectedLocations.value = [newVal.地点ID];
+        // This is a simplified path reconstruction. A full implementation
+        // would require a lookup in the locationService to build the parent path.
+        selectedLocations.value = [newVal.地点ID];
     } else {
-      selectedLocations.value = [null];
+        selectedLocations.value = [null];
     }
-  },
-  { immediate: true },
-);
+}, { immediate: true });
+
 
 function handleLocationChange(levelIndex: number) {
   const selectedId = selectedLocations.value[levelIndex];
-
+  
   // Update the final location ID
-  if (selectedId) {
-    editableSchedule.value.地点ID = selectedId;
+  if(selectedId) {
+      editableSchedule.value.地点ID = selectedId;
   }
 
   // Prune subsequent levels
@@ -105,27 +102,24 @@ function handleLocationChange(levelIndex: number) {
   }
 }
 
-watch(
-  () => props.show,
-  newVal => {
-    if (newVal) {
-      if (props.scheduleToEdit) {
-        editableSchedule.value = { ...props.scheduleToEdit };
-      } else {
-        const now = new Date();
-        editableSchedule.value = {
-          标题: '',
-          日期: now.toISOString().split('T')[0],
-          时间: now.toTimeString().slice(0, 5),
-          地点ID: '',
-          参与者: [],
-          类型: '个人',
-          描述: '',
-        };
-      }
+watch(() => props.show, (newVal) => {
+  if (newVal) {
+    if (props.scheduleToEdit) {
+      editableSchedule.value = { ...props.scheduleToEdit };
+    } else {
+      const now = new Date();
+      editableSchedule.value = {
+        标题: '',
+        日期: now.toISOString().split('T')[0],
+        时间: now.toTimeString().slice(0, 5),
+        地点ID: '',
+        参与者: [],
+        类型: '个人',
+        描述: '',
+      };
     }
-  },
-);
+  }
+});
 
 const handleSubmit = async () => {
   if (isEditing.value) {

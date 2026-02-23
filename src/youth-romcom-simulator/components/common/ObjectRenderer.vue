@@ -1,13 +1,7 @@
 <template>
   <div class="object-renderer" :class="{ 'is-nested': isNested }">
     <ul :class="{ 'multi-column': Object.keys(filteredData).length > 4 }">
-      <ObjectRendererItem
-        v-for="(value, key) in filteredData"
-        :key="key"
-        :item-key="String(key)"
-        :value="value"
-        :context="props.context"
-      />
+      <ObjectRendererItem v-for="(value, key) in filteredData" :key="key" :item-key="String(key)" :value="value" :context="props.context" />
     </ul>
   </div>
 </template>
@@ -21,6 +15,7 @@ const props = defineProps<{
   isNested?: boolean;
   context?: Record<string, any>;
 }>();
+
 
 const filteredData = computed(() => {
   if (!props.data) return {};

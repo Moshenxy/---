@@ -17,7 +17,7 @@ const show = (worldId: string) => {
   state.title = 'NPC 列表';
   state.props = { worldId };
   // 虽然我们只有一个固定的组件，但为了与 DetailModalService 保持一致，我们还是在这里引用它
-  // state.component = markRaw(NpcListModal);
+  // state.component = markRaw(NpcListModal); 
   state.isVisible = true;
 };
 

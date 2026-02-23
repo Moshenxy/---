@@ -40,7 +40,7 @@
       </div>
     </div>
     <div v-if="inputModal.isVisible" class="modal-overlay input-modal-overlay">
-      <div class="modal-content input-modal-content">
+      <div ref="inputModalContentRef" class="modal-content input-modal-content" @mousedown="onMousedown">
         <div class="input-area-container">
           <div class="input-area-with-buttons">
             <EnhancedInputBox @submit-action="handleSubmit" @toggle-history="toggleHistory" />
@@ -88,7 +88,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted, ref } from 'vue';
+import { computed, defineComponent, onMounted, ref, watch, nextTick } from 'vue';
 import FloatingCard from './components/cards/FloatingCard.vue';
 import ActionPanel from './components/common/ActionPanel.vue';
 import EnhancedInputBox from './components/common/EnhancedInputBox.vue';
@@ -141,6 +141,68 @@ export default defineComponent({
   setup() {
     const { openPanel } = usePanelManager();
     const activeCards = destinyCardService.activeCards;
+
+    const inputModalContentRef = ref<HTMLElement | null>(null);
+    const isDragging = ref(false);
+    const position = ref({ top: 0, left: 0 });
+    const dragOffset = ref({ x: 0, y: 0 });
+
+    watch(inputModalState, (newState) => {
+      if (newState.isVisible && inputModalContentRef.value) {
+        nextTick(() => {
+          const el = inputModalContentRef.value;
+          if(el && el.style.transform === '') { // 仅在第一次打开时初始化位置
+            const container = document.querySelector('.guixu-root-container') as HTMLElement;
+            if (!container) return;
+            
+            const containerRect = container.getBoundingClientRect();
+            const elRect = el.getBoundingClientRect();
+            
+            const initialTop = containerRect.bottom - elRect.height - (window.innerHeight * 0.05);
+            const initialLeft = containerRect.left + (containerRect.width - elRect.width)/2;
+
+            el.style.left = `${initialLeft}px`;
+            el.style.top = `${initialTop}px`;
+          }
+        });
+      }
+    }, { immediate: true });
+
+
+    const onMousedown = (e: MouseEvent) => {
+      if ((e.target as HTMLElement).closest('input, button, textarea')) return;
+      isDragging.value = true;
+      const el = inputModalContentRef.value!;
+      const elRect = el.getBoundingClientRect();
+      dragOffset.value.x = e.clientX - elRect.left;
+      dragOffset.value.y = e.clientY - elRect.top;
+      el.style.transition = 'none';
+      document.addEventListener('mousemove', onMousemove);
+      document.addEventListener('mouseup', onMouseup);
+    };
+
+    const onMousemove = (e: MouseEvent) => {
+      if (!isDragging.value) return;
+      requestAnimationFrame(() => {
+        const el = inputModalContentRef.value!;
+        const container = document.querySelector('.guixu-root-container') as HTMLElement;
+        if (!container) return;
+        const containerRect = container.getBoundingClientRect();
+        let newTop = e.clientY - dragOffset.value.y;
+        let newLeft = e.clientX - dragOffset.value.x;
+        newTop = Math.max(containerRect.top, Math.min(newTop, containerRect.bottom - el.offsetHeight));
+        newLeft = Math.max(containerRect.left, Math.min(newLeft, containerRect.right - el.offsetWidth));
+        el.style.top = `${newTop}px`;
+        el.style.left = `${newLeft}px`;
+      });
+    };
+
+    const onMouseup = () => {
+      isDragging.value = false;
+      if(inputModalContentRef.value) inputModalContentRef.value.style.transition = '';
+      document.removeEventListener('mousemove', onMousemove);
+      document.removeEventListener('mouseup', onMouseup);
+    };
 
     const isSmartphoneOpen = ref(false);
     const toggleSmartphone = () => {
@@ -322,6 +384,8 @@ export default defineComponent({
       isSmartphoneOpen,
       toggleSmartphone,
       activeCards,
+      inputModalContentRef,
+      onMousedown,
     };
   },
 });
@@ -380,8 +444,7 @@ export default defineComponent({
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba($color-black-void, 0.7);
-  backdrop-filter: blur(5px);
+
   display: flex;
   justify-content: center;
   align-items: center;
@@ -490,10 +553,11 @@ export default defineComponent({
 }
 
 .input-modal-overlay {
-  align-items: flex-end;
-  padding-bottom: 5vh;
-  background-color: transparent;
-  backdrop-filter: none;
+  // 覆盖整个屏幕以捕捉事件，但本身不响应指针事件
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   pointer-events: none;
 }
 
@@ -506,6 +570,9 @@ export default defineComponent({
   padding: 0;
   width: 70%;
   max-width: 900px;
+  position: fixed;
+  cursor: move;
+  /* top, left, bottom, right, transform are now controlled by JS */
 }
 
 .input-area-container {

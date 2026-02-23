@@ -137,6 +137,9 @@ class ContextService {
       时间: `${worldState.世界状态.时间.日期} ${worldState.世界状态.时间.当前片段}`,
       天气: worldState.世界状态.天气,
       氛围: currentLocation?.场景特质?.map((t: any) => t.特质名称).join(', ') || '无特殊氛围',
+      世界状态: worldState.世界状态,
+      命运卡牌系统: worldState.命运卡牌系统,
+      叙事记录: worldState.叙事记录,
     };
   }
 
@@ -167,8 +170,11 @@ class ContextService {
         locationContext[locationId] = location;
       } else {
         locationContext[locationId] = {
+          ID: locationId,
           名称: location.名称,
           层级类型: location.层级类型,
+          所属: location.所属,
+          描述: location.描述,
         };
       }
     }
@@ -244,6 +250,7 @@ class ContextService {
             身份: char.身份,
             位置: char.位置,
             核心标识: (char as Npc).人格内核?.标识符,
+            当前状态: char.当前状态,
           };
         }
       }

@@ -5,7 +5,7 @@
         <div class="category-header">
           <ul>
             <li
-              v-for="category in (Object.keys(groupedItems) as CategoryKey[])"
+              v-for="category in Object.keys(groupedItems) as CategoryKey[]"
               :key="category"
               :class="{ active: selectedCategory === category }"
               @click="selectCategory(category)"
@@ -40,8 +40,8 @@
     <!-- Item Detail Modal -->
     <div v-if="selectedItemForModal" class="modal-overlay" @click="selectedItemForModal = null">
       <div class="modal-content" @click.stop>
-         <ItemDetailPanel :item="selectedItemForModal" />
-         <button class="close-button" @click="selectedItemForModal = null">×</button>
+        <ItemDetailPanel :item="selectedItemForModal" />
+        <button class="close-button" @click="selectedItemForModal = null">×</button>
       </div>
     </div>
   </div>
@@ -80,44 +80,51 @@ const allItems = computed(() => {
   const inventory = playerCharacter.value.物品栏 as Record<string, { 数量: number }>;
   const itemDatabase = get(store.worldState, '物品数据库', {}) as Record<string, Omit<Item, 'ID' | '数量'>>;
 
-  return Object.entries(inventory).map(([itemId, itemData]) => {
-    const fullItemData = itemDatabase[itemId];
-    if (fullItemData) {
-      return {
-        ...fullItemData,
-        ID: itemId,
-        数量: itemData.数量
-      } as Item;
-    }
-    return null;
-  }).filter((item): item is Item => item !== null);
+  return Object.entries(inventory)
+    .map(([itemId, itemData]) => {
+      const fullItemData = itemDatabase[itemId];
+      if (fullItemData) {
+        return {
+          ...fullItemData,
+          ID: itemId,
+          数量: itemData.数量,
+        } as Item;
+      }
+      return null;
+    })
+    .filter((item): item is Item => item !== null);
 });
 
 const groupedItems = computed((): Record<CategoryKey, Item[]> => {
- const groups: Record<CategoryKey, Item[]> = {
-   '日常用品': [], '书籍资料': [], '个人物品': [], '剧情道具': [], '赠礼': [], '服装饰品': [],
- };
+  const groups: Record<CategoryKey, Item[]> = {
+    日常用品: [],
+    书籍资料: [],
+    个人物品: [],
+    剧情道具: [],
+    赠礼: [],
+    服装饰品: [],
+  };
 
- allItems.value.forEach(item => {
-   const category = item.类型 as CategoryKey;
-   if (groups[category]) {
-     groups[category].push(item);
-   }
- });
- 
- if (!selectedCategory.value || !Object.keys(groups).includes(selectedCategory.value)) {
-   const firstCategoryWithItems = (Object.keys(groups) as CategoryKey[]).find(k => groups[k].length > 0);
-   selectedCategory.value = firstCategoryWithItems || '日常用品';
- }
+  allItems.value.forEach(item => {
+    const category = item.类型 as CategoryKey;
+    if (groups[category]) {
+      groups[category].push(item);
+    }
+  });
 
- return groups;
+  if (!selectedCategory.value || !Object.keys(groups).includes(selectedCategory.value)) {
+    const firstCategoryWithItems = (Object.keys(groups) as CategoryKey[]).find(k => groups[k].length > 0);
+    selectedCategory.value = firstCategoryWithItems || '日常用品';
+  }
+
+  return groups;
 });
 
 const itemsInSelectedCategory = computed(() => {
- if (!selectedCategory.value || !groupedItems.value[selectedCategory.value]) {
-   return [];
- }
- return groupedItems.value[selectedCategory.value];
+  if (!selectedCategory.value || !groupedItems.value[selectedCategory.value]) {
+    return [];
+  }
+  return groupedItems.value[selectedCategory.value];
 });
 
 const selectItem = (item: Item) => {
@@ -129,12 +136,12 @@ const selectCategory = (category: CategoryKey) => {
 };
 
 const typeColorMap: Record<string, string> = {
-  '日常用品': '#6c757d',
-  '书籍资料': '#3a8f9d',
-  '个人物品': '#d4af37',
-  '剧情道具': '#8a5db5',
-  '赠礼': '#dc3545',
-  '服装饰品': '#ffc107',
+  日常用品: '#6c757d',
+  书籍资料: '#3a8f9d',
+  个人物品: '#d4af37',
+  剧情道具: '#8a5db5',
+  赠礼: '#dc3545',
+  服装饰品: '#ffc107',
 };
 const defaultColor = '#a0a0a0';
 
@@ -151,7 +158,7 @@ const getTypeStyle = (item: Item): { [key: string]: string } => {
   overflow: hidden;
   background-color: #10141d;
   color: #e0e0e0;
-  
+
   @media (max-width: 600px) {
     padding: 0;
   }
@@ -236,7 +243,7 @@ const getTypeStyle = (item: Item): { [key: string]: string } => {
   align-items: center;
   padding: 8px;
   text-align: center;
-  
+
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);

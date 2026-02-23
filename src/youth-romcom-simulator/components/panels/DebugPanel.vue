@@ -115,7 +115,9 @@ const potentialStory = computed(() => get(debugState.lastContext, '导演指令.
 const upcomingEvents = computed(() => get(debugState.lastContext, '导演指令.日历事件.事件列表', []));
 const recentEvents = computed(() => get(debugState.lastContext, '短期记忆.事件列表', []));
 
-const potentialStoryCount = computed(() => (potentialStory.value && Object.keys(potentialStory.value).length > 0 ? 1 : 0));
+const potentialStoryCount = computed(() =>
+  potentialStory.value && Object.keys(potentialStory.value).length > 0 ? 1 : 0,
+);
 const upcomingEventsCount = computed(() => upcomingEvents.value.length);
 const recentEventsCount = computed(() => recentEvents.value.length);
 

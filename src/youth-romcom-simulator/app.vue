@@ -147,27 +147,31 @@ export default defineComponent({
     const position = ref({ top: 0, left: 0 });
     const dragOffset = ref({ x: 0, y: 0 });
 
-    watch(inputModalState, (newState) => {
-      if (newState.isVisible && inputModalContentRef.value) {
-        nextTick(() => {
-          const el = inputModalContentRef.value;
-          if(el && el.style.transform === '') { // 仅在第一次打开时初始化位置
-            const container = document.querySelector('.guixu-root-container') as HTMLElement;
-            if (!container) return;
-            
-            const containerRect = container.getBoundingClientRect();
-            const elRect = el.getBoundingClientRect();
-            
-            const initialTop = containerRect.bottom - elRect.height - (window.innerHeight * 0.05);
-            const initialLeft = containerRect.left + (containerRect.width - elRect.width)/2;
+    watch(
+      inputModalState,
+      newState => {
+        if (newState.isVisible && inputModalContentRef.value) {
+          nextTick(() => {
+            const el = inputModalContentRef.value;
+            if (el && el.style.transform === '') {
+              // 仅在第一次打开时初始化位置
+              const container = document.querySelector('.guixu-root-container') as HTMLElement;
+              if (!container) return;
 
-            el.style.left = `${initialLeft}px`;
-            el.style.top = `${initialTop}px`;
-          }
-        });
-      }
-    }, { immediate: true });
+              const containerRect = container.getBoundingClientRect();
+              const elRect = el.getBoundingClientRect();
 
+              const initialTop = containerRect.bottom - elRect.height - window.innerHeight * 0.05;
+              const initialLeft = containerRect.left + (containerRect.width - elRect.width) / 2;
+
+              el.style.left = `${initialLeft}px`;
+              el.style.top = `${initialTop}px`;
+            }
+          });
+        }
+      },
+      { immediate: true },
+    );
 
     const onMousedown = (e: MouseEvent) => {
       if ((e.target as HTMLElement).closest('input, button, textarea')) return;
@@ -199,7 +203,7 @@ export default defineComponent({
 
     const onMouseup = () => {
       isDragging.value = false;
-      if(inputModalContentRef.value) inputModalContentRef.value.style.transition = '';
+      if (inputModalContentRef.value) inputModalContentRef.value.style.transition = '';
       document.removeEventListener('mousemove', onMousemove);
       document.removeEventListener('mouseup', onMouseup);
     };

@@ -58,12 +58,12 @@ export function makeDraggable(element: HTMLElement): void {
 
     element.style.cursor = 'grabbing';
     document.body.style.userSelect = 'none'; // Prevent text selection
-    
+
     // Set initial coordinates for the first frame
     latestClientX = clientX;
     latestClientY = clientY;
   };
-  
+
   const stopDrag = () => {
     if (!isDragging) return;
     isDragging = false;
@@ -78,28 +78,36 @@ export function makeDraggable(element: HTMLElement): void {
   };
 
   // Mouse events
-  element.addEventListener('mousedown', (e) => startDrag(e.clientX, e.clientY));
-  document.addEventListener('mousemove', (e) => onDragMove(e.clientX, e.clientY));
+  element.addEventListener('mousedown', e => startDrag(e.clientX, e.clientY));
+  document.addEventListener('mousemove', e => onDragMove(e.clientX, e.clientY));
   document.addEventListener('mouseup', stopDrag);
   document.addEventListener('mouseleave', stopDrag); // Stop if mouse leaves window
 
   // Touch events for mobile
-  element.addEventListener('touchstart', (e) => {
-    if (e.touches.length === 1) {
-      e.preventDefault(); // Prevent page scroll
-      startDrag(e.touches[0].clientX, e.touches[0].clientY);
-    }
-  }, { passive: false });
+  element.addEventListener(
+    'touchstart',
+    e => {
+      if (e.touches.length === 1) {
+        e.preventDefault(); // Prevent page scroll
+        startDrag(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    },
+    { passive: false },
+  );
 
-  document.addEventListener('touchmove', (e) => {
-    if (e.touches.length === 1) {
-      onDragMove(e.touches[0].clientX, e.touches[0].clientY);
-    }
-  }, { passive: true });
+  document.addEventListener(
+    'touchmove',
+    e => {
+      if (e.touches.length === 1) {
+        onDragMove(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    },
+    { passive: true },
+  );
 
   document.addEventListener('touchend', stopDrag);
   document.addEventListener('touchcancel', stopDrag);
-  
+
   // Initial style
   element.style.cursor = 'grab';
 }

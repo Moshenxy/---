@@ -53,16 +53,19 @@ onUnmounted(() => {
   stopProgress();
 });
 
-watch(() => props.error, (newError) => {
-  if (newError) {
-    stopProgress();
-  }
-});
+watch(
+  () => props.error,
+  newError => {
+    if (newError) {
+      stopProgress();
+    }
+  },
+);
 
 function startProgress() {
   // 随机选择一条提示
   randomTip.value = tips[Math.floor(Math.random() * tips.length)];
-  
+
   // 启动进度条
   progress.value = 0;
   progressInterval = window.setInterval(() => {
@@ -141,25 +144,25 @@ function stopProgress() {
     font-size: 13px;
     color: #6c757d;
     margin-top: 10px;
-      }
-    
-      .error-container {
-        .error-title {
-          color: $color-red-chi;
-          font-family: $font-family-title;
-          font-size: $font-size-h1;
-          margin-bottom: $spacing-md;
-          text-shadow: 0 0 8px rgba($color-red-chi, 0.6);
-        }
-        .error-message {
-          color: $color-white-moon;
-          font-size: $font-size-base;
-          margin-bottom: $spacing-lg;
-        }
-        .error-tip {
-          color: $color-grey-stone;
-          font-size: $font-size-small;
-        }
-      }
+  }
+
+  .error-container {
+    .error-title {
+      color: $color-red-chi;
+      font-family: $font-family-title;
+      font-size: $font-size-h1;
+      margin-bottom: $spacing-md;
+      text-shadow: 0 0 8px rgba($color-red-chi, 0.6);
     }
-    </style>
+    .error-message {
+      color: $color-white-moon;
+      font-size: $font-size-base;
+      margin-bottom: $spacing-lg;
+    }
+    .error-tip {
+      color: $color-grey-stone;
+      font-size: $font-size-small;
+    }
+  }
+}
+</style>

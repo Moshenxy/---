@@ -41,8 +41,8 @@ import RelationsDisplay from '../RelationsDisplay.vue';
 import InventoryGrid from '../InventoryGrid.vue';
 
 const props = defineProps<{
-  npc: Character,
-  npcId: string | null
+  npc: Character;
+  npcId: string | null;
 }>();
 
 const yearExpansion = reactive<Record<string, boolean>>({});
@@ -53,7 +53,7 @@ const toggleYear = (year: string | number) => {
 
 const inventoryItems = computed(() => {
   // TODO: 修正物品数据库的路径
-  const database = (store.worldState as any)?.数据库 || {}; 
+  const database = (store.worldState as any)?.数据库 || {};
   if (!props.npc || !props.npc.物品栏) return [];
 
   const backpack = props.npc.物品栏;
@@ -71,7 +71,7 @@ const inventoryItems = computed(() => {
         break;
       }
     }
-    
+
     if (itemDetails) {
       items.push({
         ...itemDetails,
@@ -86,15 +86,18 @@ const inventoryItems = computed(() => {
 const groupedMemories = computed(() => {
   if (!props.npc.记忆) return {};
   const sorted = [...props.npc.记忆].sort((a, b) => new Date(b.时间).getTime() - new Date(a.时间).getTime());
-  
-  return sorted.reduce((acc, memory) => {
-    const year = new Date(memory.时间).getFullYear();
-    if (!acc[year]) {
-      acc[year] = [];
-    }
-    acc[year].push(memory);
-    return acc;
-  }, {} as Record<string, typeof props.npc.记忆>);
+
+  return sorted.reduce(
+    (acc, memory) => {
+      const year = new Date(memory.时间).getFullYear();
+      if (!acc[year]) {
+        acc[year] = [];
+      }
+      acc[year].push(memory);
+      return acc;
+    },
+    {} as Record<string, typeof props.npc.记忆>,
+  );
 });
 
 // Initially expand the most recent year
@@ -104,13 +107,20 @@ Object.keys(groupedMemories.value).forEach((year, index) => {
 
 function getEmotionClass(emotion: string): string {
   switch (emotion) {
-    case '愤怒': return 'emotion-tag-anger';
-    case '悲伤': return 'emotion-tag-sadness';
-    case '恐惧': return 'emotion-tag-fear';
-    case '屈辱': return 'emotion-tag-humiliation';
-    case '满足': return 'emotion-tag-satisfaction';
-    case '喜悦': return 'emotion-tag-joy';
-    default: return '';
+    case '愤怒':
+      return 'emotion-tag-anger';
+    case '悲伤':
+      return 'emotion-tag-sadness';
+    case '恐惧':
+      return 'emotion-tag-fear';
+    case '屈辱':
+      return 'emotion-tag-humiliation';
+    case '满足':
+      return 'emotion-tag-satisfaction';
+    case '喜悦':
+      return 'emotion-tag-joy';
+    default:
+      return '';
   }
 }
 </script>
@@ -204,14 +214,33 @@ function getEmotionClass(emotion: string): string {
   padding: 2px 6px;
 }
 
-.emotion-tag-anger { background-color: rgba(211, 47, 47, 0.2); color: #f44336; }
-.emotion-tag-sadness { background-color: rgba(33, 150, 243, 0.2); color: #2196F3; }
-.emotion-tag-fear { background-color: rgba(156, 39, 176, 0.2); color: #9C27B0; }
-.emotion-tag-humiliation { background-color: rgba(130, 119, 23, 0.2); color: #afad70; }
-.emotion-tag-satisfaction { background-color: rgba(76, 175, 80, 0.2); color: #4CAF50; }
-.emotion-tag-joy { background-color: rgba(255, 193, 7, 0.2); color: #FFC107; }
+.emotion-tag-anger {
+  background-color: rgba(211, 47, 47, 0.2);
+  color: #f44336;
+}
+.emotion-tag-sadness {
+  background-color: rgba(33, 150, 243, 0.2);
+  color: #2196f3;
+}
+.emotion-tag-fear {
+  background-color: rgba(156, 39, 176, 0.2);
+  color: #9c27b0;
+}
+.emotion-tag-humiliation {
+  background-color: rgba(130, 119, 23, 0.2);
+  color: #afad70;
+}
+.emotion-tag-satisfaction {
+  background-color: rgba(76, 175, 80, 0.2);
+  color: #4caf50;
+}
+.emotion-tag-joy {
+  background-color: rgba(255, 193, 7, 0.2);
+  color: #ffc107;
+}
 
-.memory-event, .memory-influence {
+.memory-event,
+.memory-influence {
   margin: 0;
   padding: 2px 0;
   color: $color-grey-stone;

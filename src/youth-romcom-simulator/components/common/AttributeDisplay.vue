@@ -29,7 +29,15 @@ const props = defineProps<{
 }>();
 
 const levelXpRequirements: Record<string, number> = {
-  F: 100, E: 200, D: 300, C: 400, B: 500, A: 600, S: 800, SS: 1000, SSS: Infinity,
+  F: 100,
+  E: 200,
+  D: 300,
+  C: 400,
+  B: 500,
+  A: 600,
+  S: 800,
+  SS: 1000,
+  SSS: Infinity,
 };
 
 const nextLevelXp = computed(() => {

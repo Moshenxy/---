@@ -1,200 +1,128 @@
 <template>
-  <!-- ComplexAttribute is a self-contained block, so it's rendered at the top level -->
-  <template v-if="isComplexAttribute(value)">
-    <ComplexAttribute :data="value" />
-  </template>
-  <li v-else>
-    <span class="object-key" :title="value?.description">{{ itemKey }}:</span>
+  <li>
+    <div class="object-key" :title="String(itemKey)">{{ itemKey }}</div>
     <div class="value-cell">
-      <!-- Case 1: Progress Bar (current/max) -->
-      <template v-if="isProgressBar(value)">
-        <div class="progress-bar-container">
-          <div class="progress-bar" :style="{ width: `${(value.current / value.max) * 100}%` }"></div>
-          <span class="progress-text">{{ value.current }} / {{ value.max }}</span>
-        </div>
-      </template>
-
-      <!-- Case 2: Attribute Grid -->
-      <template v-else-if="isAttributeGridData(value)">
-        <AttributeGrid :attributes="value" />
-      </template>
-
-      <!-- Case 3: Simple Value (value key) -->
-      <template v-else-if="isSimpleValue(value)">
-        <span class="object-value">{{ value.value }}</span>
-      </template>
-
-      <!-- Case 4: Data Item (ID, 名称, 描述) -->
-      <template v-else-if="isDataItem(value)">
-        <div class="data-item">
-          <div v-for="(dataValue, dataKey) in value" :key="dataKey" class="data-item-row">
-            <span class="data-item-key">{{ dataKey }}:</span>
-            <span class="data-item-value">{{ dataValue }}</span>
-          </div>
-        </div>
-      </template>
-
-      <!-- Case 5: Recursive Object -->
-      <template v-else-if="isObject(value)">
-        <ul :class="{ 'multi-column': Object.keys(value).length > 4 }">
-          <ObjectRendererItem
-            v-for="(subValue, subKey) in filterMeta(value)"
-            :key="subKey"
-            :item-key="String(subKey)"
-            :value="subValue"
-          />
-        </ul>
-      </template>
-
-      <!-- Case 6: Primitive Value -->
-      <template v-else>
-        <span class="object-value">{{ value }}</span>
-      </template>
+      <span v-if="typeof value === 'boolean'" :class="['boolean-tag', value ? 'is-true' : 'is-false']">
+        {{ value ? '是' : '否' }}
+      </span>
+      <span v-else-if="isObject(value)">
+        <ObjectRenderer :data="value" :is-nested="true" :context="context" />
+      </span>
+      <span v-else-if="isProgress(itemKey, value)">
+        <ProgressBar :label="String(itemKey)" :value="getProgressValue(itemKey, value).current" :max="getProgressValue(itemKey, value).max" color="#d4af37" />
+      </span>
+      <span v-else-if="isCharacterId(itemKey, value)">
+        <a href="#" @click.prevent="showNpcDetail(value)">{{ getNpcName(value) }}</a>
+      </span>
+      <span v-else class="object-value">{{ value ?? '无' }}</span>
     </div>
   </li>
 </template>
 
 <script setup lang="ts">
-import AttributeGrid from './AttributeGrid.vue';
-import ComplexAttribute from './npc-details/ComplexAttribute.vue';
-import ObjectRendererItem from './ObjectRendererItem.vue'; // Self-referencing
+import { computed, defineAsyncComponent } from 'vue';
+import { npcService } from '../../services/NpcService';
+import { detailModalService } from '../../services/DetailModalService';
+import { store } from '../../store';
+import ProgressBar from './ProgressBar.vue';
+import NpcDetailDisplay from './NpcDetailDisplay.vue';
 
-defineProps<{
-  itemKey: string;
+// Forward declaration for recursive component
+const ObjectRenderer = defineAsyncComponent(() => import('./ObjectRenderer.vue'));
+
+const props = defineProps<{
+  itemKey: string | number;
   value: any;
+  isNested?: boolean;
+  context?: Record<string, any>;
 }>();
 
-const isObject = (value: any): value is Record<string, any> => {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+const isObject = (val: any) => typeof val === 'object' && val !== null && !Array.isArray(val);
+
+const isProgress = (key: string | number, val: any) => {
+  return (String(key).toLowerCase().includes('经验') || String(key).toLowerCase().includes('progress')) && typeof val === 'number';
 };
 
-const isAttributeGridData = (value: any) => {
-  if (!isObject(value)) return false;
-  // 如果对象包含 '名称' 或 '描述'，则它更可能是个复杂对象，不应用网格布局
-  if ('名称' in value || '描述' in value) return false;
-  const values = Object.values(value);
-  return values.length > 1 && values.every(v => typeof v === 'string' || typeof v === 'number');
+const getProgressValue = (key: string | number, val: any) => {
+    return { current: val, max: 100 }; // Placeholder max value
 };
 
-const isComplexAttribute = (value: any) => {
-  if (!isObject(value) || !('名称' in value && '描述' in value)) {
-    return false;
+const isCharacterId = (key: string | number, val: any) => {
+    return (String(key).toLowerCase().includes('id') || String(key).toLowerCase().includes('角色')) && typeof val === 'string' && store.worldState?.角色列表?.[val];
+};
+
+const getNpcName = (id: string) => {
+  return npcService.getNpcNameById(id);
+};
+
+const showNpcDetail = (npcId: string) => {
+  const npc = store.worldState?.角色列表?.[npcId];
+  if (npc && typeof npc === 'object') {
+    detailModalService.show(npc.名称, NpcDetailDisplay, { npc: npc, npcId: npcId });
   }
-  // Check if there are other properties that are objects themselves, which makes it complex
-  const otherKeys = Object.keys(value).filter(k => k !== '名称' && k !== '描述' && k !== '$meta');
-  return otherKeys.some(k => typeof value[k] === 'object');
 };
 
-const isProgressBar = (value: any) => {
-  return isObject(value) && 'current' in value && 'max' in value;
-};
-
-const isSimpleValue = (value: any) => {
-  return isObject(value) && 'value' in value && Object.keys(value).length <= 2;
-};
-
-const isDataItem = (value: any) => {
-  return (
-    isObject(value) &&
-    ('ID' in value || '名称' in value) &&
-    !('value' in value) &&
-    !('current' in value) &&
-    Object.values(value).every(v => typeof v !== 'object')
-  );
-};
-
-const filterMeta = (data: Record<string, any>) => {
-  if (!data) return {};
-  const { $meta, ...rest } = data;
-  return rest;
-};
 </script>
 
 <style lang="scss" scoped>
 @use '../../styles/theme/variables' as *;
 
 li {
-  display: contents;
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-md;
+  padding-bottom: $spacing-md;
+  border-bottom: 1px solid rgba($color-gold-liu, 0.1);
+  
+  &:last-child {
+    border-bottom: none;
+  }
 }
 
 .object-key {
   color: $color-gold-pale;
   font-weight: bold;
-  cursor: help;
-  text-align: right;
+  text-align: left;
+  width: 80px; // 固定键的宽度
+  flex-shrink: 0; // 防止键被压缩
   white-space: nowrap;
-  padding-bottom: $spacing-lg;
+  padding-top: $spacing-sm;
 }
 
 .value-cell {
-  padding-bottom: $spacing-lg;
+  padding-top: $spacing-sm;
   min-width: 0;
-
-  > ul {
-    list-style-type: none;
-    padding-left: $spacing-md;
-    margin-top: $spacing-sm;
-    border-left: 1px solid rgba($color-gold-liu, 0.2);
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: $spacing-sm $spacing-md;
-
-    &.multi-column {
-      grid-template-columns: repeat(2, auto 1fr);
-      gap: $spacing-sm $spacing-lg;
-    }
-  }
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
 }
 
 .object-value {
   color: $color-white-moon;
 }
 
-.progress-bar-container {
-  width: 100%;
-  background-color: rgba($color-black-void, 0.5);
-  border-radius: $border-radius-sm;
-  position: relative;
-  height: 24px;
-  border: 1px solid rgba($color-gold-liu, 0.3);
-}
-
-.progress-bar {
-  background: linear-gradient(90deg, rgba($color-cyan-tian, 0.5) 0%, rgba($color-cyan-tian, 0.8) 100%);
-  height: 100%;
-  border-radius: $border-radius-sm;
-  transition: width 0.3s ease;
-}
-
-.progress-text {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: $color-white-moon;
+.boolean-tag {
+  padding: 2px 8px;
+  border-radius: $border-radius-md;
+  font-weight: bold;
   font-size: $font-size-small;
-  text-shadow: 1px 1px 2px $color-black-void;
+
+  &.is-true {
+    background-color: rgba($color-cyan-tian, 0.2);
+    color: $color-cyan-tian;
+  }
+  &.is-false {
+    background-color: rgba($color-red-chi, 0.2);
+    color: $color-red-chi;
+  }
 }
 
-.data-item {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-xs;
+a {
+  color: $color-cyan-tian;
+  text-decoration: none;
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
-.data-item-row {
-  display: grid;
-  grid-template-columns: 80px 1fr;
-}
-
-.data-item-key {
-  color: $color-gold-liu;
-  font-weight: normal;
-  text-align: right;
-  padding-right: $spacing-sm;
-}
-
-.data-item-value {
-  color: $color-white-moon;
-}
 </style>

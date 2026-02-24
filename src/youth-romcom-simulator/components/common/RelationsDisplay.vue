@@ -5,7 +5,9 @@
         <div class="relation-header" @click="toggleExpand(id)">
           <span class="relation-name">{{ getNpcNameById(String(id)) }}</span>
           <div class="relation-tags">
-            <span class="tag">{{ relation.阶段.亲密度 }}</span>
+            <span class="tag affinity">{{ relation.阶段亲密度 }}</span>
+            <span class="tag dominance">{{ relation.阶段支配度 }}</span>
+            <span class="tag trust">{{ relation.阶段信赖度 }}</span>
           </div>
         </div>
         <div v-if="expandedRelation === id" class="relation-details">
@@ -94,6 +96,7 @@ function getFormattedTags(relation: any): string[] {
 
 <style lang="scss" scoped>
 @use '../../styles/theme/variables' as *;
+@use '../../styles/theme/mixins' as *;
 
 .relations-display {
   padding-top: $spacing-md;
@@ -124,11 +127,22 @@ function getFormattedTags(relation: any): string[] {
 
 .relation-tags .tag {
   font-size: $font-size-small;
-  background-color: rgba($color-cyan-tian, 0.2);
-  color: $color-cyan-tian;
   padding: 2px 6px;
   border-radius: $border-radius-sm;
   margin-left: $spacing-sm;
+
+  &.affinity {
+    background-color: rgba($color-red-chi, 0.2);
+    color: $color-red-chi;
+  }
+  &.dominance {
+    background-color: rgba($color-cyan-tian, 0.2);
+    color: $color-cyan-tian;
+  }
+  &.trust {
+    background-color: rgba($color-gold-liu, 0.2);
+    color: $color-gold-liu;
+  }
 }
 
 .relation-details {

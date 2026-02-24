@@ -22,7 +22,9 @@
     <div class="world-line-section">
       <div class="world-line-title">历史记录</div>
       <div class="history-buttons-container">
-        <button id="btn-view-campus-log" class="interaction-btn primary-btn btn-view-campus-log">校园日志</button>
+        <button id="btn-view-campus-log" class="interaction-btn primary-btn btn-view-campus-log">
+          校园日志
+        </button>
       </div>
     </div>
   </div>

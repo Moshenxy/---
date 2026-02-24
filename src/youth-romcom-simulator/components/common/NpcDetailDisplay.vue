@@ -1,12 +1,7 @@
 <template>
   <div class="npc-detail-display">
     <div class="tabs">
-      <button
-        v-for="tab in tabs"
-        :key="tab.id"
-        :class="{ active: activeTab === tab.id }"
-        @click="activeTab = tab.id as Tab"
-      >
+      <button v-for="tab in tabs" :key="tab.id" :class="{ active: activeTab === tab.id }" @click="activeTab = tab.id as Tab">
         {{ tab.name }}
       </button>
     </div>

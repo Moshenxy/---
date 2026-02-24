@@ -32,11 +32,15 @@ const filteredData = computed(() => {
 <style lang="scss" scoped>
 @use '../../styles/theme/variables' as *;
 
+.object-renderer {
+  background-color: rgba($color-black-void, 1);
+  padding: $spacing-md;
+  border-radius: $border-radius-md;
+}
 .object-renderer:not(.is-nested) > ul {
+  grid-template-columns: 1fr;
   &.multi-column {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: $spacing-sm $spacing-xl;
+    grid-template-columns: 1fr 1fr;
   }
 }
 
@@ -44,25 +48,20 @@ ul {
   list-style-type: none;
   padding: 0;
   margin: 0;
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: $spacing-sm $spacing-md;
-
-  &.multi-column {
-    grid-template-columns: repeat(2, auto 1fr);
-    gap: $spacing-sm $spacing-lg;
-  }
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
 }
 
 li {
-  display: contents; /* Let li's children be direct grid items of ul */
+  display: block;
 }
 
 .object-key {
   color: $color-gold-pale;
   font-weight: bold;
   cursor: help;
-  text-align: right;
+  text-align: left;
   white-space: nowrap;
   padding-bottom: $spacing-lg; // Add padding to align with value cell
 }

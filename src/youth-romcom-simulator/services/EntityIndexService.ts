@@ -65,7 +65,7 @@ class EntityIndexService {
     // 按名称索引
     const existingByName = this.indexByName.get(entity.name) || [];
     this.indexByName.set(entity.name, [...existingByName, entity]);
-    
+
     // 按ID索引
     if (!this.indexById.has(entity.id)) {
       this.indexById.set(entity.id, entity);

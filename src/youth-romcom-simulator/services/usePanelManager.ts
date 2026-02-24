@@ -7,11 +7,7 @@ import { panelRegistry } from './panelRegistry';
  * @description 简化了面板打开逻辑，移除了多世界相关的检查。
  */
 export function usePanelManager() {
-  const openPanel = (
-    category: keyof typeof panelRegistry,
-    panel: string,
-    props: Record<string, any> = {},
-  ) => {
+  const openPanel = (category: keyof typeof panelRegistry, panel: string, props: Record<string, any> = {}) => {
     const panelInfo = panelRegistry[category]?.[panel];
 
     if (panelInfo) {
@@ -24,7 +20,7 @@ export function usePanelManager() {
 
       // 打开面板
       dockManagerService.openPanel(panelId, panelInfo.title, componentName, props);
-      
+
       // 发出事件，通知布局服务等其他模块
       eventBus.emit('panelOpened', { category, panel, props, panelId });
     } else {

@@ -32,7 +32,9 @@ class MemoryService {
       const directorLogContent = logEntries.length > 0 ? logEntries[logEntries.length - 1] : '';
 
       if (!directorLogContent) {
-        console.warn('[MemoryService V3] Processed Director Log content is empty after filtering. No new memory entries to add.');
+        console.warn(
+          '[MemoryService V3] Processed Director Log content is empty after filtering. No new memory entries to add.',
+        );
         return;
       }
 

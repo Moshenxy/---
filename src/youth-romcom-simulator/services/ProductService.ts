@@ -65,13 +65,13 @@ class ProductService {
     entries.forEach(entryText => {
       const lines = entryText.trim().split('\n');
       const product: Partial<Product> = {};
-      
+
       product.id = lines[0].trim();
 
       lines.slice(1).forEach(line => {
         const [key, ...valueParts] = line.split('|');
         const value = valueParts.join('|').trim();
-        
+
         switch (key.trim()) {
           case '名称':
             product.名称 = value;

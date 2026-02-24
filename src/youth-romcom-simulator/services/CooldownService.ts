@@ -14,7 +14,9 @@ const state = reactive<CooldownState>({
 function parseCooldownTime(timeData: string | any[]): number {
   if (!timeData) return 0;
 
-  let days = 0, hours = 0, minutes = 0;
+  let days = 0,
+    hours = 0,
+    minutes = 0;
   let dataToParse: any = timeData;
 
   // 检查是否为数组形式的字符串，如果是，则尝试解析
@@ -27,7 +29,7 @@ function parseCooldownTime(timeData: string | any[]): number {
       dataToParse = []; // 解析失败则视为空数组
     }
   }
-  
+
   if (Array.isArray(dataToParse)) {
     // 处理数组格式: [6, "天", 23, "小时", 35, "分钟"]
     const dayIndex = dataToParse.indexOf('天');
@@ -35,10 +37,9 @@ function parseCooldownTime(timeData: string | any[]): number {
 
     const hourIndex = dataToParse.indexOf('小时');
     if (hourIndex > 0) hours = Number(dataToParse[hourIndex - 1]) || 0;
-    
+
     const minIndex = dataToParse.indexOf('分钟');
     if (minIndex > 0) minutes = Number(dataToParse[minIndex - 1]) || 0;
-
   } else if (typeof dataToParse === 'string') {
     // 处理字符串格式: "7天0小时0分"
     const daysMatch = dataToParse.match(/(\d+)天/);
@@ -84,21 +85,24 @@ function stopCountdown() {
   }
 }
 
-watch(simulatorCooldown, (newCooldown) => {
-  if (newCooldown.status === '冷却中') {
-    const totalSeconds = parseCooldownTime(newCooldown.time);
-    if (state.remainingSeconds <= 0 || Math.abs(state.remainingSeconds - totalSeconds) > 5) {
+watch(
+  simulatorCooldown,
+  newCooldown => {
+    if (newCooldown.status === '冷却中') {
+      const totalSeconds = parseCooldownTime(newCooldown.time);
+      if (state.remainingSeconds <= 0 || Math.abs(state.remainingSeconds - totalSeconds) > 5) {
         state.remainingSeconds = totalSeconds;
-    }
-    if (!state.intervalId) {
+      }
+      if (!state.intervalId) {
         startCountdown();
+      }
+    } else {
+      state.remainingSeconds = 0;
+      stopCountdown();
     }
-  } else {
-    state.remainingSeconds = 0;
-    stopCountdown();
-  }
-}, { immediate: true, deep: true });
-
+  },
+  { immediate: true, deep: true },
+);
 
 export const cooldownService = {
   remainingTime: computed(() => formatRemainingTime(state.remainingSeconds)),

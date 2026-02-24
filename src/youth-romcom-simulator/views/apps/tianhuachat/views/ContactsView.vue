@@ -1,24 +1,22 @@
 <template>
   <div class="contacts-view">
     <div class="contacts-header contact-search-bar">
-      <input type="text" placeholder="🔍 搜索" v-model="searchTerm" />
-      <button class="add-friend-btn" @click="showAddFriendModal">+</button>
+        <input type="text" placeholder="🔍 搜索" v-model="searchTerm">
+        <button class="add-friend-btn" @click="showAddFriendModal">+</button>
     </div>
     <div class="contact-function-list">
-      <div class="function-item" @click="showNewFriends">
-        <span>新的朋友</span>
-        <span class="count">{{ newFriendsCount }}</span>
-      </div>
-      <div class="function-item" @click="showGroupChats">
-        <span>群聊</span>
-        <span class="count">{{ groupChatsCount }}</span>
-      </div>
+        <div class="function-item" @click="showNewFriends">
+            <span>新的朋友</span>
+            <span class="count">{{ newFriendsCount }}</span>
+        </div>
+        <div class="function-item" @click="showGroupChats">
+            <span>群聊</span>
+            <span class="count">{{ groupChatsCount }}</span>
+        </div>
     </div>
     <div class="contacts-list" id="contact-groups-container">
       <details class="contact-group" v-for="group in filteredContactGroups" :key="group.name" open>
-        <summary>
-          {{ group.name }} <span>{{ group.contacts.length }}</span>
-        </summary>
+        <summary>{{ group.name }} <span>{{ group.contacts.length }}</span></summary>
         <div
           class="contact-item"
           v-for="contact in group.contacts"
@@ -53,8 +51,8 @@ interface Contact {
 }
 
 interface ContactGroup {
-  name: string;
-  contacts: Contact[];
+    name: string;
+    contacts: Contact[];
 }
 
 const contactGroups = ref<ContactGroup[]>([]);
@@ -72,16 +70,16 @@ async function loadAvatar(contact: Contact) {
 }
 
 function getAvatar(contact: Contact): string {
-  const url = avatarUrls.value[contact.id];
-  if (url && url !== 'fallback') {
-    return `<img src="${url}" alt="${contact.name}" style="width: 100%; height: 100%; object-fit: cover;">`;
-  }
-  // Fallback to initial-based avatar
-  const initial = contact.name.substring(0, 1).toUpperCase();
-  const COLORS = ['#1abc9c', '#2ecc71', '#3498db', '#9b59b6', '#34495e', '#f1c40f', '#e67e22', '#e74c3c'];
-  const colorIndex = Math.abs(contact.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % COLORS.length;
-  const backgroundColor = COLORS[colorIndex];
-  return `<div style="background-color: ${backgroundColor}; display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; color: white; font-weight: bold;">${initial}</div>`;
+    const url = avatarUrls.value[contact.id];
+    if (url && url !== 'fallback') {
+        return `<img src="${url}" alt="${contact.name}" style="width: 100%; height: 100%; object-fit: cover;">`;
+    }
+    // Fallback to initial-based avatar
+    const initial = contact.name.substring(0, 1).toUpperCase();
+    const COLORS = ['#1abc9c', '#2ecc71', '#3498db', '#9b59b6', '#34495e', '#f1c40f', '#e67e22', '#e74c3c'];
+    const colorIndex = Math.abs(contact.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % COLORS.length;
+    const backgroundColor = COLORS[colorIndex];
+    return `<div style="background-color: ${backgroundColor}; display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; color: white; font-weight: bold;">${initial}</div>`;
 }
 
 onMounted(async () => {
@@ -100,15 +98,17 @@ const filteredContactGroups = computed(() => {
   const lowerCaseSearch = searchTerm.value.toLowerCase();
   return contactGroups.value
     .map(group => {
-      const filteredContacts = group.contacts.filter(contact => contact.name.toLowerCase().includes(lowerCaseSearch));
+      const filteredContacts = group.contacts.filter(contact =>
+        contact.name.toLowerCase().includes(lowerCaseSearch)
+      );
       return { ...group, contacts: filteredContacts };
     })
     .filter(group => group.contacts.length > 0);
 });
 
 const newFriendsCount = computed(() => {
-  const newFriendsGroup = contactGroups.value.find(g => g.name === '新的朋友');
-  return newFriendsGroup ? newFriendsGroup.contacts.length : 0;
+    const newFriendsGroup = contactGroups.value.find(g => g.name === '新的朋友');
+    return newFriendsGroup ? newFriendsGroup.contacts.length : 0;
 });
 
 const emit = defineEmits(['view-chat', 'view-new-friends', 'view-group-list', 'view-contact-detail']);
@@ -122,21 +122,22 @@ function handleContactClick(contact: any) {
 }
 
 const groupChatsCount = computed(() => {
-  const groupChats = contactGroups.value.find(g => g.name === '群聊');
-  return groupChats ? groupChats.contacts.length : 0;
+    const groupChats = contactGroups.value.find(g => g.name === '群聊');
+    return groupChats ? groupChats.contacts.length : 0;
 });
 
 function showNewFriends() {
-  emit('view-new-friends');
+    emit('view-new-friends');
 }
 
 function showGroupChats() {
-  emit('view-group-list');
+    emit('view-group-list');
 }
 
 function showAddFriendModal() {
-  store.isAddFriendModalVisible = true;
+    store.isAddFriendModalVisible = true;
 }
+
 </script>
 
 <style lang="scss" scoped>
@@ -186,30 +187,30 @@ $mobile-fg: #374151;
 }
 
 .contact-function-list {
-  background-color: $mobile-card-bg;
-  margin-bottom: 8px;
-  .function-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 16px;
-    font-size: 16px;
-    border-bottom: 1px solid $mobile-border;
-    cursor: pointer;
-    &:hover {
-      background-color: $mobile-bg;
+    background-color: $mobile-card-bg;
+    margin-bottom: 8px;
+    .function-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        font-size: 16px;
+        border-bottom: 1px solid $mobile-border;
+        cursor: pointer;
+        &:hover {
+            background-color: $mobile-bg;
+        }
+        .count {
+            color: $text-secondary;
+            font-size: 14px;
+        }
     }
-    .count {
-      color: $text-secondary;
-      font-size: 14px;
-    }
-  }
 }
 
 #contact-groups-container {
-  flex-grow: 1;
-  overflow-y: auto;
-  background-color: $mobile-card-bg;
+    flex-grow: 1;
+    overflow-y: auto;
+    background-color: $mobile-card-bg;
 }
 
 .contact-group {

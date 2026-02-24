@@ -148,12 +148,12 @@ function renderGraph() {
   // 2. Link Interactions
   const linkAndLabel = svg.selectAll('.links path, .link-labels text');
   linkAndLabel.on('click', (event, d) => {
-    // Find the source node data to get the impression tags
-    const sourceNodeData = nodes.find(n => n.id === (d as any).source.id || n.id === (d as any).source);
-    const targetNodeData = nodes.find(n => n.id === (d as any).target.id || n.id === (d as any).target);
-    if (sourceNodeData && targetNodeData) {
-      showImpressionTags(event, sourceNodeData, targetNodeData);
-    }
+      // Find the source node data to get the impression tags
+      const sourceNodeData = nodes.find(n => n.id === (d as any).source.id || n.id === (d as any).source);
+      const targetNodeData = nodes.find(n => n.id === (d as any).target.id || n.id === (d as any).target);
+      if(sourceNodeData && targetNodeData) {
+          showImpressionTags(event, sourceNodeData, targetNodeData);
+      }
   });
 
   simulation.on('tick', () => {
@@ -191,17 +191,13 @@ function showImpressionTags(event: MouseEvent, sourceNode: any, targetNode: any)
   const x = (sourceNode.x + targetNode.x) / 2;
   const y = (sourceNode.y + targetNode.y) / 2;
 
-  const bubbleGroup = d3
-    .select(svgRef.value)
-    .append('g')
+  const bubbleGroup = d3.select(svgRef.value).append('g')
     .attr('class', 'impression-bubble-group')
     .attr('transform', `translate(${x}, ${y})`);
 
-  const bubbles = bubbleGroup
-    .selectAll('g.impression-bubble')
+  const bubbles = bubbleGroup.selectAll('g.impression-bubble')
     .data(validTags)
-    .enter()
-    .append('g')
+    .enter().append('g')
     .attr('class', 'impression-bubble');
 
   bubbles
@@ -249,7 +245,7 @@ function showTimeline(nodeData: any) {
   if (!centralNode || !centralNode.fullData) return;
 
   const eventsRaw = safeGetValue(centralNode.fullData, `人际关系.${nodeData.id}.关系事件`, [], false);
-
+  
   let validEvents: string[] = [];
   if (Array.isArray(eventsRaw)) {
     validEvents = eventsRaw.flat().filter(e => e && typeof e === 'string' && !e.startsWith('$__META'));
@@ -268,24 +264,27 @@ function handleTimelineHover(date: string | null) {
 }
 
 function drag(simulation: d3.Simulation<any, any>) {
-  function dragstarted(event: any) {
-    if (!event.active) simulation.alphaTarget(0.3).restart();
-    event.subject.fx = event.subject.x;
-    event.subject.fy = event.subject.y;
-  }
+    function dragstarted(event: any) {
+        if (!event.active) simulation.alphaTarget(0.3).restart();
+        event.subject.fx = event.subject.x;
+        event.subject.fy = event.subject.y;
+    }
 
-  function dragged(event: any) {
-    event.subject.fx = event.x;
-    event.subject.fy = event.y;
-  }
+    function dragged(event: any) {
+        event.subject.fx = event.x;
+        event.subject.fy = event.y;
+    }
 
-  function dragended(event: any) {
-    if (!event.active) simulation.alphaTarget(0);
-    event.subject.fx = null;
-    event.subject.fy = null;
-  }
+    function dragended(event: any) {
+        if (!event.active) simulation.alphaTarget(0);
+        event.subject.fx = null;
+        event.subject.fy = null;
+    }
 
-  return d3.drag().on('start', dragstarted).on('drag', dragged).on('end', dragended);
+    return d3.drag()
+        .on("start", dragstarted)
+        .on("drag", dragged)
+        .on("end", dragended);
 }
 
 onMounted(() => {

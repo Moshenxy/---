@@ -46,11 +46,10 @@ const userId = computed(() => store.userId);
 
 const playerJoinedClub = computed(() => {
   if (!userId.value) return null;
-  return clubs.value.find(
-    club =>
-      club.leader === userId.value ||
-      (club.deputyLeader && club.deputyLeader.includes(userId.value)) ||
-      club.members.includes(userId.value),
+  return clubs.value.find(club =>
+    club.leader === userId.value ||
+    (club.deputyLeader && club.deputyLeader.includes(userId.value)) ||
+    club.members.includes(userId.value)
   );
 });
 

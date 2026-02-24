@@ -13,9 +13,7 @@
         <h3>核心成员</h3>
         <ul class="member-list">
           <li><strong>部长:</strong> {{ getCharacterName(club.leader) }}</li>
-          <li v-if="club.deputyLeader && club.deputyLeader.length > 0">
-            <strong>副部长:</strong> {{ club.deputyLeader.map(getCharacterName).join(', ') }}
-          </li>
+          <li v-if="club.deputyLeader && club.deputyLeader.length > 0"><strong>副部长:</strong> {{ club.deputyLeader.map(getCharacterName).join(', ') }}</li>
           <li v-for="member in club.members" :key="member">{{ getCharacterName(member) }}</li>
         </ul>
       </div>
@@ -85,8 +83,7 @@ function getCharacterName(charId: string): string {
     padding-bottom: 8px;
     margin-bottom: 12px;
   }
-  p,
-  ul {
+  p, ul {
     font-size: 0.95rem;
     line-height: 1.7;
     color: #333;

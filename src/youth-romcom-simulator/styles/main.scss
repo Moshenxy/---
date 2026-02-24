@@ -68,7 +68,7 @@
       flex-grow: 1; // Allows buttons to fill the column height
     }
   }
-
+  
   // Override golden-layout styles to remove missing image references
   .lm_header .lm_tab .lm_close_tab,
   .lm_controls .lm_popout,
@@ -76,6 +76,7 @@
   .lm_controls .lm_close {
     background-image: none !important;
   }
+
 }
 
 .text-psychology {
@@ -91,6 +92,7 @@
   color: $color-gold-liu;
   font-weight: bold;
 }
+
 
 // Override golden-layout tab height
 .lm_header {

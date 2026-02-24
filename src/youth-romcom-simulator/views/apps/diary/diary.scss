@@ -9,7 +9,7 @@
     display: flex;
     border-bottom: 1px solid #dee2e6;
     background-color: #fff;
-
+    
     button {
       padding: 0.75rem 1.5rem;
       border: none;
@@ -48,19 +48,19 @@
         display: flex;
         align-items: center;
         gap: 0.5rem;
-
+        
         label {
           font-size: 0.85rem;
           color: #495057;
         }
 
-        input[type='number'] {
+        input[type="number"] {
           width: 50px;
           padding: 0.25rem 0.5rem;
           border: 1px solid #ced4da;
           border-radius: 4px;
         }
-        input[type='checkbox'] {
+        input[type="checkbox"] {
           width: 16px;
           height: 16px;
         }

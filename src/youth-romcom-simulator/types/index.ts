@@ -100,13 +100,9 @@ export const 关系Schema = z
         信赖度: z.coerce.number().default(0),
       })
       .default({ 亲密度: 0, 支配度: 0, 信赖度: 0 }),
-    阶段: z
-      .object({
-        亲密度: z.string().default('生疏'),
-        支配度: z.string().default('平等'),
-        信赖度: z.string().default('中立'),
-      })
-      .default({ 亲密度: '生疏', 支配度: '平等', 信赖度: '中立' }),
+    阶段亲密度: z.string().default('生疏'),
+    阶段支配度: z.string().default('平等'),
+    阶段信赖度: z.string().default('中立'),
     最近互动: z.string().default('无'),
     动作冷却池: z
       .record(
@@ -121,14 +117,16 @@ export const 关系Schema = z
   })
   .default({
     数值: { 亲密度: 0, 支配度: 0, 信赖度: 0 },
-    阶段: { 亲密度: '生疏', 支配度: '平等', 信赖度: '中立' },
+    阶段亲密度: '生疏',
+    阶段支配度: '平等',
+    阶段信赖度: '中立',
     最近互动: '无',
     动作冷却池: {},
   })
   .transform(val => {
-    val.阶段.亲密度 = findStage(val.数值.亲密度, 关系阶段定义.亲密度);
-    val.阶段.支配度 = findStage(val.数值.支配度, 关系阶段定义.支配度);
-    val.阶段.信赖度 = findStage(val.数值.信赖度, 关系阶段定义.信赖度);
+    val.阶段亲密度 = findStage(val.数值.亲密度, 关系阶段定义.亲密度);
+    val.阶段支配度 = findStage(val.数值.支配度, 关系阶段定义.支配度);
+    val.阶段信赖度 = findStage(val.数值.信赖度, 关系阶段定义.信赖度);
     return val;
   });
 

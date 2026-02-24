@@ -21,35 +21,36 @@ export interface SpatialEntity {
 }
 
 export interface Resource {
-  ID: string;
-  名称: string;
-  所属实体ID: string;
-  类型: '矿物' | '草药' | '能量' | '灵魂' | '知识' | string;
-  能级: number;
-  稀有度: '常见' | '稀有' | '传说' | '史诗' | '神话' | string;
-  描述: string;
+    ID: string;
+    名称: string;
+    所属实体ID: string;
+    类型: '矿物' | '草药' | '能量' | '灵魂' | '知识' | string;
+    能级: number;
+    稀有度: '常见' | '稀有' | '传说' | '史诗' | '神话' | string;
+    描述: string;
 }
 
 export interface Faction {
-  ID: string;
-  名称: string;
-  类型: string;
-  核心目标: string;
-  力量亲和: readonly string[];
+    ID: string;
+    名称: string;
+    类型: string;
+    核心目标: string;
+    力量亲和: readonly string[];
 }
 
 export interface Civilization {
-  主流文明形态: string;
-  社会结构: string;
-  文化内核: {
-    核心价值观: readonly string[];
-    社会风貌: string;
-    禁忌与信仰: string;
-  };
-  艺术与科技风格: string;
-  势力: readonly Faction[];
-  群体?: any[]; // 暂不详细定义
+    主流文明形态: string;
+    社会结构: string;
+    文化内核: {
+        核心价值观: readonly string[];
+        社会风貌: string;
+        禁忌与信仰: string;
+    };
+    艺术与科技风格: string;
+    势力: readonly Faction[];
+    群体?: any[]; // 暂不详细定义
 }
+
 
 export interface Content {
   空间实体: readonly SpatialEntity[];
@@ -71,7 +72,9 @@ export interface WorldDefinition {
   力量体系: any; // 暂不详细定义
 }
 
+
 // ######### 用于地图可视化的前端节点定义 #########
+
 
 /**
  * 代表一个经过处理、用于前端可视化的空间实体节点。

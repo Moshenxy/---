@@ -88,7 +88,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted, ref, watch, nextTick } from 'vue';
+import { computed, defineComponent, nextTick, onMounted, ref, watch } from 'vue';
 import FloatingCard from './components/cards/FloatingCard.vue';
 import ActionPanel from './components/common/ActionPanel.vue';
 import EnhancedInputBox from './components/common/EnhancedInputBox.vue';
@@ -144,68 +144,71 @@ export default defineComponent({
 
     const inputModalContentRef = ref<HTMLElement | null>(null);
     const isDragging = ref(false);
-    const position = ref({ top: 0, left: 0 });
-    const dragOffset = ref({ x: 0, y: 0 });
+    const position = ref({ x: 0, y: 0 });
+    const dragStart = ref({ x: 0, y: 0 });
+    const elementStart = ref({ x: 0, y: 0 });
 
-    watch(
-      inputModalState,
-      newState => {
-        if (newState.isVisible && inputModalContentRef.value) {
-          nextTick(() => {
-            const el = inputModalContentRef.value;
-            if (el && el.style.transform === '') {
-              // 仅在第一次打开时初始化位置
-              const container = document.querySelector('.guixu-root-container') as HTMLElement;
-              if (!container) return;
+    watch(inputModalState, (newState) => {
+        if (newState.isVisible) {
+            nextTick(() => {
+                const el = inputModalContentRef.value;
+                if (el && !el.style.transform) {
+                    const container = document.querySelector('.guixu-root-container');
+                    if (container) {
+                        const containerRect = container.getBoundingClientRect();
+                        const elRect = el.getBoundingClientRect();
+                        
+                        // 设置在容器底部，并考虑5%的vh间距
+                        const initialY = containerRect.height - elRect.height - (window.innerHeight * 0.05);
+                        // 水平居中
+                        const initialX = (containerRect.width - elRect.width) / 2;
 
-              const containerRect = container.getBoundingClientRect();
-              const elRect = el.getBoundingClientRect();
-
-              const initialTop = containerRect.bottom - elRect.height - window.innerHeight * 0.05;
-              const initialLeft = containerRect.left + (containerRect.width - elRect.width) / 2;
-
-              el.style.left = `${initialLeft}px`;
-              el.style.top = `${initialTop}px`;
-            }
-          });
+                        position.value = { x: initialX, y: initialY };
+                        el.style.transform = `translate(${initialX}px, ${initialY}px)`;
+                    }
+                }
+            });
         }
-      },
-      { immediate: true },
-    );
+    }, { deep: true });
 
     const onMousedown = (e: MouseEvent) => {
-      if ((e.target as HTMLElement).closest('input, button, textarea')) return;
-      isDragging.value = true;
-      const el = inputModalContentRef.value!;
-      const elRect = el.getBoundingClientRect();
-      dragOffset.value.x = e.clientX - elRect.left;
-      dragOffset.value.y = e.clientY - elRect.top;
-      el.style.transition = 'none';
-      document.addEventListener('mousemove', onMousemove);
-      document.addEventListener('mouseup', onMouseup);
+        if ((e.target as HTMLElement).closest('input, button, textarea')) return;
+        
+        isDragging.value = true;
+        dragStart.value = { x: e.clientX, y: e.clientY };
+        elementStart.value = { x: position.value.x, y: position.value.y };
+        
+        const el = inputModalContentRef.value;
+        if (el) el.style.transition = 'none';
+
+        document.addEventListener('mousemove', onMousemove);
+        document.addEventListener('mouseup', onMouseup);
     };
 
     const onMousemove = (e: MouseEvent) => {
-      if (!isDragging.value) return;
-      requestAnimationFrame(() => {
-        const el = inputModalContentRef.value!;
-        const container = document.querySelector('.guixu-root-container') as HTMLElement;
-        if (!container) return;
-        const containerRect = container.getBoundingClientRect();
-        let newTop = e.clientY - dragOffset.value.y;
-        let newLeft = e.clientX - dragOffset.value.x;
-        newTop = Math.max(containerRect.top, Math.min(newTop, containerRect.bottom - el.offsetHeight));
-        newLeft = Math.max(containerRect.left, Math.min(newLeft, containerRect.right - el.offsetWidth));
-        el.style.top = `${newTop}px`;
-        el.style.left = `${newLeft}px`;
-      });
+        if (!isDragging.value) return;
+        e.preventDefault();
+        
+        requestAnimationFrame(() => {
+            const dx = e.clientX - dragStart.value.x;
+            const dy = e.clientY - dragStart.value.y;
+            
+            const newX = elementStart.value.x + dx;
+            const newY = elementStart.value.y + dy;
+            
+            position.value = { x: newX, y: newY };
+            
+            const el = inputModalContentRef.value;
+            if(el) el.style.transform = `translate(${newX}px, ${newY}px)`;
+        });
     };
 
     const onMouseup = () => {
-      isDragging.value = false;
-      if (inputModalContentRef.value) inputModalContentRef.value.style.transition = '';
-      document.removeEventListener('mousemove', onMousemove);
-      document.removeEventListener('mouseup', onMouseup);
+        isDragging.value = false;
+        const el = inputModalContentRef.value;
+        if (el) el.style.transition = ''; // 恢复动画
+        document.removeEventListener('mousemove', onMousemove);
+        document.removeEventListener('mouseup', onMouseup);
     };
 
     const isSmartphoneOpen = ref(false);
@@ -456,14 +459,17 @@ export default defineComponent({
 }
 
 .modal-content {
-  @include frosted-glass(rgba($color-indigo-deep, 0.8), 12px);
-  border: 1px solid rgba($color-gold-liu, 0.4);
-  border-radius: $border-radius-md;
-  padding: $spacing-lg;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   min-width: 320px;
   max-width: 500px;
+  border-radius: $border-radius-md;
 
+  .confirmation-modal {
+    @include frosted-glass(rgba($color-indigo-deep, 0.8), 12px);
+    border: 1px solid rgba($color-gold-liu, 0.4);
+    padding: $spacing-lg;
+  }
+  
   .confirmation-title {
     color: $color-gold-pale;
     font-family: $font-family-title;
@@ -494,6 +500,7 @@ export default defineComponent({
   max-height: 80vh;
   display: flex;
   flex-direction: column;
+  background-color: $color-black-void;
 
   .modal-header {
     display: flex;
@@ -574,9 +581,12 @@ export default defineComponent({
   padding: 0;
   width: 70%;
   max-width: 900px;
-  position: fixed;
+  position: absolute; /* 确保相对于 .guixu-root-container 定位 */
+  top: 0;
+  left: 0;
   cursor: move;
-  /* top, left, bottom, right, transform are now controlled by JS */
+  will-change: transform;
+  transition: opacity 0.3s ease; /* 添加过渡效果 */
 }
 
 .input-area-container {

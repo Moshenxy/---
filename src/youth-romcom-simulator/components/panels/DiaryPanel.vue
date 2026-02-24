@@ -102,7 +102,7 @@ const selectedDiary = ref<DiaryEntry | null>(null);
 const sectionsOpen = reactive({
   events: false,
   relations: false,
-  memos: false
+  memos: false,
 });
 
 type Section = keyof typeof sectionsOpen;
@@ -112,21 +112,21 @@ const toggleSection = (section: Section) => {
 };
 
 const selectDiary = (diary: DiaryEntry) => {
-    selectedDiary.value = diary;
-    // isNavOpen.value = false; // Now controlled by parent
-    emit('close-diary-nav');
+  selectedDiary.value = diary;
+  // isNavOpen.value = false; // Now controlled by parent
+  emit('close-diary-nav');
 };
 
 onMounted(async () => {
-    try {
-        const entries = await diaryService.getDiaryEntries();
-        diaryList.value = entries;
-        if (entries.length > 0) {
-            selectedDiary.value = entries[0];
-        }
-    } catch (error) {
-        console.error("Failed to load diary entries:", error);
+  try {
+    const entries = await diaryService.getDiaryEntries();
+    diaryList.value = entries;
+    if (entries.length > 0) {
+      selectedDiary.value = entries[0];
     }
+  } catch (error) {
+    console.error('Failed to load diary entries:', error);
+  }
 });
 </script>
 
@@ -143,7 +143,6 @@ onMounted(async () => {
   overflow: hidden;
   position: relative;
 }
-
 
 .app-content {
   flex-grow: 1;
@@ -171,10 +170,16 @@ onMounted(async () => {
   padding: 20px;
   z-index: 101;
   transform: translateX(0);
-  box-shadow: 5px 0 15px rgba(0,0,0,0.3);
+  box-shadow: 5px 0 15px rgba(0, 0, 0, 0.3);
 
-  h3 { color: #d4af37; }
-  ul { list-style: none; padding: 0; margin: 0; }
+  h3 {
+    color: #d4af37;
+  }
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
   li {
     padding: 10px;
     cursor: pointer;
@@ -190,21 +195,38 @@ onMounted(async () => {
   }
 }
 
-.slide-enter-active, .slide-leave-active,
-.slide-fade-enter-active, .slide-fade-leave-active {
+.slide-enter-active,
+.slide-leave-active,
+.slide-fade-enter-active,
+.slide-fade-leave-active {
   transition: all 0.3s ease;
 }
 
-.slide-enter-from, .slide-leave-to { transform: translateX(-100%); }
-.slide-fade-enter-from, .slide-fade-leave-to { opacity: 0; }
+.slide-enter-from,
+.slide-leave-to {
+  transform: translateX(-100%);
+}
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  opacity: 0;
+}
 
 .diary-header {
   text-align: center;
   margin-bottom: 30px;
   padding-bottom: 20px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  .date-weather { font-size: 14px; color: #8a8a9e; margin-bottom: 10px; }
-  .title { font-size: 24px; color: #e0e0e0; margin: 0; font-weight: 600; }
+  .date-weather {
+    font-size: 14px;
+    color: #8a8a9e;
+    margin-bottom: 10px;
+  }
+  .title {
+    font-size: 24px;
+    color: #e0e0e0;
+    margin: 0;
+    font-weight: 600;
+  }
 }
 
 .diary-section {
@@ -218,28 +240,63 @@ onMounted(async () => {
     .arrow {
       transition: transform 0.3s ease;
       display: inline-block;
-      &.open { transform: rotate(90deg); }
+      &.open {
+        transform: rotate(90deg);
+      }
     }
   }
-  h2 { font-size: 18px; color: #d4af37; border-bottom: 1px solid #d4af37; padding-bottom: 8px; margin-top: 0; margin-bottom: 15px; }
-  p, ul { font-size: 15px; line-height: 1.8; white-space: pre-wrap; }
-  ul { padding-left: 20px; }
-  li { margin-bottom: 8px; }
+  h2 {
+    font-size: 18px;
+    color: #d4af37;
+    border-bottom: 1px solid #d4af37;
+    padding-bottom: 8px;
+    margin-top: 0;
+    margin-bottom: 15px;
+  }
+  p,
+  ul {
+    font-size: 15px;
+    line-height: 1.8;
+    white-space: pre-wrap;
+  }
+  ul {
+    padding-left: 20px;
+  }
+  li {
+    margin-bottom: 8px;
+  }
 }
 
-.collapsible-content { padding-top: 10px; }
+.collapsible-content {
+  padding-top: 10px;
+}
 
-.event-item, .relation-item {
+.event-item,
+.relation-item {
   background-color: rgba(255, 255, 255, 0.03);
   border-radius: 8px;
   padding: 15px;
   margin-bottom: 15px;
   border-left: 3px solid #3a8f9d;
-  p { margin: 5px 0; }
-  strong { color: #a9a9c8; }
-  .t吐槽 { font-style: italic; color: #8a8a9e; }
+  p {
+    margin: 5px 0;
+  }
+  strong {
+    color: #a9a9c8;
+  }
+  .t吐槽 {
+    font-style: italic;
+    color: #8a8a9e;
+  }
 }
 
-.relation-item { border-left-color: #8a5db5; }
-.empty-state { text-align: center; color: #888; padding-top: 5em; font-style: italic; }
+.relation-item {
+  border-left-color: #8a5db5;
+}
+.empty-state {
+  text-align: center;
+  color: #888;
+  padding-top: 5em;
+  font-style: italic;
+}
 </style>

@@ -2,11 +2,15 @@
   <div class="detail-tab-content grid-layout">
     <div class="detail-item">
       <strong class="detail-key">姓名:</strong>
-      <div class="detail-value"><p>{{ npc.名称 }}</p></div>
+      <div class="detail-value">
+        <p>{{ npc.名称 }}</p>
+      </div>
     </div>
     <div class="detail-item">
       <strong class="detail-key">生日:</strong>
-      <div class="detail-value"><p>{{ formattedBirthDate }} ({{ age }})</p></div>
+      <div class="detail-value">
+        <p>{{ formattedBirthDate }} ({{ age }})</p>
+      </div>
     </div>
     <div class="detail-item">
       <strong class="detail-key">身份:</strong>
@@ -16,34 +20,40 @@
     </div>
     <div class="detail-item">
       <strong class="detail-key">相貌:</strong>
-      <div class="detail-value"><p>{{ npc.个人信息.容貌 }}</p></div>
+      <div class="detail-value">
+        <p>{{ npc.个人信息.容貌 }}</p>
+      </div>
     </div>
     <div class="detail-item">
       <strong class="detail-key">着装:</strong>
-      <div class="detail-value"><p>{{ npc.个人信息.衣着 }}</p></div>
+      <div class="detail-value">
+        <p>{{ npc.个人信息.衣着 }}</p>
+      </div>
     </div>
-     <div class="detail-item">
+    <div class="detail-item">
       <strong class="detail-key">心理状态:</strong>
-      <div class="detail-value"><p>{{ npc.内在世界.心理状态 }} ({{ npc.内在世界.心理健康 }})</p></div>
+      <div class="detail-value">
+        <p>{{ npc.内在世界.心理状态 }} ({{ npc.内在世界.心理健康 }})</p>
+      </div>
     </div>
     <div class="detail-item evolution-level">
-     <strong class="detail-key">演化等级:</strong>
-     <div class="evolution-tracks">
-       <div class="track">
-         <span class="track-label">身体</span>
-         <span class="track-level">{{ npc.内在世界.NSFW?.phys ?? 0 }}</span>
-         <span class="track-status">{{ physicalLevelStatus }}</span>
-       </div>
-       <div class="track">
-         <span class="track-label">精神</span>
-         <span class="track-level">{{ npc.内在世界.NSFW?.mind ?? 0 }}</span>
-         <span class="track-status">{{ mentalLevelStatus }}</span>
-       </div>
-     </div>
-   </div>
+      <strong class="detail-key">演化等级:</strong>
+      <div class="evolution-tracks">
+        <div class="track">
+          <span class="track-label">身体</span>
+          <span class="track-level">{{ npc.内在世界.NSFW?.phys ?? 0 }}</span>
+          <span class="track-status">{{ physicalLevelStatus }}</span>
+        </div>
+        <div class="track">
+          <span class="track-label">精神</span>
+          <span class="track-level">{{ npc.内在世界.NSFW?.mind ?? 0 }}</span>
+          <span class="track-status">{{ mentalLevelStatus }}</span>
+        </div>
+      </div>
+    </div>
     <div class="detail-item full-width">
       <strong class="detail-key">核心动机:</strong>
-       <div class="detail-value">
+      <div class="detail-value">
         <AttributeGrid :attributes="npc.内在世界.核心动机" />
       </div>
     </div>
@@ -98,7 +108,6 @@ const mentalLevelStatus = computed(() => {
   return mentalLevels.find(m => m.lv === level)?.status || '未知';
 });
 
-
 const age = computed(() => {
   if (!props.npc.个人信息?.出生日期) return '未知';
   const birthDate = new Date(props.npc.个人信息.出生日期);
@@ -117,7 +126,6 @@ const formattedBirthDate = computed(() => {
   const date = new Date(bd);
   return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
 });
-
 </script>
 
 <style lang="scss" scoped>

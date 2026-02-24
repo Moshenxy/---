@@ -126,7 +126,7 @@ export default defineComponent({
   background-size: cover;
   background-position: center;
   transition: background-image 0.5s ease-in-out;
-  
+
   // Add a subtle vignette to make text more readable
   &::after {
     content: '';
@@ -135,7 +135,7 @@ export default defineComponent({
     left: 0;
     width: 100%;
     height: 100%;
-    background: radial-gradient(circle, rgba(0,0,0,0) 50%, rgba(0,0,0,0.4) 100%);
+    background: radial-gradient(circle, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.4) 100%);
   }
 }
 

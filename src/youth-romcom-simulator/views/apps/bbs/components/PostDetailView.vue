@@ -45,16 +45,16 @@ const newReply = ref('');
 
 function submitReply() {
   if (!newReply.value.trim()) return;
-  
+
   const command = `[行动指令|回复帖子|${props.post.id}|${newReply.value.trim()}]`;
   actions.addCachedCommand(command);
-  
+
   // Optimistic update for instant feedback
   props.post.replies.push({
     author: store.userId,
     content: newReply.value.trim(),
   });
-  
+
   actions.showToastr('你的回复已提交，将在下次与AI交互时处理。');
   newReply.value = '';
 }
@@ -86,19 +86,19 @@ function getAuthorName(authorId: string): string {
   font-size: 0.9rem;
 }
 .detail-title {
-    font-size: 1.2rem;
-    margin: 0;
-    flex-grow: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  font-size: 1.2rem;
+  margin: 0;
+  flex-grow: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .post-meta {
-    font-size: 0.8rem;
-    color: #6c757d;
-    margin-bottom: 20px;
-    display: flex;
-    gap: 15px;
+  font-size: 0.8rem;
+  color: #6c757d;
+  margin-bottom: 20px;
+  display: flex;
+  gap: 15px;
 }
 .post-content-full {
   background: #fff;
@@ -110,39 +110,39 @@ function getAuthorName(authorId: string): string {
   word-wrap: break-word;
 }
 .replies-section h3 {
-    margin-top: 0;
-    border-bottom: 1px solid #dee2e6;
-    padding-bottom: 10px;
-    margin-bottom: 15px;
-    font-size: 1.1rem;
+  margin-top: 0;
+  border-bottom: 1px solid #dee2e6;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+  font-size: 1.1rem;
 }
 .reply-item {
-    background: #f8f9fa;
-    padding: 12px;
-    border-radius: 4px;
-    margin-bottom: 10px;
-    border-left: 3px solid #0d6efd;
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  border-left: 3px solid #0d6efd;
 }
 .reply-content {
-    margin: 0 0 8px 0;
-    line-height: 1.6;
+  margin: 0 0 8px 0;
+  line-height: 1.6;
 }
 .reply-author {
-    text-align: right;
-    font-size: 0.8rem;
-    color: #6c757d;
-    margin: 0;
+  text-align: right;
+  font-size: 0.8rem;
+  color: #6c757d;
+  margin: 0;
 }
 .no-replies {
-    color: #6c757d;
-    text-align: center;
-    padding: 30px;
-    background: #f8f9fa;
-    border-radius: 4px;
+  color: #6c757d;
+  text-align: center;
+  padding: 30px;
+  background: #f8f9fa;
+  border-radius: 4px;
 }
 .reply-input-section {
   margin-top: 20px;
-  
+
   textarea {
     width: 100%;
     min-height: 80px;

@@ -22,7 +22,12 @@
       <div class="tab-content">
         <div v-if="activeTab === 'status'" class="card status-section">
           <div class="status-list" v-if="protagonist.当前状态 && protagonist.当前状态.length">
-            <div v-for="(status, index) in protagonist.当前状态" :key="index" class="status-item" @click="selectedStatus = status">
+            <div
+              v-for="(status, index) in protagonist.当前状态"
+              :key="index"
+              class="status-item"
+              @click="selectedStatus = status"
+            >
               <span>{{ status.名称 }}</span>
               <span class="status-duration">{{ formatDuration(status.持续到) }}</span>
             </div>
@@ -32,13 +37,23 @@
 
         <div v-if="activeTab === 'attributes'" class="card attributes-section">
           <div class="attributes-grid">
-            <AttributeDisplay v-for="(attr, key) in protagonist.属性" :key="key" :name="translateAttribute(key)" :value="attr" />
+            <AttributeDisplay
+              v-for="(attr, key) in protagonist.属性"
+              :key="key"
+              :name="translateAttribute(key)"
+              :value="attr"
+            />
           </div>
         </div>
 
         <div v-if="activeTab === 'skills'" class="card skills-section">
           <div class="skills-list" v-if="protagonist.技能 && Object.keys(protagonist.技能).length">
-            <div v-for="(skill, key) in protagonist.技能" :key="key" class="skill-item" @click="selectedSkill = { name: key, ...skill }">
+            <div
+              v-for="(skill, key) in protagonist.技能"
+              :key="key"
+              class="skill-item"
+              @click="selectedSkill = { name: key, ...skill }"
+            >
               <div class="skill-header">
                 <span class="skill-name">{{ key }}</span>
                 <span class="skill-level" :style="{ color: getSkillLevelColor(skill.等级) }">Lv. {{ skill.等级 }}</span>
@@ -50,9 +65,7 @@
         </div>
       </div>
     </div>
-    <div v-else class="loading-pane">
-      正在加载角色数据...
-    </div>
+    <div v-else class="loading-pane">正在加载角色数据...</div>
 
     <!-- Status Detail Modal -->
     <div v-if="selectedStatus" class="modal-overlay" @click="selectedStatus = null">
@@ -76,7 +89,10 @@
           <button class="close-button" @click="selectedSkill = null">&times;</button>
         </div>
         <div class="modal-body">
-          <p><strong>等级:</strong> <span :style="{ color: getSkillLevelColor(selectedSkill.等级) }">Lv. {{ selectedSkill.等级 }}</span></p>
+          <p>
+            <strong>等级:</strong>
+            <span :style="{ color: getSkillLevelColor(selectedSkill.等级) }">Lv. {{ selectedSkill.等级 }}</span>
+          </p>
           <p><strong>类型:</strong> {{ selectedSkill.类型 }}</p>
           <div class="experience-bar">
             <div class="progress-fill" :style="{ width: `${getSkillExpPercentage(selectedSkill)}%` }"></div>
@@ -177,7 +193,7 @@ const getSkillExpPercentage = (skill: SkillWithKey) => {
 
   .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, rgba(212,175,55,0.5) 0%, rgba(212,175,55,0.8) 100%);
+    background: linear-gradient(90deg, rgba(212, 175, 55, 0.5) 0%, rgba(212, 175, 55, 0.8) 100%);
     transition: width 0.5s ease;
   }
 
@@ -261,7 +277,9 @@ const getSkillExpPercentage = (skill: SkillWithKey) => {
     background-color: transparent;
     color: #a0a0a0;
     cursor: pointer;
-    transition: background-color 0.3s, color 0.3s;
+    transition:
+      background-color 0.3s,
+      color 0.3s;
     border-radius: 8px;
     &.active {
       background-color: rgba(212, 175, 55, 0.2);
@@ -353,7 +371,8 @@ const getSkillExpPercentage = (skill: SkillWithKey) => {
   }
 }
 
-.loading-pane, .empty-state {
+.loading-pane,
+.empty-state {
   display: flex;
   justify-content: center;
   align-items: center;

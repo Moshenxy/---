@@ -11,9 +11,9 @@
         <span v-for="char in charactersHere" :key="char.名称" class="character-tag">{{ char.名称 }}</span>
       </div>
       <ul class="children-list" v-if="hasChildren">
-        <LocationNode 
-          v-for="child in location.children" 
-          :key="child.id" 
+        <LocationNode
+          v-for="child in location.children"
+          :key="child.id"
           :location="child"
           :all-locations="allLocations"
           :characters-by-location="charactersByLocation"
@@ -58,9 +58,9 @@ export default defineComponent({
       required: true,
     },
     charactersByLocation: {
-        type: Object as PropType<Record<string, Character[]>>,
-        required: true,
-    }
+      type: Object as PropType<Record<string, Character[]>>,
+      required: true,
+    },
   },
   setup(props) {
     const isExpanded = ref(false);
@@ -68,7 +68,7 @@ export default defineComponent({
     const hasChildren = computed(() => props.location.children && props.location.children.length > 0);
 
     const charactersHere = computed(() => {
-        return props.charactersByLocation[props.location.id] || [];
+      return props.charactersByLocation[props.location.id] || [];
     });
 
     const toggle = () => {
@@ -79,7 +79,7 @@ export default defineComponent({
       isExpanded,
       toggle,
       hasChildren,
-      charactersHere
+      charactersHere,
     };
   },
 });
@@ -124,7 +124,7 @@ export default defineComponent({
   padding-left: 15px;
   border-left: 1px solid #444;
   margin-left: -7px;
-  
+
   .description {
     font-size: 13px;
     color: #a0a0a0;
@@ -137,11 +137,11 @@ export default defineComponent({
     margin: 10px 0;
     padding-left: 5px;
     .character-tag {
-        background-color: rgba(58, 143, 157, 0.2);
-        color: #3a8f9d;
-        padding: 2px 6px;
-        border-radius: 5px;
-        margin-left: 8px;
+      background-color: rgba(58, 143, 157, 0.2);
+      color: #3a8f9d;
+      padding: 2px 6px;
+      border-radius: 5px;
+      margin-left: 8px;
     }
   }
 }

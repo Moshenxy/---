@@ -76,7 +76,7 @@ const actions = {
   setNavigationPath(path: NavigationCrumb[]): void {
     state.navigationPath = path;
   },
-  
+
   /**
    * 设置完整的世界数据，供各组件查询。
    * @param data - 从 Lorebook 解析出的世界定义。
@@ -84,7 +84,7 @@ const actions = {
   setWorldData(data: WorldDefinition): void {
     state.worldData = data;
   },
-  
+
   /**
    * 设置玩家本体和化身的位置ID。
    * @param locations - 包含 user 和 avatar 位置ID的对象。

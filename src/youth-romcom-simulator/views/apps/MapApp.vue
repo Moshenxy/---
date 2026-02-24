@@ -1,9 +1,9 @@
 <template>
   <div class="map-app">
     <ul class="location-tree">
-      <LocationNode 
-        v-for="location in locationTree" 
-        :key="location.id" 
+      <LocationNode
+        v-for="location in locationTree"
+        :key="location.id"
         :location="location"
         :all-locations="locations"
         :characters-by-location="charactersByLocation"
@@ -84,7 +84,7 @@ const locationTree = computed(() => {
   const buildTree = (nodes: LocationNodeData[]): LocationNodeData[] => {
     return nodes.map(node => ({
       ...node,
-      children: childrenOf[node.id] ? buildTree(childrenOf[node.id]) : []
+      children: childrenOf[node.id] ? buildTree(childrenOf[node.id]) : [],
     }));
   };
 

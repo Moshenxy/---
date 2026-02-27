@@ -31,12 +31,12 @@ class ClothingService {
 
     const season = this._getSeason(new Date(worldState.世界状态.时间));
     const locationType = this._getLocationType(character.位置); // e.g., 'school', 'home'
-    
+
     let outfit = this._findBestMatch(db, character, season, locationType);
 
     // Fallback to default outfit if no specific match found
     if (!outfit) {
-        outfit = character.个人信息.衣着 || '穿着普通的衣服。';
+      outfit = character.个人信息.衣着 || '穿着普通的衣服。';
     }
 
     return outfit;
@@ -57,43 +57,51 @@ class ClothingService {
 
   private _findBestMatch(db: any, character: Character, season: string, locationType: string): string {
     const characterName = character.名称;
-    const anchor = db.character_anchors && Object.values(db.character_anchors).find((anc: any) => anc.core.includes(characterName)) as any;
+    const anchor =
+      db.character_anchors &&
+      (Object.values(db.character_anchors).find((anc: any) => anc.core.includes(characterName)) as any);
 
     // 优先使用 smart_match_logic
     if (db.smart_match_logic && db.smart_match_logic[characterName]) {
-        const logicString: string = db.smart_match_logic[characterName];
-        const rules = logicString.split(';').map(s => s.trim());
-        const locationRule = rules.find(r => r.toLowerCase().startsWith(locationType));
+      const logicString: string = db.smart_match_logic[characterName];
+      const rules = logicString.split(';').map(s => s.trim());
+      const locationRule = rules.find(r => r.toLowerCase().startsWith(locationType));
 
-        if (locationRule) {
-            const match = locationRule.match(/\[(.*?)\]/);
-            if (match) {
-                const tag = match[1];
-                for (const category in db.wardrobe_pool) {
-                    const item = (db.wardrobe_pool[category] as any[]).find(i => i.tag === tag);
-                    if (item) {
-                        console.log(`[ClothingService] Smart match found for ${characterName} at ${locationType}: ${item.detail}`);
-                        return item.detail;
-                    }
-                }
+      if (locationRule) {
+        const match = locationRule.match(/\[(.*?)\]/);
+        if (match) {
+          const tag = match[1];
+          for (const category in db.wardrobe_pool) {
+            const item = (db.wardrobe_pool[category] as any[]).find(i => i.tag === tag);
+            if (item) {
+              console.log(
+                `[ClothingService] Smart match found for ${characterName} at ${locationType}: ${item.detail}`,
+              );
+              return item.detail;
             }
+          }
         }
+      }
     }
 
     // 如果 smart_match_logic 未命中，则使用通用逻辑
     if (anchor) {
-        if (locationType === 'school') {
-            const pool = character.个人信息.性别 === '男' ? db.wardrobe_pool.school_uniform_male : db.wardrobe_pool.school_uniform_female;
-            const uniform = pool.find((item: any) => item.tag.includes(season));
-            if (uniform) return uniform.detail;
-        } else if (locationType === 'home') {
-            const homeWear = db.wardrobe_pool.home_private[0]; // Simplified
-            if (homeWear) return homeWear.detail;
-        }
+      if (locationType === 'school') {
+        const pool =
+          character.个人信息.性别 === '男'
+            ? db.wardrobe_pool.school_uniform_male
+            : db.wardrobe_pool.school_uniform_female;
+        const uniform = pool.find((item: any) => item.tag.includes(season));
+        if (uniform) return uniform.detail;
+      } else if (locationType === 'home') {
+        const homeWear = db.wardrobe_pool.home_private[0]; // Simplified
+        if (homeWear) return homeWear.detail;
+      }
     }
-    
+
     // 最终回退
-    const fallbackPool = character.个人信息.性别 === '男' ? db.wardrobe_pool.casual_daily_male : db.wardrobe_pool.casual_daily_female;
+    const fallbackPool =
+      character.个人信息.性别 === '男' ? db.wardrobe_pool.casual_daily_male : db.wardrobe_pool.casual_daily_female;
     return fallbackPool[0]?.detail || '穿着普通的衣服。';
   }
 

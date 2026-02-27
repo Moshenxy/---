@@ -22,6 +22,13 @@ export interface UserIntent {
 }
 
 class ContextService {
+  private shuffleArray<T>(array: T[]): T[] {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
   private lastProcessedCardDrawTime: { 日期: string; 片段: string } | null = null;
   private hasIssuedDrawCommandForTime = false;
 
@@ -132,11 +139,18 @@ class ContextService {
     const locationId = protagonist?.位置;
     const currentLocation = locationId ? locationContext[locationId] : undefined;
 
+    const activeTraits = currentLocation?.当前激活特质 || [];
+    const atmosphere = activeTraits.length > 0
+      ? activeTraits.map((t: any) => `【${t.特质名称}】: ${t.效果}`).join('; ')
+      : '无特殊氛围';
+
     return {
       地点: currentLocation?.名称 || '未知',
+      地点状态: `【${currentLocation?.当前开放状态 || '未知'}】`,
       时间: `${worldState.世界状态.时间.日期} ${worldState.世界状态.时间.当前片段}`,
       天气: worldState.世界状态.天气,
-      氛围: currentLocation?.场景特质?.map((t: any) => t.特质名称).join(', ') || '无特殊氛围',
+      场景氛围与规则: atmosphere,
+      // 恢复被误删的宏观对象
       世界状态: worldState.世界状态,
       命运卡牌系统: worldState.命运卡牌系统,
       叙事记录: worldState.叙事记录,
@@ -278,8 +292,31 @@ class ContextService {
       if (!subjectRelations) continue;
       relationshipContext[subjectId] = {};
       for (const objectId of idsToProcess) {
-        if (subjectRelations[objectId]) {
-          relationshipContext[subjectId][objectId] = subjectRelations[objectId];
+        const relation = subjectRelations[objectId];
+        if (relation && typeof relation === 'object') {
+          // V2.0 精简上下文改造：加入导演提示
+          const directives = [];
+          if (relation.饱和度) {
+              if (relation.饱和度.亲密度 > 80) directives.push(`【导演提示：${subjectId}对${objectId}的'亲密度'已饱和，日常互动收益将极低。】`);
+              if (relation.饱和度.支配度 > 80) directives.push(`【导演提示：${subjectId}对${objectId}的'支配度'已饱和。】`);
+              if (relation.饱和度.信赖度 > 80) directives.push(`【导演提示：${subjectId}对${objectId}的'信赖度'已饱和。】`);
+          }
+          if (relation.关系瓶颈) {
+              if (relation.关系瓶颈.亲密度) directives.push(`【导演提示：${subjectId}对${objectId}的'亲密度'已遭遇瓶颈，需要“突破事件”才能进入下一阶段。】`);
+              if (relation.关系瓶颈.支配度) directives.push(`【导演提示：${subjectId}对${objectId}的'支配度'已遭遇瓶颈。】`);
+              if (relation.关系瓶颈.信赖度) directives.push(`【导演提示：${subjectId}对${objectId}的'信赖度'已遭遇瓶颈。】`);
+          }
+
+          relationshipContext[subjectId][objectId] = {
+            数值: relation.数值,
+            阶段: {
+              亲密度: relation.阶段亲密度,
+              支配度: relation.阶段支配度,
+              信赖度: relation.阶段信赖度,
+            },
+            最近互动: relation.最近互动,
+            ...(directives.length > 0 && { 导演提示: directives.join(' ') })
+          };
         }
       }
     }
@@ -365,7 +402,7 @@ class ContextService {
       if (randomEventsContent) {
         const randomEventsData = JSON.parse(randomEventsContent);
         const randomPool = randomEventsData.pool || [];
-        const availableRandomEvents = randomPool
+        const availableRandomEvents = this.shuffleArray(randomPool)
           .slice(0, 2)
           .map((event: any) => ({ 类型: event.type, 标题: event.content, 内容: event.detail }));
         if (availableRandomEvents.length > 0) {

@@ -100,28 +100,36 @@ export const 关系Schema = z
         信赖度: z.coerce.number().default(0),
       })
       .default({ 亲密度: 0, 支配度: 0, 信赖度: 0 }),
+    饱和度: z
+      .object({
+        亲密度: z.coerce.number().min(0).max(100).default(0),
+        支配度: z.coerce.number().min(0).max(100).default(0),
+        信赖度: z.coerce.number().min(0).max(100).default(0),
+      })
+      .optional()
+      .default({ 亲密度: 0, 支配度: 0, 信赖度: 0 }),
+    关系瓶颈: z
+      .object({
+        亲密度: z.boolean().optional().default(false),
+        支配度: z.boolean().optional().default(false),
+        信赖度: z.boolean().optional().default(false),
+      })
+      .optional()
+      .default({ 亲密度: false, 支配度: false, 信赖度: false }),
     阶段亲密度: z.string().default('生疏'),
     阶段支配度: z.string().default('平等'),
     阶段信赖度: z.string().default('中立'),
     最近互动: z.string().default('无'),
-    动作冷却池: z
-      .record(
-        z.string().describe('动作ID'),
-        z
-          .string()
-          .regex(/^\d{4}-\d{2}-\d{2}$/)
-          .describe('YYYY-MM-DD 格式的日期'),
-      )
-      .optional()
-      .default({}),
+    上次互动时间: z.string().optional(),
   })
   .default({
     数值: { 亲密度: 0, 支配度: 0, 信赖度: 0 },
+    饱和度: { 亲密度: 0, 支配度: 0, 信赖度: 0 },
+    关系瓶颈: { 亲密度: false, 支配度: false, 信赖度: false },
     阶段亲密度: '生疏',
     阶段支配度: '平等',
     阶段信赖度: '中立',
     最近互动: '无',
-    动作冷却池: {},
   })
   .transform(val => {
     val.阶段亲密度 = findStage(val.数值.亲密度, 关系阶段定义.亲密度);

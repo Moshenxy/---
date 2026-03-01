@@ -140,9 +140,8 @@ class ContextService {
     const currentLocation = locationId ? locationContext[locationId] : undefined;
 
     const activeTraits = currentLocation?.当前激活特质 || [];
-    const atmosphere = activeTraits.length > 0
-      ? activeTraits.map((t: any) => `【${t.特质名称}】: ${t.效果}`).join('; ')
-      : '无特殊氛围';
+    const atmosphere =
+      activeTraits.length > 0 ? activeTraits.map((t: any) => `【${t.特质名称}】: ${t.效果}`).join('; ') : '无特殊氛围';
 
     return {
       地点: currentLocation?.名称 || '未知',
@@ -276,14 +275,22 @@ class ContextService {
           // V2.0 精简上下文改造：加入导演提示
           const directives = [];
           if (relation.饱和度) {
-              if (relation.饱和度.亲密度 > 80) directives.push(`【导演提示：${subjectId}对${objectId}的'亲密度'已饱和，日常互动收益将极低。】`);
-              if (relation.饱和度.支配度 > 80) directives.push(`【导演提示：${subjectId}对${objectId}的'支配度'已饱和。】`);
-              if (relation.饱和度.信赖度 > 80) directives.push(`【导演提示：${subjectId}对${objectId}的'信赖度'已饱和。】`);
+            if (relation.饱和度.亲密度 > 80)
+              directives.push(`【导演提示：${subjectId}对${objectId}的'亲密度'已饱和，日常互动收益将极低。】`);
+            if (relation.饱和度.支配度 > 80)
+              directives.push(`【导演提示：${subjectId}对${objectId}的'支配度'已饱和。】`);
+            if (relation.饱和度.信赖度 > 80)
+              directives.push(`【导演提示：${subjectId}对${objectId}的'信赖度'已饱和。】`);
           }
           if (relation.关系瓶颈) {
-              if (relation.关系瓶颈.亲密度) directives.push(`【导演提示：${subjectId}对${objectId}的'亲密度'已遭遇瓶颈，需要“突破事件”才能进入下一阶段。】`);
-              if (relation.关系瓶颈.支配度) directives.push(`【导演提示：${subjectId}对${objectId}的'支配度'已遭遇瓶颈。】`);
-              if (relation.关系瓶颈.信赖度) directives.push(`【导演提示：${subjectId}对${objectId}的'信赖度'已遭遇瓶颈。】`);
+            if (relation.关系瓶颈.亲密度)
+              directives.push(
+                `【导演提示：${subjectId}对${objectId}的'亲密度'已遭遇瓶颈，需要“突破事件”才能进入下一阶段。】`,
+              );
+            if (relation.关系瓶颈.支配度)
+              directives.push(`【导演提示：${subjectId}对${objectId}的'支配度'已遭遇瓶颈。】`);
+            if (relation.关系瓶颈.信赖度)
+              directives.push(`【导演提示：${subjectId}对${objectId}的'信赖度'已遭遇瓶颈。】`);
           }
 
           relationshipContext[subjectId][objectId] = {
@@ -294,7 +301,7 @@ class ContextService {
               信赖度: relation.阶段信赖度,
             },
             最近互动: relation.最近互动,
-            ...(directives.length > 0 && { 导演提示: directives.join(' ') })
+            ...(directives.length > 0 && { 导演提示: directives.join(' ') }),
           };
         }
       }

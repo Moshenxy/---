@@ -138,6 +138,20 @@ export const 关系Schema = z
     return val;
   });
 
+export const 物品Schema = z.object({
+  ID: z.string().describe("物品的唯一标识符"),
+  名称: z.string(),
+  类型: z.enum(['日常用品', '书籍资料', '个人物品', '剧情道具', '赠礼', '服装饰品']),
+  描述: z.string(),
+  效果: z.string().optional().describe("物品使用后的效果描述"),
+  可堆叠: z.boolean().prefault(true),
+  服装数据: z.object({
+    部位: z.enum(['外套', '上衣', '下装', '连衣裙', '袜子', '鞋子', '内衣', '饰品']),
+    标签: z.array(z.string()),
+    季节适应性: z.array(z.enum(['春', '夏', '秋', '冬'])),
+  }).optional(),
+});
+
 export const 卡牌Schema = z.object({
   ID: z.string().default(() => `card_${new Date().getTime()}`),
   类型: z.enum(['任务卡', '角色卡', '物品卡', '事件卡', '命运卡', '属性卡', '技能卡', '灾难卡', '纪念卡']),
@@ -237,6 +251,37 @@ export const 关系动态Schema = z.object({
     .optional(),
 });
 
+const 日程时间规则Schema = z.object({
+    星期: z.array(z.enum(['日', '一', '二', '三', '四', '五', '六'])).optional(),
+    时间片段: z.array(z.enum(['早晨', '上学路', '午前', '午休', '午后', '放学后', '傍晚', '夜'])).optional(),
+});
+
+const 倾向条目Schema = z.object({
+    倾向ID: z.string(),
+    偏好标签: z.array(z.string()).optional(),
+    范围: z.enum(['当前建筑', '当前区域', '全市']),
+});
+
+const 每日倾向Schema = z.partialRecord(z.enum(['早晨', '上学路', '午前', '午休', '午后', '放学后', '傍晚', '夜']), z.array(倾向条目Schema));
+
+const 强制日程条目Schema = z.object({
+    活动名称: z.string(),
+    地点ID: z.string(),
+    时间规则: 日程时间规则Schema,
+    可中断: z.boolean().optional(),
+    中断检定: z.object({
+        检定属性: z.enum(['沟通', '观察', '行动力', '精神力', '知识', '魅力']),
+        基础DC: z.number(),
+    }).optional(),
+});
+
+const 日程表Schema = z.object({
+    强制日程: z.array(强制日程条目Schema).optional(),
+    工作日: 每日倾向Schema.optional(),
+    周末: 每日倾向Schema.optional(),
+    假期: 每日倾向Schema.optional(),
+}).optional();
+
 const 角色基础Schema = z.object({
   名称: z.string().default('无名氏'),
   身份: z.array(z.object({ 组织: z.string(), 职位: z.string() })).default([]),
@@ -246,16 +291,25 @@ const 角色基础Schema = z.object({
       年龄: z.coerce.number().default(17),
       容貌: z.string().default('未描述'),
       身材: z.string().default('未描述'),
-      衣着: z.string().default('未描述'),
       性别: z.enum(['男', '女', '其他']).default('男'),
     })
     .default({
       年龄: 17,
       容貌: '未描述',
       身材: '未描述',
-      衣着: '未描述',
       性别: '男',
     }),
+  衣柜: z.array(z.string()).optional(),
+  当前衣着: z.object({
+      外套: z.string().optional(),
+      上衣: z.string().optional(),
+      下装: z.string().optional(),
+      连衣裙: z.string().optional(),
+      袜子: z.string().optional(),
+      鞋子: z.string().optional(),
+      内衣: z.string().optional(),
+      饰品: z.array(z.string()).optional(),
+  }).optional(),
   属性: z.record(z.enum(['沟通', '观察', '行动力', '精神力', '知识', '魅力']), 属性Schema).optional(),
   技能: z.record(z.string(), 技能Schema).optional(),
   物品栏: z.record(z.string(), z.object({ 数量: z.coerce.number().default(1) })).optional(),
@@ -312,6 +366,7 @@ export const NpcSchema = 角色基础Schema.extend({
     }),
   人格内核: 人格内核Schema,
   关系动态: 关系动态Schema,
+  日程表: 日程表Schema,
   记忆: z
     .array(
       z.object({
@@ -322,6 +377,7 @@ export const NpcSchema = 角色基础Schema.extend({
       }),
     )
     .default([]),
+  自动化: z.object({ 启用: z.boolean().prefault(true) }).optional(),
 });
 
 export const 场景特质Schema = z.object({
@@ -343,6 +399,7 @@ export const 地点Schema = z.object({
   层级类型: z.enum(['城市', '区域', '建筑群', '建筑', '房间', '地标']),
   所属: z.object({ ID: z.string() }).nullable(),
   描述: z.string(),
+  标签: z.array(z.string()).optional(),
   场景特质: z.array(场景特质Schema).optional(),
   包含物品: z.array(z.string()).optional(),
 });
@@ -358,8 +415,9 @@ export const RootSchema = z.object({
             .default('2012-04-08'),
           当前片段: z.enum(['早晨', '上学路', '午前', '午休', '午后', '放学后', '傍晚', '夜']).default('早晨'),
           星期: z.enum(['日', '一', '二', '三', '四', '五', '六']).default('日'),
+          当日类型: z.enum(['工作日', '周末', '节假日']).readonly().default('工作日'),
         })
-        .default({ 日期: '2012-04-08', 当前片段: '早晨', 星期: '日' }),
+        .default({ 日期: '2012-04-08', 当前片段: '早晨', 星期: '日', 当日类型: '工作日' }),
       行动点: z
         .object({
           当前: z.coerce.number().default(2),
@@ -382,9 +440,10 @@ export const RootSchema = z.object({
           章: 1,
           标题: '侍奉部的诞生',
         }),
-    })
-    .default({
-      时间: { 日期: '2012-04-08', 当前片段: '早晨', 星期: '日' },
+     引擎调试信息: z.string().optional().readonly(),
+   })
+   .default({
+      时间: { 日期: '2012-04-08', 当前片段: '早晨', 星期: '日', 当日类型: '工作日' },
       行动点: { 当前: 2, 上限: 2 },
       状态: '日常的世界',
       天气: '晴天',
@@ -393,8 +452,9 @@ export const RootSchema = z.object({
     }),
   主角: 主角Schema.or(z.literal('待初始化')).default('待初始化'),
   地点: z.record(z.string(), 地点Schema).optional(),
+  物品数据库: z.record(z.string().describe('物品ID'), 物品Schema).optional(),
   角色列表: z.record(z.string(), NpcSchema.or(z.literal('待初始化'))).default({}),
-  关系: z.record(z.string(), z.record(z.string(), 关系Schema)).default({}),
+  关系: z.record(z.string(), z.record(z.string(), 关系Schema.or(z.literal('待初始化')))).default({}),
   命运卡牌系统: z
     .object({
       下次抽卡时间: z

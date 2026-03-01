@@ -140,17 +140,18 @@ class ContextService {
     const currentLocation = locationId ? locationContext[locationId] : undefined;
 
     const activeTraits = currentLocation?.当前激活特质 || [];
-    const atmosphere =
-      activeTraits.length > 0 ? activeTraits.map((t: any) => `【${t.特质名称}】: ${t.效果}`).join('; ') : '无特殊氛围';
+    const atmosphere = activeTraits.length > 0
+      ? activeTraits.map((t: any) => `【${t.特质名称}】: ${t.效果}`).join('; ')
+      : '无特殊氛围';
 
     return {
       地点: currentLocation?.名称 || '未知',
       地点状态: `【${currentLocation?.当前开放状态 || '未知'}】`,
-      时间: `${worldState.世界状态.时间.日期} ${worldState.世界状态.时间.当前片段}`,
+      时间: `${worldState.世界状态.时间.日期} ${worldState.世界状态.时间.当前片段} (${worldState.世界状态.时间.当日类型})`,
       天气: worldState.世界状态.天气,
       场景氛围与规则: atmosphere,
       // 恢复被误删的宏观对象
-      世界状态: worldState.世界状态,
+      世界状态: (({ 引擎调试信息, ...rest }) => rest)(worldState.世界状态),
       命运卡牌系统: worldState.命运卡牌系统,
       叙事记录: worldState.叙事记录,
     };
@@ -188,6 +189,7 @@ class ContextService {
           层级类型: location.层级类型,
           所属: location.所属,
           描述: location.描述,
+          标签: location.标签, // 补充缺失的标签字段
         };
       }
     }
@@ -205,8 +207,6 @@ class ContextService {
     const presentCharacters: any = {};
     const absentCharacterSummaries: any = {};
     const presentCharacterIds = new Set<string>();
-
-    const clothingStyleGuide = await this.loadClothingStyles();
 
     if (worldState && worldState.角色列表) {
       const allChars = worldState.角色列表;
@@ -233,29 +233,8 @@ class ContextService {
         const char = allChars[charId];
         if (typeof char !== 'object' || !char) continue;
 
-        const charWithStyle = { ...char };
-        const styleGuide = clothingStyleGuide?.[charId] || clothingStyleGuide?.DEFAULT;
-        if (styleGuide) {
-          const finalStyle: any = {
-            通用偏好: styleGuide.通用偏好,
-            特殊情境: styleGuide.特殊情境,
-          };
-
-          const season = this.getCurrentSeason(new Date(worldState.世界状态.时间.日期));
-          const weather = worldState.世界状态.天气;
-
-          if (styleGuide.季节偏好?.[season]) {
-            finalStyle.季节偏好 = { [season]: styleGuide.季节偏好[season] };
-          }
-          if (styleGuide.天气应对?.[weather]) {
-            finalStyle.天气应对 = { [weather]: styleGuide.天气应对[weather] };
-          }
-
-          (charWithStyle as any).服装风格 = finalStyle;
-        }
-
         if (fullDetailCharIds.has(charId)) {
-          presentCharacters[charId] = charWithStyle;
+          presentCharacters[charId] = char; // 直接使用完整的、最新的角色对象
           if (char.位置 === sceneLocation) presentCharacterIds.add(charId);
         } else {
           absentCharacterSummaries[charId] = {
@@ -264,6 +243,7 @@ class ContextService {
             位置: char.位置,
             核心标识: (char as Npc).人格内核?.标识符,
             当前状态: char.当前状态,
+            当前衣着: (char as Npc).当前衣着, // 为幕后推演添加衣着信息
           };
         }
       }
@@ -296,22 +276,14 @@ class ContextService {
           // V2.0 精简上下文改造：加入导演提示
           const directives = [];
           if (relation.饱和度) {
-            if (relation.饱和度.亲密度 > 80)
-              directives.push(`【导演提示：${subjectId}对${objectId}的'亲密度'已饱和，日常互动收益将极低。】`);
-            if (relation.饱和度.支配度 > 80)
-              directives.push(`【导演提示：${subjectId}对${objectId}的'支配度'已饱和。】`);
-            if (relation.饱和度.信赖度 > 80)
-              directives.push(`【导演提示：${subjectId}对${objectId}的'信赖度'已饱和。】`);
+              if (relation.饱和度.亲密度 > 80) directives.push(`【导演提示：${subjectId}对${objectId}的'亲密度'已饱和，日常互动收益将极低。】`);
+              if (relation.饱和度.支配度 > 80) directives.push(`【导演提示：${subjectId}对${objectId}的'支配度'已饱和。】`);
+              if (relation.饱和度.信赖度 > 80) directives.push(`【导演提示：${subjectId}对${objectId}的'信赖度'已饱和。】`);
           }
           if (relation.关系瓶颈) {
-            if (relation.关系瓶颈.亲密度)
-              directives.push(
-                `【导演提示：${subjectId}对${objectId}的'亲密度'已遭遇瓶颈，需要“突破事件”才能进入下一阶段。】`,
-              );
-            if (relation.关系瓶颈.支配度)
-              directives.push(`【导演提示：${subjectId}对${objectId}的'支配度'已遭遇瓶颈。】`);
-            if (relation.关系瓶颈.信赖度)
-              directives.push(`【导演提示：${subjectId}对${objectId}的'信赖度'已遭遇瓶颈。】`);
+              if (relation.关系瓶颈.亲密度) directives.push(`【导演提示：${subjectId}对${objectId}的'亲密度'已遭遇瓶颈，需要“突破事件”才能进入下一阶段。】`);
+              if (relation.关系瓶颈.支配度) directives.push(`【导演提示：${subjectId}对${objectId}的'支配度'已遭遇瓶颈。】`);
+              if (relation.关系瓶颈.信赖度) directives.push(`【导演提示：${subjectId}对${objectId}的'信赖度'已遭遇瓶颈。】`);
           }
 
           relationshipContext[subjectId][objectId] = {
@@ -322,7 +294,7 @@ class ContextService {
               信赖度: relation.阶段信赖度,
             },
             最近互动: relation.最近互动,
-            ...(directives.length > 0 && { 导演提示: directives.join(' ') }),
+            ...(directives.length > 0 && { 导演提示: directives.join(' ') })
           };
         }
       }

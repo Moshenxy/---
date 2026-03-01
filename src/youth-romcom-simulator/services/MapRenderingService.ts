@@ -24,10 +24,10 @@ export class MapRenderingService {
   private getKmValue(value: [number, Unit]): number {
     const [num, unit] = value;
     const unitToKm: { [key in Unit]: number } = {
-      km: 1,
-      里: 0.5,
-      光年: 9.461e12,
-      天文单位: 149597870.7,
+      'km': 1,
+      '里': 0.5,
+      '光年': 9.461e12,
+      '天文单位': 149597870.7,
       'km²': 1,
       '里²': 0.25,
       '光年²': 8.95e25,

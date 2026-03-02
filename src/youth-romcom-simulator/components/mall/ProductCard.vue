@@ -9,9 +9,7 @@
       <div class="product-footer">
         <p class="product-price">¥ {{ product.价格 }}</p>
         <p class="product-stock">库存: {{ product.库存 }}</p>
-        <button @click="$emit('addToCart', product)" :disabled="product.库存 === 0">
-          +
-        </button>
+        <button @click="$emit('addToCart', product)" :disabled="product.库存 === 0">+</button>
       </div>
     </div>
   </div>

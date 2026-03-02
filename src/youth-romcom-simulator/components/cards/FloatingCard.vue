@@ -72,7 +72,7 @@ const toggleZoom = () => {
   width: auto;
   height: auto;
   transform: translate(-50%, -50%);
-  
+
   .the-card {
     transform: scale(1.1); /* Slightly larger for better view */
   }

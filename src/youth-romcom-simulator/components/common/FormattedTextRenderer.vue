@@ -5,12 +5,12 @@
         :class="segment.class"
         @click="
           segment.npc
-           ? showNpcInfo(segment.npc)
-           : segment.locationId
-           ? showLocationInfo(segment.locationId)
-           : segment.item
-           ? showDatabaseItemInfo(segment.item)
-           : null
+            ? showNpcInfo(segment.npc)
+            : segment.locationId
+              ? showLocationInfo(segment.locationId)
+              : segment.item
+                ? showDatabaseItemInfo(segment.item)
+                : null
         "
         >{{ segment.text }}</span
       >
@@ -58,7 +58,7 @@ const locationNamesRegex = computed(() => {
   return new RegExp(`(${escapedNames.join('|')})`, 'g');
 });
 
-const activeWorld = computed(() => store.activeView === 'mainWorld' ? mainWorld.value : avatarWorld.value);
+const activeWorld = computed(() => (store.activeView === 'mainWorld' ? mainWorld.value : avatarWorld.value));
 
 const databaseItemNamesRegex = computed(() => {
   const database = activeWorld.value?.数据库;
@@ -119,9 +119,11 @@ function parseText(text: string): TextSegment[] {
     }
 
     const innerSegments = parseEntities(innerText);
-    
+
     innerSegments.forEach(segment => {
-      const combinedClass = Array.isArray(segment.class) ? [outerClass, ...segment.class] : [outerClass, segment.class].filter(Boolean);
+      const combinedClass = Array.isArray(segment.class)
+        ? [outerClass, ...segment.class]
+        : [outerClass, segment.class].filter(Boolean);
       segments.push({ ...segment, class: combinedClass });
     });
 
@@ -137,7 +139,7 @@ function parseText(text: string): TextSegment[] {
 
 function parseEntities(text: string): TextSegment[] {
   const segments: TextSegment[] = [];
-  
+
   const entityRegexParts = [];
   if (npcNamesRegex.value) entityRegexParts.push(npcNamesRegex.value.source);
   if (locationNamesRegex.value) entityRegexParts.push(locationNamesRegex.value.source);
@@ -148,7 +150,7 @@ function parseEntities(text: string): TextSegment[] {
   }
 
   const entityRegex = new RegExp(entityRegexParts.join('|'), 'g');
-  
+
   let lastIndex = 0;
   let match;
 
@@ -267,34 +269,58 @@ function getNpcRelationshipClass(npc: Character): string {
     color: $color-gold-liu;
     font-weight: bold;
   }
-  
+
   :deep(.npc-name) {
     font-family: $font-family-title;
     cursor: pointer;
     text-decoration: underline;
     text-decoration-color: rgba(255, 255, 255, 0.5);
     transition: all 0.2s ease;
-    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+    text-shadow:
+      -1px -1px 0 #000,
+      1px -1px 0 #000,
+      -1px 1px 0 #000,
+      1px 1px 0 #000;
 
     &:hover {
       background-color: rgba(255, 255, 255, 0.15);
       text-decoration-color: #fff;
     }
 
-    &.npc-hostile-intense { color: #ff4d4d; }
-    &.npc-hostile { color: #ff8c66; }
-    &.npc-unfriendly { color: #ffd700; }
-    &.npc-neutral { color: #ffffff; }
-    &.npc-friendly { color: #90ee90; }
-    &.npc-devoted { color: #87cefa; }
-    &.npc-fanatical { color: #ff69b4; }
-    &.npc-unknown { color: #9e9e9e; }
+    &.npc-hostile-intense {
+      color: #ff4d4d;
+    }
+    &.npc-hostile {
+      color: #ff8c66;
+    }
+    &.npc-unfriendly {
+      color: #ffd700;
+    }
+    &.npc-neutral {
+      color: #ffffff;
+    }
+    &.npc-friendly {
+      color: #90ee90;
+    }
+    &.npc-devoted {
+      color: #87cefa;
+    }
+    &.npc-fanatical {
+      color: #ff69b4;
+    }
+    &.npc-unknown {
+      color: #9e9e9e;
+    }
   }
 
   :deep(.location-name) {
     color: #80b9ea; /* A light cyan color */
     cursor: pointer;
-    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+    text-shadow:
+      -1px -1px 0 #000,
+      1px -1px 0 #000,
+      -1px 1px 0 #000,
+      1px 1px 0 #000;
     text-decoration: underline;
     text-decoration-color: rgba(128, 222, 234, 0.5);
 
@@ -307,7 +333,11 @@ function getNpcRelationshipClass(npc: Character): string {
   :deep(.database-item-name) {
     color: #f8cbad; /* A light orange color for items */
     cursor: pointer;
-    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+    text-shadow:
+      -1px -1px 0 #000,
+      1px -1px 0 #000,
+      -1px 1px 0 #000,
+      1px 1px 0 #000;
     text-decoration: underline;
     text-decoration-color: rgba(248, 203, 173, 0.5);
 

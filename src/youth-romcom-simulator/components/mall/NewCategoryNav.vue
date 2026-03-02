@@ -1,9 +1,9 @@
 <template>
   <div class="category-nav-container">
     <div class="category-nav">
-      <button 
-        v-for="category in categories" 
-        :key="category" 
+      <button
+        v-for="category in categories"
+        :key="category"
         @click="$emit('selectCategory', category)"
         :class="{ active: selectedCategory === category }"
       >
@@ -22,7 +22,7 @@ defineProps({
   selectedCategory: {
     type: String,
     required: true,
-  }
+  },
 });
 defineEmits(['selectCategory']);
 </script>
@@ -32,7 +32,7 @@ defineEmits(['selectCategory']);
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  
+
   &::-webkit-scrollbar {
     height: 6px;
   }
@@ -57,7 +57,7 @@ defineEmits(['selectCategory']);
   flex-wrap: nowrap;
   gap: 0.75rem; /* 12px */
   padding: 0.5rem 0;
-  
+
   button {
     white-space: nowrap;
     padding: 0.5rem 1rem; /* 8px 16px */
@@ -72,7 +72,7 @@ defineEmits(['selectCategory']);
     &:hover {
       background-color: #f3f4f6; /* cool-gray-100 */
     }
-    
+
     &.active {
       background-color: #4f46e5; /* indigo-600 */
       color: white;

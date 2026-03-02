@@ -1,7 +1,5 @@
 <template>
-  <button class="follow-btn" :class="{ followed: isFollowedState }" @click.stop="toggle">
-    ★
-  </button>
+  <button class="follow-btn" :class="{ followed: isFollowedState }" @click.stop="toggle">★</button>
 </template>
 
 <script setup lang="ts">
@@ -33,7 +31,9 @@ function toggle() {
   color: $color-grey-stone;
   cursor: pointer;
   font-size: 1.2rem;
-  transition: color 0.2s ease, transform 0.2s ease;
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
 
   &:hover {
     color: $color-gold-liu;

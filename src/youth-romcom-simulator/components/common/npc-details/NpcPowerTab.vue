@@ -37,7 +37,9 @@
             <div v-if="npc.人格内核.对话风格.常用语?.length">
               <strong>常用语:</strong>
               <div class="tags-container">
-                <span v-for="phrase in npc.人格内核.对话风格.常用语" :key="phrase" class="tag phrase-tag">{{ phrase }}</span>
+                <span v-for="phrase in npc.人格内核.对话风格.常用语" :key="phrase" class="tag phrase-tag">{{
+                  phrase
+                }}</span>
               </div>
             </div>
           </div>
@@ -48,7 +50,12 @@
     <div class="detail-item full-width">
       <strong class="detail-key">技能</strong>
       <div v-if="npc.技能 && Object.keys(npc.技能).length > 0" class="skills-list">
-        <div v-for="(skill, skillName) in npc.技能" :key="skillName" class="skill-item" @click="showSkillDetail(skill, skillName as string)">
+        <div
+          v-for="(skill, skillName) in npc.技能"
+          :key="skillName"
+          class="skill-item"
+          @click="showSkillDetail(skill, skillName as string)"
+        >
           <div class="skill-header">
             <h3>{{ skillName }}</h3>
             <div class="skill-level">等级 {{ skill.等级 }}</div>
@@ -76,10 +83,13 @@ const toggleProfile = (index: number) => {
 };
 
 // Reset expanded state when npc changes
-watch(() => props.npc, () => {
-  expandedProfiles.value = {};
-}, { immediate: true });
-
+watch(
+  () => props.npc,
+  () => {
+    expandedProfiles.value = {};
+  },
+  { immediate: true },
+);
 
 const showSkillDetail = (skill: Skill, skillName: string) => {
   // Assuming a simple modal for now, this can be expanded
@@ -133,7 +143,8 @@ const showSkillDetail = (skill: Skill, skillName: string) => {
       font-weight: bold;
       color: $color-white-moon;
     }
-    .profile-behavior, .profile-motivation {
+    .profile-behavior,
+    .profile-motivation {
       font-size: $font-size-small;
       color: $color-grey-stone;
       span {
@@ -263,7 +274,8 @@ const showSkillDetail = (skill: Skill, skillName: string) => {
       font-weight: bold;
       color: $color-white-moon;
     }
-    .profile-behavior, .profile-motivation {
+    .profile-behavior,
+    .profile-motivation {
       font-size: $font-size-small;
       color: $color-grey-stone;
       span {

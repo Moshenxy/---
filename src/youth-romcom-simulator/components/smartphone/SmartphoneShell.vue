@@ -13,10 +13,10 @@
         <AppViewContainer v-else :title="getAppName(activeAppId)" @back="goHome">
           <template #header-actions>
             <button v-if="activeAppId === 'diary'" class="header-action-btn" @click="isDiaryNavOpen = !isDiaryNavOpen">
-               <i class="fas fa-bars"></i>
+              <i class="fas fa-bars"></i>
             </button>
           </template>
-          <component :is="activeApp" :is-diary-nav-open="isDiaryNavOpen" @close-diary-nav="isDiaryNavOpen = false"/>
+          <component :is="activeApp" :is-diary-nav-open="isDiaryNavOpen" @close-diary-nav="isDiaryNavOpen = false" />
         </AppViewContainer>
       </transition>
     </div>
@@ -88,7 +88,7 @@ export default defineComponent({
         activeApp.value = apps[appId];
         activeAppId.value = appId;
         if (appId !== 'diary') {
-           isDiaryNavOpen.value = false;
+          isDiaryNavOpen.value = false;
         }
       } else {
         console.warn(`App not found: ${appId}`);
@@ -273,7 +273,9 @@ export default defineComponent({
   justify-content: center;
   align-items: center;
   opacity: 0.7;
-  transition: opacity 0.2s ease, background-color 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    background-color 0.2s ease;
 
   &:hover {
     opacity: 1;
@@ -296,7 +298,9 @@ export default defineComponent({
   }
   &::before {
     top: 16px;
-    box-shadow: 0 5px 0 white, 0 10px 0 white;
+    box-shadow:
+      0 5px 0 white,
+      0 10px 0 white;
   }
 }
 
@@ -310,7 +314,7 @@ export default defineComponent({
 .back-btn {
   width: 24px;
   height: 24px;
-  
+
   &::before {
     content: '';
     display: block;

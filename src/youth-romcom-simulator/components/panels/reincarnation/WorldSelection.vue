@@ -24,7 +24,8 @@
             v-for="epoch in detailedWorld.epochs"
             :key="epoch.id"
             :class="{ active: activeEpochId === epoch.id }"
-            @click="activeEpochId = epoch.id">
+            @click="activeEpochId = epoch.id"
+          >
             {{ epoch.name }}
           </button>
         </div>
@@ -126,18 +127,19 @@ const parsedWorlds = computed<ParsedWorld[]>(() => {
     .filter(([worldId]) => worldId !== '$meta' && !worldId.includes('template'))
     .map(([worldId, worldData]: [string, any]) => {
       const historicalEpochs = get(worldData, '定义.历史纪元', {});
-      const epochs: Epoch[] = Object.entries(historicalEpochs)
-        .map(([epochId, epochData]: [string, any]) => {
-          const coreLaws = get(epochData, '规则.核心法则', {});
-          return {
-            id: epochId,
-            name: epochData.纪元名称 || '未知纪元',
-            energyLevel: get(epochData, '规则.世界能级', 1),
-            timeFlow: get(epochData, '规则.时间流速', 1),
-            description: epochData.纪元概述 || '一片混沌，无法窥其貌。',
-            coreLaws: Object.values(coreLaws).map((law: any) => law.名称).filter(Boolean) as string[],
-          };
-        });
+      const epochs: Epoch[] = Object.entries(historicalEpochs).map(([epochId, epochData]: [string, any]) => {
+        const coreLaws = get(epochData, '规则.核心法则', {});
+        return {
+          id: epochId,
+          name: epochData.纪元名称 || '未知纪元',
+          energyLevel: get(epochData, '规则.世界能级', 1),
+          timeFlow: get(epochData, '规则.时间流速', 1),
+          description: epochData.纪元概述 || '一片混沌，无法窥其貌。',
+          coreLaws: Object.values(coreLaws)
+            .map((law: any) => law.名称)
+            .filter(Boolean) as string[],
+        };
+      });
 
       return {
         id: ++idCounter,
@@ -223,7 +225,7 @@ const activeEpoch = computed(() => {
   return detailedWorld.value.epochs.find(e => e.id === activeEpochId.value);
 });
 
-watch(detailedWorld, (newWorld) => {
+watch(detailedWorld, newWorld => {
   if (newWorld) {
     activeEpochId.value = newWorld.currentEpochId;
   } else {
@@ -306,11 +308,15 @@ const adjustSpeed = (delta: number) => {
   }
 };
 
-watch(speedLevel, (newLevel) => {
+watch(
+  speedLevel,
+  newLevel => {
     if (starMapService) {
       starMapService.setSpeedMultiplier(speedLevels[newLevel]);
     }
-}, { immediate: true });
+  },
+  { immediate: true },
+);
 </script>
 
 <style lang="scss" scoped>

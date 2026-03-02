@@ -9,12 +9,7 @@
         <ObjectRenderer :data="value" :is-nested="true" :context="context" />
       </span>
       <span v-else-if="isProgress(itemKey, value)">
-        <ProgressBar
-          :label="String(itemKey)"
-          :value="getProgressValue(itemKey, value).current"
-          :max="getProgressValue(itemKey, value).max"
-          color="#d4af37"
-        />
+        <ProgressBar :label="String(itemKey)" :value="getProgressValue(itemKey, value).current" :max="getProgressValue(itemKey, value).max" color="#d4af37" />
       </span>
       <span v-else-if="isCharacterId(itemKey, value)">
         <a href="#" @click.prevent="showNpcDetail(value)">{{ getNpcName(value) }}</a>
@@ -45,22 +40,15 @@ const props = defineProps<{
 const isObject = (val: any) => typeof val === 'object' && val !== null && !Array.isArray(val);
 
 const isProgress = (key: string | number, val: any) => {
-  return (
-    (String(key).toLowerCase().includes('经验') || String(key).toLowerCase().includes('progress')) &&
-    typeof val === 'number'
-  );
+  return (String(key).toLowerCase().includes('经验') || String(key).toLowerCase().includes('progress')) && typeof val === 'number';
 };
 
 const getProgressValue = (key: string | number, val: any) => {
-  return { current: val, max: 100 }; // Placeholder max value
+    return { current: val, max: 100 }; // Placeholder max value
 };
 
 const isCharacterId = (key: string | number, val: any) => {
-  return (
-    (String(key).toLowerCase().includes('id') || String(key).toLowerCase().includes('角色')) &&
-    typeof val === 'string' &&
-    store.worldState?.角色列表?.[val]
-  );
+    return (String(key).toLowerCase().includes('id') || String(key).toLowerCase().includes('角色')) && typeof val === 'string' && store.worldState?.角色列表?.[val];
 };
 
 const getNpcName = (id: string) => {
@@ -73,6 +61,7 @@ const showNpcDetail = (npcId: string) => {
     detailModalService.show(npc.名称, NpcDetailDisplay, { npc: npc, npcId: npcId });
   }
 };
+
 </script>
 
 <style lang="scss" scoped>
@@ -84,7 +73,7 @@ li {
   gap: $spacing-md;
   padding-bottom: $spacing-md;
   border-bottom: 1px solid rgba($color-gold-liu, 0.1);
-
+  
   &:last-child {
     border-bottom: none;
   }
@@ -135,4 +124,5 @@ a {
     text-decoration: underline;
   }
 }
+
 </style>

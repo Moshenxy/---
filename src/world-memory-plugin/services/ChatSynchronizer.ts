@@ -48,7 +48,6 @@ export class ChatSynchronizer {
       } else {
         log('[ChatSynchronizer] No orphaned memories found.');
       }
-
     } catch (error) {
       console.error('[ChatSynchronizer] Error during chat synchronization:', error);
     } finally {

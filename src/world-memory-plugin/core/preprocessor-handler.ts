@@ -26,22 +26,25 @@ export class PreprocessorHandler {
 
     try {
       log('开始上下文预处理...');
-      
+
       const latestMessage = getChatMessages(-1)?.[0];
       if (!latestMessage || latestMessage.role !== 'user' || typeof latestMessage.message !== 'string') {
         this.isBusy = false;
         return;
       }
       const originalUserInput = latestMessage.message;
-      
-      const userPromptToModify = generate_data.prompt.slice().reverse().find(p => p.role === 'user');
+
+      const userPromptToModify = generate_data.prompt
+        .slice()
+        .reverse()
+        .find(p => p.role === 'user');
       if (!userPromptToModify || typeof userPromptToModify.content !== 'string') {
         this.isBusy = false;
         return;
       }
 
       const recentMemories = await TavernService.getRecentMemories(10);
-      
+
       if (!pinia) throw new Error('Pinia store not initialized.');
       const settingsStore = useSettingsStore(pinia);
       const systemCots = `
@@ -88,7 +91,6 @@ ${JSON.stringify(analystResponse, null, 2)}`;
         systemPrompt.content += `\n\n${systemCots}\n\n${narratorCot}`;
         log('已成功向系统提示词注入基础COT和叙事COT。');
       }
-      
     } catch (error) {
       console.error('[PreprocessorHandler] 处理注入逻辑时出错:', error);
       toastr.error('记忆插件上下文注入失败。');
@@ -100,7 +102,13 @@ ${JSON.stringify(analystResponse, null, 2)}`;
   public static startListening() {
     this.stopListening();
     if (typeof eventOn !== 'function') return;
-    this.stopListener = eventOn('generate_after_data', this.handlePreprocess.bind(this) as (generate_data: { prompt: SillyTavern.SendingMessage[]; }, dry_run: boolean) => void).stop;
+    this.stopListener = eventOn(
+      'generate_after_data',
+      this.handlePreprocess.bind(this) as (
+        generate_data: { prompt: SillyTavern.SendingMessage[] },
+        dry_run: boolean,
+      ) => void,
+    ).stop;
     log('已启动“分析-注入”预处理器。');
   }
 

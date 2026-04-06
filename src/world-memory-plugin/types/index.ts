@@ -59,36 +59,54 @@ export const EpisodicMemoryUnitSchema = z.object({
     auditory: z.string().describe('听觉相关的闪光灯记忆碎片'),
     somatic: z.string().describe('体感相关的闪光灯记忆碎片'),
   }),
-  full_context: z.object({
+  full_context: z
+    .object({
       description: z.string().optional(),
-      stimulus: z.object({
-        source: z.string(),
-        action: z.string(),
-        object: z.string(),
-        keywords: z.array(z.string()),
-      }).partial().optional(),
-      response: z.object({
-        action: z.string(),
-        dialogue: z.string(),
-        keywords: z.array(z.string()),
-      }).partial().optional(),
-      psyche: z.object({
-        emotion_spectrum: z.record(z.string(), z.number()).describe('情绪光谱'),
-        cognitive_attribution: z.string().describe('认知归因'),
-        self_reflection: z.string().optional().describe('关于该事件的自我反思'),
-      }).partial().optional(),
-      visual_context_snapshot: z.object({
-        my_apparel: z.string(),
-        user_apparel: z.string(),
-        environment_details: z.string(),
-      }).partial().optional(),
-    }).partial().optional(),
-  links: z.object({
-    by_person: z.array(z.string()),
-    by_object: z.array(z.string()),
-    by_emotion: z.array(z.string()),
-    causal_chain: z.string().nullable(),
-  }).partial().optional(),
+      stimulus: z
+        .object({
+          source: z.string(),
+          action: z.string(),
+          object: z.string(),
+          keywords: z.array(z.string()),
+        })
+        .partial()
+        .optional(),
+      response: z
+        .object({
+          action: z.string(),
+          dialogue: z.string(),
+          keywords: z.array(z.string()),
+        })
+        .partial()
+        .optional(),
+      psyche: z
+        .object({
+          emotion_spectrum: z.record(z.string(), z.number()).describe('情绪光谱'),
+          cognitive_attribution: z.string().describe('认知归因'),
+          self_reflection: z.string().optional().describe('关于该事件的自我反思'),
+        })
+        .partial()
+        .optional(),
+      visual_context_snapshot: z
+        .object({
+          my_apparel: z.string(),
+          user_apparel: z.string(),
+          environment_details: z.string(),
+        })
+        .partial()
+        .optional(),
+    })
+    .partial()
+    .optional(),
+  links: z
+    .object({
+      by_person: z.array(z.string()),
+      by_object: z.array(z.string()),
+      by_emotion: z.array(z.string()),
+      causal_chain: z.string().nullable(),
+    })
+    .partial()
+    .optional(),
 });
 
 // TypeScript type inferred from the Zod schema
@@ -129,11 +147,15 @@ export const NatureTraitSchema = z.object({
   id: z.string(),
   trait: z.string(),
   description: z.string(),
-  evolution: z.array(z.object({
-    timestamp: z.string(),
-    reason: z.string(),
-    new_description: z.string(),
-  })).optional(),
+  evolution: z
+    .array(
+      z.object({
+        timestamp: z.string(),
+        reason: z.string(),
+        new_description: z.string(),
+      }),
+    )
+    .optional(),
   supporting_memories: z.array(z.string()),
 });
 

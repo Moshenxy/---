@@ -19,7 +19,7 @@ export class MessageHandler {
   private static async handleNewMessage(messageId: number) {
     const messages = getChatMessages(messageId);
     if (!messages || messages.length === 0) return;
-    
+
     const message = messages[0];
     // 我们只关心由AI生成的消息 (assistant role)
     if (message.role !== 'assistant') {
@@ -38,7 +38,7 @@ export class MessageHandler {
 
     try {
       const memoryJson = JSON.parse(jsonString);
-      
+
       // Inject the message ID before validation
       memoryJson.created_at_message_id = messageId;
 

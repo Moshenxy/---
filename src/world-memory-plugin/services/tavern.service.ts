@@ -1,11 +1,4 @@
-import type {
-  EpisodicMemoryUnit,
-  SynthesisEntry,
-  Nature,
-  NatureTrait,
-  Cognition,
-  CognitiveStatement
-} from '../types';
+import type { EpisodicMemoryUnit, SynthesisEntry, Nature, NatureTrait, Cognition, CognitiveStatement } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 import { log } from '../utils/logger';
 import { NatureSchema, CognitionSchema, EpisodicMemoryUnitSchema } from '../types';
@@ -255,7 +248,7 @@ export class TavernService {
         // 构造一个对象，让 replaceVariables 替换其中的宏
         const timeObj = { time: '{{date}} {{time}}' };
         replaceVariables(timeObj, { type: 'script' });
-        
+
         // 如果替换后的值与原宏不同，说明宏生效了
         if (timeObj.time && timeObj.time !== '{{date}} {{time}}') {
           gameTime = timeObj.time;
@@ -404,7 +397,7 @@ export class TavernService {
           }
         } else if (nodeType === 'MEMORY') {
           const memory = EpisodicMemoryUnitSchema.parse(JSON.parse(entryToUpdate.content || '{}'));
-          
+
           if (payload.summary_text !== undefined) {
             memory.summary.text = payload.summary_text;
           }
@@ -420,7 +413,7 @@ export class TavernService {
           if (payload.somatic !== undefined) {
             memory.flashbulb_fragments.somatic = payload.somatic;
           }
-          
+
           entryToUpdate.content = JSON.stringify(memory, null, 2);
         }
       } catch (error) {

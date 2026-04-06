@@ -189,7 +189,12 @@ function renderGraph(graphData: { nodes: D3Node[]; links: any[] }) {
     // 增加节点间的排斥力，让它们在球面上散开
     .force('charge', forceManyBody().strength(-100))
     // 增加碰撞力，防止节点重叠
-    .force('collide', forceCollide().radius((d: any) => radius(d as D3Node) + 5).iterations(2))
+    .force(
+      'collide',
+      forceCollide()
+        .radius((d: any) => radius(d as D3Node) + 5)
+        .iterations(2),
+    )
     .force(
       'r',
       // 使用 d3-force-3d 的 forceRadial
@@ -199,8 +204,7 @@ function renderGraph(graphData: { nodes: D3Node[]; links: any[] }) {
         if (node.type === 'COGNITION') return 250; // 认知在中层
         if (node.type === 'MEMORY') return 450; // 记忆在外层
         return 0; // 核心在中心
-      })
-      .strength(1.0) // 增强向心力，使其更严格地保持在球面上
+      }).strength(1.0), // 增强向心力，使其更严格地保持在球面上
     );
 
   const coreNode = nodes.find(n => n.id === 'NATURE_CORE');

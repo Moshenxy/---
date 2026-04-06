@@ -16,7 +16,7 @@ export interface GraphLink {
 }
 
 export class GraphDataService {
-  public static async getGraphData(): Promise<{ nodes: GraphNode[], links: GraphLink[] }> {
+  public static async getGraphData(): Promise<{ nodes: GraphNode[]; links: GraphLink[] }> {
     const nodes: GraphNode[] = [];
     const links: GraphLink[] = [];
     const memoryNodeMap = new Map<string, GraphNode>();
@@ -46,7 +46,12 @@ export class GraphDataService {
     const cognitionStatementNodes: GraphNode[] = [];
 
     // 中心“本性”核心节点
-    const natureCoreNode: GraphNode = { id: 'NATURE_CORE', type: 'NATURE', label: '本性核心', data: { id: 'NATURE_CORE', trait: '核心', description: '所有本性特质的汇集点' }};
+    const natureCoreNode: GraphNode = {
+      id: 'NATURE_CORE',
+      type: 'NATURE',
+      label: '本性核心',
+      data: { id: 'NATURE_CORE', trait: '核心', description: '所有本性特质的汇集点' },
+    };
     nodes.push(natureCoreNode);
 
     if (natureData) {
@@ -71,7 +76,7 @@ export class GraphDataService {
           return false;
         }
       });
-      
+
       const statementNode: GraphNode = {
         id: `cognition-${statement.id}`,
         type: 'COGNITION',
@@ -85,13 +90,13 @@ export class GraphDataService {
     // 4. 创建链接
     // 4.1 本性 -> 记忆 (双向)
     for (const traitNode of natureTraitNodes) {
-        const trait = traitNode.data as NatureTrait;
-        for (const memId of trait.supporting_memories) {
-            if(memoryNodeMap.has(memId)) {
-                links.push({ source: traitNode.id, target: memId });
-                links.push({ source: memId, target: traitNode.id }); // Reverse link
-            }
+      const trait = traitNode.data as NatureTrait;
+      for (const memId of trait.supporting_memories) {
+        if (memoryNodeMap.has(memId)) {
+          links.push({ source: traitNode.id, target: memId });
+          links.push({ source: memId, target: traitNode.id }); // Reverse link
         }
+      }
     }
 
     // 4.2 认知 -> 记忆 (双向)
@@ -104,7 +109,7 @@ export class GraphDataService {
         }
       }
     }
-    
+
     return { nodes, links };
   }
 }

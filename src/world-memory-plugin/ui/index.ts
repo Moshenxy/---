@@ -24,6 +24,7 @@ const hostWindow = (() => {
 
 const hostDocument = hostWindow.document;
 
+
 /**
  * 卸载并清理Vue应用实例。
  */
@@ -73,7 +74,7 @@ export function initVueApp(): App | null {
     const app = createApp(SettingsPanel);
     pinia = createPinia();
     app.use(pinia);
-
+    
     // 传送样式到主窗口
     styleDestroyer = teleportStyle(hostDocument.head).destroy;
 

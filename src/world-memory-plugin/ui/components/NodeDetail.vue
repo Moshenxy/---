@@ -4,17 +4,17 @@
     <div v-if="props.node.type === 'NATURE'">
       <div class="detail-section">
         <div class="detail-header">
-          <h5>描述</h5>
+          <h5>核心陈述</h5>
           <button
             v-if="!editing.active && props.node.id !== 'NATURE_CORE'"
-            @click="startEdit('description', props.node.data.description)"
+            @click="startEdit('trait', props.node.data.trait)"
             class="edit-btn"
           >
             ✎
           </button>
         </div>
-        <p v-if="!editing.active || editing.field !== 'description'">{{ props.node.data.description }}</p>
-        <div v-if="editing.active && editing.field === 'description'" class="edit-area">
+        <p v-if="!editing.active || editing.field !== 'trait'">{{ props.node.data.trait }}</p>
+        <div v-if="editing.active && editing.field === 'trait'" class="edit-area">
           <textarea v-model="editing.text" class="wm-textarea"></textarea>
           <div class="edit-controls">
             <button class="wm-save-btn small" @click="saveEdit">保存</button>
@@ -22,13 +22,49 @@
           </div>
         </div>
       </div>
+
+      <div class="detail-section" v-if="props.node.id !== 'NATURE_CORE'">
+        <div class="detail-header">
+          <h5>详细阐述 / 内心独白</h5>
+          <button v-if="!editing.active" @click="startEdit('elaboration', props.node.data.elaboration || props.node.data.description || '')" class="edit-btn">
+            ✎
+          </button>
+        </div>
+        <p v-if="!editing.active || editing.field !== 'elaboration'">{{ props.node.data.elaboration || props.node.data.description || '暂无详细阐述' }}</p>
+        <div v-if="editing.active && editing.field === 'elaboration'" class="edit-area">
+          <textarea v-model="editing.text" class="wm-textarea"></textarea>
+          <div class="edit-controls">
+            <button class="wm-save-btn small" @click="saveEdit">保存</button>
+            <button class="wm-btn small" @click="cancelEdit">取消</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-section" v-if="props.node.id !== 'NATURE_CORE'">
+        <div class="detail-header">
+          <h5>行为影响 / 绝对准则</h5>
+          <button v-if="!editing.active" @click="startEdit('behavioral_impact', props.node.data.behavioral_impact || '')" class="edit-btn">
+            ✎
+          </button>
+        </div>
+        <p v-if="!editing.active || editing.field !== 'behavioral_impact'">{{ props.node.data.behavioral_impact || '暂无行为影响' }}</p>
+        <div v-if="editing.active && editing.field === 'behavioral_impact'" class="edit-area">
+          <textarea v-model="editing.text" class="wm-textarea"></textarea>
+          <div class="edit-controls">
+            <button class="wm-save-btn small" @click="saveEdit">保存</button>
+            <button class="wm-btn small" @click="cancelEdit">取消</button>
+          </div>
+        </div>
+      </div>
+
       <div v-if="props.node.data.evolution && props.node.data.evolution.length > 0" class="detail-section">
         <h5>演化历史</h5>
         <ul class="evolution-list">
           <li v-for="(evo, i) in props.node.data.evolution.slice().reverse()" :key="i">
             <p class="time">{{ evo.timestamp }}</p>
-            <p><strong>原因:</strong> {{ evo.reason }}</p>
-            <p><strong>新描述:</strong> {{ evo.new_description }}</p>
+            <p><strong>蜕变原因:</strong> {{ evo.reason }}</p>
+            <p v-if="evo.previous_trait"><strong>旧陈述:</strong> {{ evo.previous_trait }}</p>
+            <p v-if="evo.new_description"><strong>旧描述:</strong> {{ evo.new_description }}</p>
           </li>
         </ul>
       </div>
@@ -38,7 +74,7 @@
     <div v-else-if="props.node.type === 'COGNITION'">
       <div class="detail-section">
         <div class="detail-header">
-          <h5>认知内容</h5>
+          <h5>核心陈述</h5>
           <button v-if="!editing.active" @click="startEdit('statement', props.node.data.statement)" class="edit-btn">
             ✎
           </button>
@@ -52,6 +88,52 @@
           </div>
         </div>
         <p class="time">{{ props.node.data.timestamp }}</p>
+      </div>
+
+      <div class="detail-section">
+        <div class="detail-header">
+          <h5>详细阐述 / 内心独白</h5>
+          <button v-if="!editing.active" @click="startEdit('elaboration', props.node.data.elaboration || '')" class="edit-btn">
+            ✎
+          </button>
+        </div>
+        <p v-if="!editing.active || editing.field !== 'elaboration'">{{ props.node.data.elaboration || '暂无详细阐述' }}</p>
+        <div v-if="editing.active && editing.field === 'elaboration'" class="edit-area">
+          <textarea v-model="editing.text" class="wm-textarea"></textarea>
+          <div class="edit-controls">
+            <button class="wm-save-btn small" @click="saveEdit">保存</button>
+            <button class="wm-btn small" @click="cancelEdit">取消</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <div class="detail-header">
+          <h5>行为影响 / 表现指南</h5>
+          <button v-if="!editing.active" @click="startEdit('behavioral_impact', props.node.data.behavioral_impact || '')" class="edit-btn">
+            ✎
+          </button>
+        </div>
+        <p v-if="!editing.active || editing.field !== 'behavioral_impact'">{{ props.node.data.behavioral_impact || '暂无行为影响' }}</p>
+        <div v-if="editing.active && editing.field === 'behavioral_impact'" class="edit-area">
+          <textarea v-model="editing.text" class="wm-textarea"></textarea>
+          <div class="edit-controls">
+            <button class="wm-save-btn small" @click="saveEdit">保存</button>
+            <button class="wm-btn small" @click="cancelEdit">取消</button>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="props.node.data.evolution && props.node.data.evolution.length > 0" class="detail-section">
+        <h5>演化历史</h5>
+        <ul class="evolution-list">
+          <li v-for="(evo, i) in props.node.data.evolution.slice().reverse()" :key="i">
+            <p class="time">{{ evo.timestamp }}</p>
+            <p><strong>触发事件:</strong> {{ evo.trigger_event }}</p>
+            <p><strong>转变原因:</strong> {{ evo.reason }}</p>
+            <p><strong>旧陈述:</strong> {{ evo.previous_statement }}</p>
+          </li>
+        </ul>
       </div>
     </div>
 
@@ -84,16 +166,8 @@
         <ul class="flashbulb-list">
           <li>
             <strong>视觉:</strong>
-            <span v-if="!editing.active || editing.field !== 'visual'">{{
-              props.node.data.flashbulb_fragments.visual
-            }}</span>
-            <button
-              v-if="!editing.active"
-              @click="startEdit('visual', props.node.data.flashbulb_fragments.visual)"
-              class="edit-btn small-edit"
-            >
-              ✎
-            </button>
+            <span v-if="!editing.active || editing.field !== 'visual'">{{ props.node.data.flashbulb_fragments.visual }}</span>
+            <button v-if="!editing.active" @click="startEdit('visual', props.node.data.flashbulb_fragments.visual)" class="edit-btn small-edit">✎</button>
             <div v-if="editing.active && editing.field === 'visual'" class="edit-area inline">
               <input type="text" v-model="editing.text" class="wm-input" />
               <button class="wm-save-btn small" @click="saveEdit">保存</button>
@@ -102,16 +176,8 @@
           </li>
           <li>
             <strong>听觉:</strong>
-            <span v-if="!editing.active || editing.field !== 'auditory'">{{
-              props.node.data.flashbulb_fragments.auditory
-            }}</span>
-            <button
-              v-if="!editing.active"
-              @click="startEdit('auditory', props.node.data.flashbulb_fragments.auditory)"
-              class="edit-btn small-edit"
-            >
-              ✎
-            </button>
+            <span v-if="!editing.active || editing.field !== 'auditory'">{{ props.node.data.flashbulb_fragments.auditory }}</span>
+            <button v-if="!editing.active" @click="startEdit('auditory', props.node.data.flashbulb_fragments.auditory)" class="edit-btn small-edit">✎</button>
             <div v-if="editing.active && editing.field === 'auditory'" class="edit-area inline">
               <input type="text" v-model="editing.text" class="wm-input" />
               <button class="wm-save-btn small" @click="saveEdit">保存</button>
@@ -120,16 +186,8 @@
           </li>
           <li>
             <strong>体感:</strong>
-            <span v-if="!editing.active || editing.field !== 'somatic'">{{
-              props.node.data.flashbulb_fragments.somatic
-            }}</span>
-            <button
-              v-if="!editing.active"
-              @click="startEdit('somatic', props.node.data.flashbulb_fragments.somatic)"
-              class="edit-btn small-edit"
-            >
-              ✎
-            </button>
+            <span v-if="!editing.active || editing.field !== 'somatic'">{{ props.node.data.flashbulb_fragments.somatic }}</span>
+            <button v-if="!editing.active" @click="startEdit('somatic', props.node.data.flashbulb_fragments.somatic)" class="edit-btn small-edit">✎</button>
             <div v-if="editing.active && editing.field === 'somatic'" class="edit-area inline">
               <input type="text" v-model="editing.text" class="wm-input" />
               <button class="wm-save-btn small" @click="saveEdit">保存</button>
@@ -141,18 +199,10 @@
       <div class="detail-section">
         <div class="detail-header">
           <h5>关键词</h5>
-          <button
-            v-if="!editing.active"
-            @click="startEdit('keywords', props.node.data.summary.keywords.join(', '))"
-            class="edit-btn"
-          >
-            ✎
-          </button>
+          <button v-if="!editing.active" @click="startEdit('keywords', props.node.data.summary.keywords.join(', '))" class="edit-btn">✎</button>
         </div>
         <div v-if="!editing.active || editing.field !== 'keywords'" class="wm-keywords">
-          <span v-for="keyword in props.node.data.summary.keywords" :key="keyword" class="wm-keyword">{{
-            keyword
-          }}</span>
+          <span v-for="keyword in props.node.data.summary.keywords" :key="keyword" class="wm-keyword">{{ keyword }}</span>
         </div>
         <div v-if="editing.active && editing.field === 'keywords'" class="edit-area">
           <input type="text" v-model="editing.text" class="wm-input" placeholder="用逗号分隔关键词" />
@@ -217,12 +267,9 @@ async function saveEdit() {
   if (!props.node?.id) return;
 
   let payload: any = {};
-
+  
   if (editing.value.field === 'keywords') {
-    payload.keywords = editing.value.text
-      .split(',')
-      .map(k => k.trim())
-      .filter(k => k);
+    payload.keywords = editing.value.text.split(',').map(k => k.trim()).filter(k => k);
   } else {
     payload[editing.value.field] = editing.value.text;
   }
@@ -232,6 +279,12 @@ async function saveEdit() {
   // Optimistically update the view
   if (editing.value.field === 'statement') {
     props.node.data.statement = editing.value.text;
+  } else if (editing.value.field === 'elaboration') {
+    props.node.data.elaboration = editing.value.text;
+  } else if (editing.value.field === 'behavioral_impact') {
+    props.node.data.behavioral_impact = editing.value.text;
+  } else if (editing.value.field === 'trait' && props.node.type === 'NATURE') {
+    props.node.data.trait = editing.value.text;
   } else if (editing.value.field === 'description') {
     props.node.data.description = editing.value.text;
   } else if (editing.value.field === 'summary_text') {
@@ -244,13 +297,6 @@ async function saveEdit() {
 
   cancelEdit();
 }
-
-const getLatestDescription = (trait: NatureTrait): string => {
-  if (trait.evolution && trait.evolution.length > 0) {
-    return trait.evolution[trait.evolution.length - 1].new_description;
-  }
-  return trait.description;
-};
 
 const getSupportingMemories = (data: any): string[] => {
   if (data.supporting_memories) return data.supporting_memories;

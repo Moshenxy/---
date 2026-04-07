@@ -24,14 +24,67 @@ const ReflectionOutputSchema = z.object({
     .array(
       z.object({
         subject: z.string().describe('新认知的主题'),
-        content: z.string().describe('新认知的具体内容（第一人称）'),
+        content: z.string().describe('新认知的核心陈述（第一人称）'),
+        elaboration: z.string().describe('对该认知的详细阐述或内心独白'),
+        behavioral_impact: z.string().describe('该认知对角色行为和决策的具体影响'),
         keywords: z.array(z.string()).describe('与该认知相关的关键词'),
         supporting_memories: z.array(z.string()).describe('支撑该认知的记忆ID列表'),
       }),
     )
     .optional()
     .describe('通过反思形成的新认知列表'),
-  nature_update_suggestion: z.string().optional().describe('对“本性”条目的更新建议'),
+  cognitive_shifts: z
+    .array(
+      z.object({
+        target_cognition_id: z.string().describe('要修正的现有认知ID'),
+        trigger_event: z.string().describe('触发改变的事件或记忆简述'),
+        reason_for_change: z.string().describe('思想转变的原因'),
+        updated_statement: z.string().describe('修正后的核心陈述'),
+        updated_elaboration: z.string().describe('修正后的详细阐述'),
+        updated_behavioral_impact: z.string().describe('修正后的行为影响'),
+        new_supporting_memories: z.array(z.string()).describe('新增的支撑记忆ID列表'),
+      })
+    )
+    .optional()
+    .describe('现有认知的演化与修正'),
+  nature_shifts: z
+    .array(
+      z.object({
+        target_nature_id: z.string().describe('要蜕变的现有本性ID'),
+        new_trait: z.string().describe('蜕变后的核心陈述'),
+        new_elaboration: z.string().describe('蜕变后的详细阐述'),
+        new_behavioral_impact: z.string().describe('蜕变后的行为影响'),
+        reason: z.string().describe('本性蜕变的原因（结合记忆与认知）'),
+        supporting_memory_ids: z.array(z.string()).describe('支撑此次蜕变的近期重大记忆ID列表'),
+        supporting_cognition_ids: z.array(z.string()).describe('支撑此次蜕变的现有或新产生的认知ID列表'),
+      })
+    )
+    .optional()
+    .describe('核心本性的重大蜕变'),
+  promotion_candidates: z
+    .array(
+      z.discriminatedUnion('type', [
+        z.object({
+          type: z.literal('memory_to_cognition'),
+          source_memory_ids: z.array(z.string()),
+          target_cognition_content: z.string(),
+          subject: z.string().describe('新认知的主题'),
+          keywords: z.array(z.string()).describe('新认知的关键词'),
+        }),
+        z.object({
+          type: z.literal('cognition_to_nature'),
+          source_cognition_content: z.string(),
+          target_nature_content: z.string(),
+          trait_name: z.string().describe('新本性的简短名称'),
+          elaboration: z.string().describe('对该本性的详细阐述或内心独白'),
+          behavioral_impact: z.string().describe('该本性对角色行为和决策的绝对准则'),
+          supporting_memories: z.array(z.string()).describe('继承的支撑记忆ID'),
+        }),
+      ]),
+    )
+    .optional()
+    .describe('提议晋升的记忆或认知列表'),
+  nature_update_suggestion: z.string().optional().describe('对“本性”条目的更新建议（旧版，保留兼容）'),
 });
 
 // Zod Schema for the entire Analyst AI response
@@ -59,54 +112,36 @@ export const EpisodicMemoryUnitSchema = z.object({
     auditory: z.string().describe('听觉相关的闪光灯记忆碎片'),
     somatic: z.string().describe('体感相关的闪光灯记忆碎片'),
   }),
-  full_context: z
-    .object({
+  full_context: z.object({
       description: z.string().optional(),
-      stimulus: z
-        .object({
-          source: z.string(),
-          action: z.string(),
-          object: z.string(),
-          keywords: z.array(z.string()),
-        })
-        .partial()
-        .optional(),
-      response: z
-        .object({
-          action: z.string(),
-          dialogue: z.string(),
-          keywords: z.array(z.string()),
-        })
-        .partial()
-        .optional(),
-      psyche: z
-        .object({
-          emotion_spectrum: z.record(z.string(), z.number()).describe('情绪光谱'),
-          cognitive_attribution: z.string().describe('认知归因'),
-          self_reflection: z.string().optional().describe('关于该事件的自我反思'),
-        })
-        .partial()
-        .optional(),
-      visual_context_snapshot: z
-        .object({
-          my_apparel: z.string(),
-          user_apparel: z.string(),
-          environment_details: z.string(),
-        })
-        .partial()
-        .optional(),
-    })
-    .partial()
-    .optional(),
-  links: z
-    .object({
-      by_person: z.array(z.string()),
-      by_object: z.array(z.string()),
-      by_emotion: z.array(z.string()),
-      causal_chain: z.string().nullable(),
-    })
-    .partial()
-    .optional(),
+      stimulus: z.object({
+        source: z.string(),
+        action: z.string(),
+        object: z.string(),
+        keywords: z.array(z.string()),
+      }).partial().optional(),
+      response: z.object({
+        action: z.string(),
+        dialogue: z.string(),
+        keywords: z.array(z.string()),
+      }).partial().optional(),
+      psyche: z.object({
+        emotion_spectrum: z.record(z.string(), z.number()).describe('情绪光谱'),
+        cognitive_attribution: z.string().describe('认知归因'),
+        self_reflection: z.string().optional().describe('关于该事件的自我反思'),
+      }).partial().optional(),
+      visual_context_snapshot: z.object({
+        my_apparel: z.string(),
+        user_apparel: z.string(),
+        environment_details: z.string(),
+      }).partial().optional(),
+    }).partial().optional(),
+  links: z.object({
+    by_person: z.array(z.string()),
+    by_object: z.array(z.string()),
+    by_emotion: z.array(z.string()),
+    causal_chain: z.string().nullable(),
+  }).partial().optional(),
 });
 
 // TypeScript type inferred from the Zod schema
@@ -131,6 +166,8 @@ export const SynthesisEntrySchema = z.object({
   placeholder_id: z.string().optional(),
   memory_data: SynthesisEpisodicMemoryUnitSchema.optional(),
   content: z.string().optional(),
+  elaboration: z.string().optional(),
+  behavioral_impact: z.string().optional(),
   subject: z.string().optional(),
   keywords: z.array(z.string()).optional(),
   supporting_memories: z.array(z.string()).optional(),
@@ -146,16 +183,18 @@ export type SynthesisResponse = z.infer<typeof SynthesisResponseSchema>;
 export const NatureTraitSchema = z.object({
   id: z.string(),
   trait: z.string(),
-  description: z.string(),
-  evolution: z
-    .array(
-      z.object({
-        timestamp: z.string(),
-        reason: z.string(),
-        new_description: z.string(),
-      }),
-    )
-    .optional(),
+  description: z.string().optional(),
+  elaboration: z.string().optional().describe('详细阐述/内心独白'),
+  behavioral_impact: z.string().optional().describe('行为影响/绝对准则'),
+  created_at_message_id: z.number().optional().describe('该本性创建时的聊天消息ID (楼层)'),
+  evolution: z.array(z.object({
+    timestamp: z.string(),
+    reason: z.string(),
+    previous_trait: z.string().optional(),
+    previous_elaboration: z.string().optional(),
+    previous_behavioral_impact: z.string().optional(),
+    new_description: z.string().optional(),
+  })).optional(),
   supporting_memories: z.array(z.string()),
 });
 
@@ -165,7 +204,16 @@ export const NatureSchema = z.array(NatureTraitSchema);
 export const CognitiveStatementSchema = z.object({
   id: z.string().uuid().describe('认知陈述的唯一ID'),
   timestamp: z.string(),
+  created_at_message_id: z.number().optional().describe('该认知创建时的聊天消息ID (楼层)'),
   statement: z.string(),
+  elaboration: z.string().optional().describe('详细阐述/内心独白'),
+  behavioral_impact: z.string().optional().describe('行为影响/表现指南'),
+  evolution: z.array(z.object({
+    timestamp: z.string(),
+    trigger_event: z.string(),
+    previous_statement: z.string(),
+    reason: z.string(),
+  })).optional().describe('认知的演化历史'),
   supporting_memories: z.array(z.string()),
 });
 

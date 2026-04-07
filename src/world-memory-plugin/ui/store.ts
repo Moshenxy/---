@@ -19,11 +19,19 @@ export const useSettingsStore = defineStore('world-memory-settings', () => {
 
   const uiState = useStorage(STORAGE_KEY_UI, {
     mode: 'panel' as 'panel' | 'orb',
-    activeTab: 'main' as 'main' | 'nature' | 'cognition' | 'atlas' | 'api' | 'manage',
+    activeTab: 'main' as 'main' | 'nature' | 'cognition' | 'atlas' | 'api' | 'params' | 'manage',
     panelPos: { x: 100, y: 100, width: 340, height: 420 },
     orbPos: { x: 300, y: 300 },
   });
 
+  const advancedSettings = useStorage('world-memory-plugin-advanced-settings', {
+    natureDegradeDistance: 400,
+    cognitionDegradeDistance: 200,
+    memoryForgetDistance: 300,
+    contextChatLines: 5,
+    recentMemoriesCount: 10,
+  });
+  
   const latestMemory = ref<EpisodicMemoryUnit | null>(null);
   const modelList = ref<string[]>([]);
   const isFetchingModels = ref(false);
@@ -69,7 +77,7 @@ export const useSettingsStore = defineStore('world-memory-settings', () => {
     natureContent.value = entry?.content ?? null;
     isLoading.value = false;
   };
-
+  
   const fetchCognitions = async () => {
     isLoading.value = true;
     cognitionEntries.value = await TavernService.getCognitionEntries();
@@ -83,7 +91,7 @@ export const useSettingsStore = defineStore('world-memory-settings', () => {
       toastr.info('开始人格创生...');
       const context = TavernService.getCharacterContext();
       if (!context) throw new Error('无法获取角色上下文。');
-
+      
       const systemCots = `
 # 认知隔离协议
 ${cognitiveIsolationCot}
@@ -91,7 +99,7 @@ ${cognitiveIsolationCot}
 # 动态表达协议
 ${dynamicExpressionCot}
 `;
-
+      
       const results = await AiService.callSynthesisAI(apiSettings.value, context, systemCots);
       await TavernService.batchSaveFromSynthesis(results);
       await findAndSetNature();
@@ -168,16 +176,11 @@ ${dynamicExpressionCot}
     uiState.value.mode = newMode;
   };
 
-  const setActiveTab = (tab: 'main' | 'nature' | 'cognition' | 'atlas' | 'api' | 'manage') => {
+  const setActiveTab = (tab: 'main' | 'nature' | 'cognition' | 'atlas' | 'api' | 'params' | 'manage') => {
     uiState.value.activeTab = tab;
   };
 
-  const updateNodeContent = async (
-    nodeId: string,
-    nodeType: 'NATURE' | 'COGNITION' | 'MEMORY',
-    parentEntryName: string,
-    payload: { [key: string]: any },
-  ) => {
+  const updateNodeContent = async (nodeId: string, nodeType: 'NATURE' | 'COGNITION' | 'MEMORY', parentEntryName: string, payload: { [key: string]: any }) => {
     try {
       await TavernService.updateMemoryContent(nodeId, nodeType, parentEntryName, payload);
       toastr.success('记忆内容已更新！');
@@ -192,6 +195,7 @@ ${dynamicExpressionCot}
   return {
     apiSettings,
     uiState,
+    advancedSettings,
     latestMemory,
     modelList,
     isFetchingModels,

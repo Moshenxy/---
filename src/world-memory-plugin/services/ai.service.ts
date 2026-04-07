@@ -29,6 +29,8 @@ export class AiService {
     context: any,
     recentMemories: EpisodicMemoryUnit[],
     systemCots: string = '',
+    currentCognitions: any[] = [],
+    currentNature: any[] = [],
   ): Promise<AnalystResponse> {
     const { apiUrl, apiKey, model } = apiSettings;
 
@@ -47,6 +49,12 @@ export class AiService {
     }));
 
     const userMessage = `
+[现有本性]
+${JSON.stringify(currentNature, null, 2)}
+
+[现有认知]
+${JSON.stringify(currentCognitions, null, 2)}
+
 [最近的记忆]
 ${JSON.stringify(memorySummaries, null, 2)}
 

@@ -1,65 +1,70 @@
 <template>
   <div class="wm-root" :data-mode="uiState.mode" :class="{ 'is-phone': isPhone }">
     <!-- 悬浮面板 -->
-    <div v-show="uiState.mode === 'panel'" class="wm-panel" :style="panelStyle">
+    <div
+      v-show="uiState.mode === 'panel'"
+      class="wm-panel"
+      :style="panelStyle"
+    >
       <div class="wm-drag-handle" @pointerdown.prevent.stop="onDragStart">⋮⋮</div>
       <div class="wm-header">
         <span>世界记忆插件 V2</span>
         <button class="wm-btn" title="收起" @click="setMode('orb')">&ndash;</button>
       </div>
       <div class="wm-tabs">
-        <button class="wm-tab-btn" :class="{ 'is-active': uiState.activeTab === 'main' }" @click="setActiveTab('main')">
+        <button 
+          class="wm-tab-btn" 
+          :class="{ 'is-active': uiState.activeTab === 'main' }"
+          @click="setActiveTab('main')"
+        >
           主界面
         </button>
-        <button
-          class="wm-tab-btn"
+        <button 
+          class="wm-tab-btn" 
           :class="{ 'is-active': uiState.activeTab === 'atlas' }"
           @click="setActiveTab('atlas')"
         >
           人格图谱
         </button>
-        <button class="wm-tab-btn" :class="{ 'is-active': uiState.activeTab === 'api' }" @click="setActiveTab('api')">
+        <button 
+          class="wm-tab-btn" 
+          :class="{ 'is-active': uiState.activeTab === 'api' }"
+          @click="setActiveTab('api')"
+        >
           API配置
         </button>
         <button
-          class="wm-tab-btn"
-          :class="{ 'is-active': uiState.activeTab === 'manage' }"
-          @click="setActiveTab('manage')"
-        >
-          管理
-        </button>
+           class="wm-tab-btn"
+           :class="{ 'is-active': uiState.activeTab === 'params' }"
+           @click="setActiveTab('params')"
+         >
+           参数配置
+         </button>
+        <button
+           class="wm-tab-btn"
+           :class="{ 'is-active': uiState.activeTab === 'manage' }"
+           @click="setActiveTab('manage')"
+         >
+           管理
+         </button>
       </div>
       <div class="wm-body">
         <!-- API 配置 -->
         <div v-if="uiState.activeTab === 'api'" class="wm-tab-content">
           <div class="wm-form-group">
             <label for="api-url">API URL</label>
-            <input
-              id="api-url"
-              type="text"
-              class="wm-input"
-              v-model="apiSettings.apiUrl"
-              placeholder="例如：https://api.openai.com/v1"
-            />
+            <input id="api-url" type="text" class="wm-input" v-model="apiSettings.apiUrl" placeholder="例如：https://api.openai.com/v1" />
           </div>
           <div class="wm-form-group">
             <label for="api-key">API Key</label>
-            <input
-              id="api-key"
-              type="password"
-              class="wm-input"
-              v-model="apiSettings.apiKey"
-              placeholder="请输入您的API Key"
-            />
+            <input id="api-key" type="password" class="wm-input" v-model="apiSettings.apiKey" placeholder="请输入您的API Key" />
           </div>
           <div class="wm-form-group">
             <label for="model-name">模型名称</label>
             <div class="wm-model-group">
               <select id="model-name" class="wm-input" v-model="apiSettings.model">
                 <option v-if="!apiSettings.model && modelList.length === 0" value="" disabled>请先获取列表</option>
-                <option v-if="apiSettings.model && !modelList.includes(apiSettings.model)" :value="apiSettings.model">
-                  {{ apiSettings.model }} (自定义)
-                </option>
+                <option v-if="apiSettings.model && !modelList.includes(apiSettings.model)" :value="apiSettings.model">{{ apiSettings.model }} (自定义)</option>
                 <option v-for="model in modelList" :key="model" :value="model">
                   {{ model }}
                 </option>
@@ -90,25 +95,50 @@
               </span>
             </div>
           </div>
-          <div v-else class="wm-placeholder">暂无记忆。开始对话以生成第一条记忆。</div>
+          <div v-else class="wm-placeholder">
+            暂无记忆。开始对话以生成第一条记忆。
+          </div>
         </div>
         <!-- 人格图谱 -->
-        <div v-if="uiState.activeTab === 'atlas'" class="wm-tab-content">
-          <AtlasPanel />
+         <div v-if="uiState.activeTab === 'atlas'" class="wm-tab-content">
+            <AtlasPanel />
+         </div>
+        <!-- 参数配置 -->
+        <div v-if="uiState.activeTab === 'params'" class="wm-tab-content">
+          <div class="wm-form-group">
+            <label for="context-chat-lines">上下文发送层数 (最近聊天记录数)</label>
+            <input id="context-chat-lines" type="number" class="wm-input" v-model="advancedSettings.contextChatLines" min="1" max="50" />
+          </div>
+          <div class="wm-form-group">
+            <label for="recent-memories-count">近期记忆数 (发送给AI的最近记忆数量)</label>
+            <input id="recent-memories-count" type="number" class="wm-input" v-model="advancedSettings.recentMemoriesCount" min="0" max="50" />
+          </div>
+          <div class="wm-form-group">
+            <label for="nature-degrade">本性降级楼层数</label>
+            <input id="nature-degrade" type="number" class="wm-input" v-model="advancedSettings.natureDegradeDistance" min="10" />
+          </div>
+          <div class="wm-form-group">
+            <label for="cognition-degrade">认知降级楼层数</label>
+            <input id="cognition-degrade" type="number" class="wm-input" v-model="advancedSettings.cognitionDegradeDistance" min="10" />
+          </div>
+          <div class="wm-form-group">
+            <label for="memory-forget">记忆遗忘楼层数</label>
+            <input id="memory-forget" type="number" class="wm-input" v-model="advancedSettings.memoryForgetDistance" min="10" />
+          </div>
         </div>
         <!-- 管理 -->
         <div v-if="uiState.activeTab === 'manage'" class="wm-tab-content">
-          <div class="danger-zone">
-            <h4>危险区域</h4>
-            <p>以下操作会永久删除世界书条目，请谨慎操作。</p>
-            <div class="danger-buttons">
-              <button class="danger-btn" @click="deleteNatures">删除本性</button>
-              <button class="danger-btn" @click="deleteCognitions">删除认知</button>
-              <button class="danger-btn" @click="deleteEpisodics">删除记忆</button>
-              <button class="danger-btn all" @click="deleteAllMemories">删除全部</button>
-            </div>
-          </div>
-        </div>
+           <div class="danger-zone">
+             <h4>危险区域</h4>
+             <p>以下操作会永久删除世界书条目，请谨慎操作。</p>
+             <div class="danger-buttons">
+               <button class="danger-btn" @click="deleteNatures">删除本性</button>
+               <button class="danger-btn" @click="deleteCognitions">删除认知</button>
+               <button class="danger-btn" @click="deleteEpisodics">删除记忆</button>
+               <button class="danger-btn all" @click="deleteAllMemories">删除全部</button>
+             </div>
+           </div>
+         </div>
       </div>
     </div>
 
@@ -133,17 +163,10 @@ import { useSettingsStore } from '../store';
 import AtlasPanel from './AtlasPanel.vue';
 
 const settingsStore = useSettingsStore();
-const { uiState, apiSettings, latestMemory, modelList, isFetchingModels, isSynthesizing } = storeToRefs(settingsStore);
+const { uiState, apiSettings, advancedSettings, latestMemory, modelList, isFetchingModels, isSynthesizing } = storeToRefs(settingsStore);
 const {
-  setMode,
-  saveApiSettings,
-  setActiveTab,
-  fetchLatestMemory,
-  fetchModelList,
-  deleteNatures,
-  deleteCognitions,
-  deleteEpisodics,
-  deleteAllMemories,
+  setMode, saveApiSettings, setActiveTab, fetchLatestMemory, fetchModelList,
+  deleteNatures, deleteCognitions, deleteEpisodics, deleteAllMemories,
   synthesizePersonality,
 } = settingsStore;
 
@@ -232,8 +255,7 @@ onBeforeUnmount(() => {
   pointer-events: none;
   font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
 }
-.wm-panel,
-.wm-orb {
+.wm-panel, .wm-orb {
   position: fixed;
   pointer-events: auto;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
@@ -320,13 +342,13 @@ onBeforeUnmount(() => {
   gap: 16px;
 }
 .wm-btn.large {
-  width: auto;
-  height: auto;
-  padding: 10px 16px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: bold;
-  flex-grow: 1;
+    width: auto;
+    height: auto;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    flex-grow: 1;
 }
 
 .wm-tab-content {
@@ -384,6 +406,28 @@ onBeforeUnmount(() => {
   display: flex;
   gap: 8px;
 }
+.wm-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.wm-form-group label {
+  font-size: 13px;
+  color: #ccc;
+}
+.wm-input {
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.2);
+  color: #f0f0f0;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+}
+.wm-input:focus {
+  border-color: #9194e8;
+}
 .wm-model-group select {
   flex-grow: 1;
 }
@@ -398,22 +442,22 @@ onBeforeUnmount(() => {
   border-radius: 8px;
   padding: 16px;
   background: rgba(192, 57, 43, 0.1);
-}
-.danger-zone h4 {
+ }
+ .danger-zone h4 {
   margin-top: 0;
   color: #e74c3c;
-}
-.danger-zone p {
+ }
+ .danger-zone p {
   font-size: 13px;
   color: #f0f0f0;
-}
-.danger-buttons {
+ }
+ .danger-buttons {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
   margin-top: 16px;
-}
-.danger-btn {
+ }
+ .danger-btn {
   appearance: none;
   border: 1px solid #c0392b;
   background: transparent;
@@ -422,18 +466,18 @@ onBeforeUnmount(() => {
   border-radius: 6px;
   cursor: pointer;
   font-weight: bold;
-}
-.danger-btn:hover {
+ }
+ .danger-btn:hover {
   background: rgba(192, 57, 43, 0.2);
-}
-.danger-btn.all {
+ }
+ .danger-btn.all {
   grid-column: 1 / -1;
   background: #c0392b;
   color: white;
-}
-.danger-btn.all:hover {
+ }
+ .danger-btn.all:hover {
   background: #a53125;
-}
+ }
 .wm-footer {
   margin-top: auto;
   padding-top: 16px;

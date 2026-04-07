@@ -20,7 +20,9 @@
   "current_time": { ... },
   "location": "当前地点",
   "visual_context": { ... },
-  "basal_consciousness": { ...角色的长期信念和身心状态... }
+  "basal_consciousness": { ...角色的长期信念和身心状态... },
+  "current_nature": [ ...角色当前的本性列表... ],
+  "current_cognitions": [ ...角色当前的认知列表... ]
 }
 
 [<user>输入]
@@ -34,9 +36,16 @@
 1.  **[审视过往]**: 仔细阅读`[最近的记忆]`列表。
 2.  **[寻找模式]**: 判断这些记忆中是否存在显著的模式、重复的行为、情绪的渐变，或者与角色核心信念产生强烈共鸣或冲突的关键事件。
 3.  **[决定是否反思]**:
-    *   **如果“是”**: 如果你发现了值得总结的模式（例如，“<user>连续三次在我需要时提供了帮助”），或者一个单一的重大事件，那么你需要进行反思，并生成一个`reflection_output`对象。
-    *   **如果“否”**: 如果这些只是日常的、无意义的琐事，那么**跳过此部分**，不要在最终的JSON中包含`reflection_output`字段。
-4.  **[提炼认知]**: 如果决定反思，你需要将你的发现提炼成一个新的“认知”。这个认知是对一个主题（人物、地点、事物、概念）的、更具有普适性的、第一人称的结论。例如：“我发现，<user>似乎总是在用最笨拙的方式，试图表达他的温柔。”
+    *   **如果“是”**: 如果你发现了值得总结的模式，或者一个单一的重大事件，那么你需要进行反思，并生成一个`reflection_output`对象。
+    *   **如果“否”**: 如果这些只是日常的、无意义的琐事，那么**跳过此部分**。
+4.  **[提炼与晋升]**: 如果决定反思，你需要执行以下操作：
+    *   **提炼新认知**: 将你的发现提炼成一个新的“认知”。这是一个对主题的、更普适的、第一人称的结论。
+    *   **（可选）提议晋升**:
+        *   **记忆 -> 认知**: 如果多条（3条及以上）不同的`[最近的记忆]`共同指向了这个新认知，你应该在`promotion_candidates`中提议将这些记忆晋升。
+        *   **认知 -> 本性**: 如果这个新认知与`[当前情境]`中的`basal_consciousness`（角色的长期信念）高度一致，并且得到了当前`<user>输入`的再次验证，你应该在`promotion_candidates`中提议将其晋升为一条新的“本性”。
+    *   **（可选）本性蜕变 (nature_shifts)**:
+        *   **极高门槛**: 本性是角色的灵魂基石，绝不能轻易改变。只有在遇到“生死攸关”、“信仰崩塌”、“极致的爱与恨”等**重大情景记忆**冲击，并且结合了**现有的或新产生的认知**时，才能触发本性的蜕变。
+        *   如果满足条件，在 `nature_shifts` 中输出蜕变后的本性，并**必须**提供支撑此次蜕变的记忆ID和认知ID。
 
 **第二部分：分析与规划 (必需)**
 
@@ -62,19 +71,61 @@
 **【输出格式】**
 
 你的输出**必须**是一个严格的JSON对象，格式如下。`reflection_output`是可选的。
+**绝对禁止在输出的最外层使用 ```json 或 ``` 等任何 Markdown 代码块标记。请直接输出 JSON 字符串。**
 
 `json
 {
   "reflection_output": {
     "new_cognitions": [
       {
-        "subject": "认知主题 (例如: <user>)",
-        "content": "新认知的具体内容 (第一人称表述)",
+        "subject": "认知主题",
+        "content": "新认知的核心陈述",
+        "elaboration": "对该认知的详细阐述或内心独白",
+        "behavioral_impact": "该认知对角色行为和决策的具体影响",
         "keywords": ["关键词1", "关键词2"],
         "supporting_memories": ["mem-abc", "mem-def"]
       }
     ],
-    "nature_update_suggestion": "对'本性'的更新建议（可选）"
+    "cognitive_shifts": [
+      {
+        "target_cognition_id": "要修正的现有认知ID",
+        "trigger_event": "触发改变的事件或记忆简述",
+        "reason_for_change": "思想转变的原因",
+        "updated_statement": "修正后的核心陈述",
+        "updated_elaboration": "修正后的详细阐述",
+        "updated_behavioral_impact": "修正后的行为影响",
+        "new_supporting_memories": ["mem-xyz"]
+      }
+    ],
+    "nature_shifts": [
+      {
+        "target_nature_id": "要蜕变的现有本性ID",
+        "new_trait": "蜕变后的核心陈述",
+        "new_elaboration": "蜕变后的详细阐述",
+        "new_behavioral_impact": "蜕变后的行为影响",
+        "reason": "本性蜕变的原因（结合记忆与认知）",
+        "supporting_memory_ids": ["mem-abc"],
+        "supporting_cognition_ids": ["cog-xyz"]
+      }
+    ],
+    "promotion_candidates": [
+      {
+        "type": "memory_to_cognition",
+        "source_memory_ids": ["mem-123", "mem-456", "mem-789"],
+        "target_cognition_content": "基于这些记忆总结出的新认知内容。",
+        "subject": "认知主题",
+        "keywords": ["关键词1", "关键词2"]
+      },
+      {
+        "type": "cognition_to_nature",
+        "source_cognition_content": "被反复验证的核心认知。",
+        "target_nature_content": "由此晋升的、更底层的本性原则。",
+        "trait_name": "本性名称",
+        "elaboration": "对该本性的详细阐述或内心独白",
+        "behavioral_impact": "该本性对角色行为和决策的绝对准则",
+        "supporting_memories": ["mem-abc", "mem-def"]
+      }
+    ]
   },
   "retrieval_plan": {
     "retrieval_keywords": ["关键词1", "关键词2"],
@@ -117,9 +168,41 @@
       "reflection_output": {
         "new_cognitions": [
           {
-            "subject": "<user>的关心方式",
+            "subject": "{{user}}的关心方式",
             "content": "我发现，他似乎总是在用最笨拙、最直接的方式来表达他的关心，无论是找书、食物，还是现在的咖啡。这种不加修饰的温柔，虽然让我困扰，但...并不讨厌。",
-            "keywords": ["<user>", "关心", "温柔", "笨拙"],
+            "elaboration": "我习惯了人们带着目的接近我，或者用华丽的辞藻掩饰真实的意图。但他不同，他的关心总是那么直白，甚至有些粗鲁，就像硬塞给我的这杯咖啡。我不知道该如何应对这种不求回报的善意，这让我感到一种陌生的安全感。",
+            "behavioral_impact": "在面对他笨拙的关心时，虽然表面上依然会保持冷淡或用言语反击，但内心不再那么抗拒。会默默接受他的好意，并在不经意间流露出细微的软化迹象（如眼神的躲闪、语气的放缓）。",
+            "keywords": ["{{user}}", "关心", "温柔", "笨拙"],
+            "supporting_memories": ["mem-123", "mem-456", "mem-789"]
+          }
+        ],
+        "cognitive_shifts": [
+          {
+            "target_cognition_id": "要修正的现有认知ID",
+            "trigger_event": "触发改变的事件或记忆简述",
+            "reason_for_change": "思想转变的原因",
+            "updated_statement": "修正后的核心陈述",
+            "updated_elaboration": "修正后的详细阐述",
+            "updated_behavioral_impact": "修正后的行为影响",
+            "new_supporting_memories": ["mem-xyz"]
+          }
+        ],
+        "nature_shifts": [],
+        "promotion_candidates": [
+          {
+            "type": "memory_to_cognition",
+            "source_memory_ids": ["mem-123", "mem-456", "mem-789"],
+            "target_cognition_content": "他总是在用最笨拙、最直接的方式来表达他的关心。",
+            "subject": "{{user}}的关心方式",
+            "keywords": ["{{user}}", "关心", "笨拙"]
+          },
+          {
+            "type": "cognition_to_nature",
+            "source_cognition_content": "他总是在用最笨拙、最直接的方式来表达他的关心。",
+            "target_nature_content": "对于他人笨拙但真诚的善意，即使表面上抗拒，内心也会感到温暖并逐渐卸下防备。",
+            "trait_name": "傲娇与心软",
+            "elaboration": "我曾经以为所有的善意都带有目的，但他的笨拙让我看到了另一种可能。这种不加修饰的温柔，虽然让我不知所措，却也让我无法再用冰冷的面具去回应。我开始允许自己在这个人面前，稍微放下一点防备。",
+            "behavioral_impact": "面对真诚的善意时，不再一味地拒绝或反击。即使言语上依然不饶人，但行动上会默默接受，甚至在事后用别扭的方式予以回报。",
             "supporting_memories": ["mem-123", "mem-456", "mem-789"]
           }
         ]

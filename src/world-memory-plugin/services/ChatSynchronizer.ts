@@ -51,7 +51,6 @@ export class ChatSynchronizer {
 
       // 4. 运行记忆新陈代谢（降级与遗忘）
       await TavernService.runMetabolism();
-
     } catch (error) {
       console.error('[ChatSynchronizer] Error during chat synchronization:', error);
     } finally {

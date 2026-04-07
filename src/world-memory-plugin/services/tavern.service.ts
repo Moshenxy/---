@@ -1,11 +1,4 @@
-import type {
-  EpisodicMemoryUnit,
-  SynthesisEntry,
-  Nature,
-  NatureTrait,
-  Cognition,
-  CognitiveStatement
-} from '../types';
+import type { EpisodicMemoryUnit, SynthesisEntry, Nature, NatureTrait, Cognition, CognitiveStatement } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 import { log } from '../utils/logger';
 import { NatureSchema, CognitionSchema, EpisodicMemoryUnitSchema } from '../types';
@@ -261,7 +254,7 @@ export class TavernService {
         // 构造一个对象，让 replaceVariables 替换其中的宏
         const timeObj = { time: '{{date}} {{time}}' };
         replaceVariables(timeObj, { type: 'script' });
-        
+
         // 如果替换后的值与原宏不同，说明宏生效了
         if (timeObj.time && timeObj.time !== '{{date}} {{time}}') {
           gameTime = timeObj.time;
@@ -416,7 +409,7 @@ export class TavernService {
           }
         } else if (nodeType === 'MEMORY') {
           const memory = EpisodicMemoryUnitSchema.parse(JSON.parse(entryToUpdate.content || '{}'));
-          
+
           if (payload.summary_text !== undefined) {
             memory.summary.text = payload.summary_text;
           }
@@ -432,7 +425,7 @@ export class TavernService {
           if (payload.somatic !== undefined) {
             memory.flashbulb_fragments.somatic = payload.somatic;
           }
-          
+
           entryToUpdate.content = JSON.stringify(memory, null, 2);
         }
       } catch (error) {
@@ -452,7 +445,7 @@ export class TavernService {
     sourceMemoryIds: string[],
     targetCognitionContent: string,
     subject: string,
-    keywords: string[]
+    keywords: string[],
   ): Promise<void> {
     const worldbookName = await this.getTargetWorldbookName();
 
@@ -463,7 +456,7 @@ export class TavernService {
       '', // 晋升时暂无详细阐述，后续可由AI补充
       '', // 晋升时暂无行为影响
       keywords,
-      sourceMemoryIds
+      sourceMemoryIds,
     );
     log(`[TavernService] 记忆已晋升为认知: "${targetCognitionContent.substring(0, 20)}..."`);
   }
@@ -481,7 +474,7 @@ export class TavernService {
       updated_elaboration: string;
       updated_behavioral_impact: string;
       new_supporting_memories: string[];
-    }
+    },
   ): Promise<void> {
     let gameTime = new Date().toISOString().replace('T', ' ').substring(0, 19);
     try {
@@ -499,28 +492,28 @@ export class TavernService {
     await updateWorldbookWith(worldbookName, entries => {
       for (const entry of entries) {
         if (!entry.name?.startsWith('认知-') || !entry.content) continue;
-        
+
         try {
           const cognitions = CognitionSchema.parse(JSON.parse(entry.content));
           const targetIndex = cognitions.findIndex(c => c.id === shift.target_cognition_id);
-          
+
           if (targetIndex > -1) {
             const target = cognitions[targetIndex];
-            
+
             // 记录演化历史
             if (!target.evolution) target.evolution = [];
             target.evolution.push({
               timestamp: gameTime,
               trigger_event: shift.trigger_event,
               previous_statement: target.statement,
-              reason: shift.reason_for_change
+              reason: shift.reason_for_change,
             });
 
             // 更新内容
             target.statement = shift.updated_statement;
             target.elaboration = shift.updated_elaboration;
             target.behavioral_impact = shift.updated_behavioral_impact;
-            
+
             // 合并支撑记忆
             const allMemories = new Set([...target.supporting_memories, ...shift.new_supporting_memories]);
             target.supporting_memories = Array.from(allMemories);
@@ -550,7 +543,7 @@ export class TavernService {
       reason: string;
       supporting_memory_ids: string[];
       supporting_cognition_ids: string[];
-    }
+    },
   ): Promise<void> {
     let gameTime = new Date().toISOString().replace('T', ' ').substring(0, 19);
     try {
@@ -568,14 +561,16 @@ export class TavernService {
     await updateWorldbookWith(worldbookName, entries => {
       for (const entry of entries) {
         if (!entry.name?.startsWith('本性-') || !entry.content) continue;
-        
+
         try {
           const nature = NatureSchema.parse(JSON.parse(entry.content));
-          const targetIndex = nature.findIndex(t => t.id === shift.target_nature_id || `nature-${t.id}` === shift.target_nature_id);
-          
+          const targetIndex = nature.findIndex(
+            t => t.id === shift.target_nature_id || `nature-${t.id}` === shift.target_nature_id,
+          );
+
           if (targetIndex > -1) {
             const target = nature[targetIndex];
-            
+
             // 记录演化历史
             if (!target.evolution) target.evolution = [];
             target.evolution.push({
@@ -584,7 +579,7 @@ export class TavernService {
               previous_trait: target.trait,
               previous_elaboration: target.elaboration,
               previous_behavioral_impact: target.behavioral_impact,
-              new_description: target.description // 保留旧的 description 以防万一
+              new_description: target.description, // 保留旧的 description 以防万一
             });
 
             // 更新内容
@@ -593,12 +588,12 @@ export class TavernService {
             target.behavioral_impact = shift.new_behavioral_impact;
             // 同步更新 description 以保持向后兼容
             target.description = shift.new_trait;
-            
+
             // 合并支撑记忆和认知
             const allMemories = new Set([
               ...(target.supporting_memories || []),
               ...shift.supporting_memory_ids,
-              ...shift.supporting_cognition_ids
+              ...shift.supporting_cognition_ids,
             ]);
             target.supporting_memories = Array.from(allMemories);
 
@@ -624,10 +619,10 @@ export class TavernService {
     traitName: string,
     elaboration: string,
     behavioral_impact: string,
-    supportingMemories: string[]
+    supportingMemories: string[],
   ): Promise<void> {
     const worldbookName = await this.getTargetWorldbookName();
-    
+
     // 尝试获取游戏内时间
     let gameTime = new Date().toISOString().replace('T', ' ').substring(0, 19);
     try {
@@ -650,13 +645,15 @@ export class TavernService {
       elaboration: elaboration,
       behavioral_impact: behavioral_impact,
       created_at_message_id: currentFloor,
-      evolution: [{
-        timestamp: gameTime,
-        reason: `由认知晋升: ${sourceCognitionContent}`,
-        previous_trait: '',
-        new_description: targetNatureContent
-      }],
-      supporting_memories: supportingMemories
+      evolution: [
+        {
+          timestamp: gameTime,
+          reason: `由认知晋升: ${sourceCognitionContent}`,
+          previous_trait: '',
+          new_description: targetNatureContent,
+        },
+      ],
+      supporting_memories: supportingMemories,
     };
 
     await this.createOrUpdateNatureEntry(worldbookName, characterName, [newTrait]);
@@ -689,7 +686,7 @@ export class TavernService {
     }
 
     const worldbookName = await this.getTargetWorldbookName();
-    
+
     let degradedCognitions: CognitiveStatement[] = [];
     let degradedMemories: EpisodicMemoryUnit[] = [];
     let memoriesToDelete: string[] = [];
@@ -709,7 +706,7 @@ export class TavernService {
                 timestamp: new Date().toISOString(),
                 created_at_message_id: currentFloor,
                 statement: `[本性退化] ${trait.trait}: ${trait.description}`,
-                supporting_memories: trait.supporting_memories
+                supporting_memories: trait.supporting_memories,
               });
               log(`[Metabolism] 本性降级为认知: ${trait.trait}`);
             } else {
@@ -739,17 +736,19 @@ export class TavernService {
                 type: 'semantic',
                 summary: {
                   text: `[认知退化] 曾经认为: ${cog.statement}`,
-                  keywords: (entry.strategy?.keys || []).map(k => String(k))
+                  keywords: (entry.strategy?.keys || []).map(k => String(k)),
                 },
                 flashbulb_fragments: { visual: '', auditory: '', somatic: '' },
-                full_context: { description: `随着时间流逝，这条认知逐渐模糊，退化为一段普通的记忆。内容：${cog.statement}` }
+                full_context: {
+                  description: `随着时间流逝，这条认知逐渐模糊，退化为一段普通的记忆。内容：${cog.statement}`,
+                },
               });
               log(`[Metabolism] 认知降级为记忆: ${cog.statement.substring(0, 15)}...`);
             } else {
               keptCognitions.push(cog);
             }
           }
-          
+
           // 将从本性降级来的认知追加到第一个认知条目中
           if (degradedCognitions.length > 0 && entry === cognitionEntries[0]) {
             keptCognitions.push(...degradedCognitions);
@@ -781,7 +780,15 @@ export class TavernService {
     if (degradedCognitions.length > 0) {
       const charName = getCharData('current')?.name || 'default';
       for (const cog of degradedCognitions) {
-        await this.createOrUpdateCognitionEntry(worldbookName, charName, cog.statement, cog.elaboration, cog.behavioral_impact, [], cog.supporting_memories);
+        await this.createOrUpdateCognitionEntry(
+          worldbookName,
+          charName,
+          cog.statement,
+          cog.elaboration,
+          cog.behavioral_impact,
+          [],
+          cog.supporting_memories,
+        );
       }
     }
 

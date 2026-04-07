@@ -26,7 +26,7 @@ export class PreprocessorHandler {
 
     try {
       log('开始上下文预处理...');
-      
+
       if (!pinia) throw new Error('Pinia store not initialized.');
       const settingsStore = useSettingsStore(pinia);
       const contextLines = settingsStore.advancedSettings.contextChatLines || 5;
@@ -41,7 +41,10 @@ export class PreprocessorHandler {
 
       // 找到最后一条用户消息作为 originalUserInput
       // 即使最后一条消息是 assistant (例如在重新生成时)，我们也需要找到触发这次生成的最后一条用户消息
-      const lastUserMessage = recentChatMessages.slice().reverse().find(m => m.role === 'user');
+      const lastUserMessage = recentChatMessages
+        .slice()
+        .reverse()
+        .find(m => m.role === 'user');
       if (!lastUserMessage || typeof lastUserMessage.message !== 'string') {
         this.isBusy = false;
         return;
@@ -52,10 +55,13 @@ export class PreprocessorHandler {
       const chatContext = recentChatMessages.map(msg => ({
         role: msg.role,
         name: msg.name,
-        content: msg.message
+        content: msg.message,
       }));
-      
-      const userPromptToModify = generate_data.prompt.slice().reverse().find(p => p.role === 'user');
+
+      const userPromptToModify = generate_data.prompt
+        .slice()
+        .reverse()
+        .find(p => p.role === 'user');
       if (!userPromptToModify || typeof userPromptToModify.content !== 'string') {
         this.isBusy = false;
         return;
@@ -63,7 +69,7 @@ export class PreprocessorHandler {
 
       const recentMemories = await TavernService.getRecentMemories(recentMemoriesCount);
       const currentCognitions = await TavernService.getAllCognitions();
-      const currentNature = await TavernService.getNature() || [];
+      const currentNature = (await TavernService.getNature()) || [];
       const systemCots = `
 # 认知隔离协议
 ${cognitiveIsolationCot}
@@ -79,12 +85,13 @@ ${dynamicExpressionCot}
         recentMemories,
         systemCots,
         currentCognitions,
-        currentNature
+        currentNature,
       );
 
       if (analystResponse.reflection_output) {
-        const { new_cognitions, cognitive_shifts, nature_shifts, nature_update_suggestion, promotion_candidates } = analystResponse.reflection_output;
-        
+        const { new_cognitions, cognitive_shifts, nature_shifts, nature_update_suggestion, promotion_candidates } =
+          analystResponse.reflection_output;
+
         // 1. 保存新认知
         if (new_cognitions?.length) {
           for (const cognition of new_cognitions) {
@@ -107,7 +114,7 @@ ${dynamicExpressionCot}
             await TavernService.applyNatureShift(worldbookName, shift);
           }
         }
-        
+
         // 2. 处理旧版兼容的本性更新建议
         if (nature_update_suggestion) {
           const charName = getCharData('current')?.name;
@@ -125,7 +132,7 @@ ${dynamicExpressionCot}
                 candidate.source_memory_ids,
                 candidate.target_cognition_content,
                 candidate.subject,
-                candidate.keywords
+                candidate.keywords,
               );
             } else if (candidate.type === 'cognition_to_nature') {
               await TavernService.promoteCognitionToNature(
@@ -135,7 +142,7 @@ ${dynamicExpressionCot}
                 candidate.trait_name,
                 candidate.elaboration || '',
                 candidate.behavioral_impact || '',
-                candidate.supporting_memories
+                candidate.supporting_memories,
               );
             }
           }
@@ -154,10 +161,9 @@ ${JSON.stringify(analystResponse, null, 2)}`;
       // 将 CoT 作为独立的 system 消息注入到最末尾 (深度 0)，以获得最高指令权重
       generate_data.prompt.push({
         role: 'system',
-        content: `${systemCots}\n\n${narratorCot}`
+        content: `${systemCots}\n\n${narratorCot}`,
       });
       log('已成功将基础COT和叙事COT作为独立系统提示词注入到末尾(深度0)。');
-      
     } catch (error) {
       console.error('[PreprocessorHandler] 处理注入逻辑时出错:', error);
       toastr.error('记忆插件上下文注入失败。');
@@ -169,7 +175,13 @@ ${JSON.stringify(analystResponse, null, 2)}`;
   public static startListening() {
     this.stopListening();
     if (typeof eventOn !== 'function') return;
-    this.stopListener = eventOn('generate_after_data', this.handlePreprocess.bind(this) as (generate_data: { prompt: SillyTavern.SendingMessage[]; }, dry_run: boolean) => void).stop;
+    this.stopListener = eventOn(
+      'generate_after_data',
+      this.handlePreprocess.bind(this) as (
+        generate_data: { prompt: SillyTavern.SendingMessage[] },
+        dry_run: boolean,
+      ) => void,
+    ).stop;
     log('已启动“分析-注入”预处理器。');
   }
 

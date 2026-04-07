@@ -15,7 +15,8 @@ export class LifecycleService {
    * 开始生命周期服务的后台轮询。
    * @param interval - 轮询间隔（毫秒）。
    */
-  public static start(interval = 5 * 60 * 1000) { // 默认5分钟检查一次
+  public static start(interval = 5 * 60 * 1000) {
+    // 默认5分钟检查一次
     if (this.intervalId !== null) {
       log('[LifecycleService] Service is already running.');
       return;
@@ -53,10 +54,9 @@ export class LifecycleService {
         return;
       }
       const currentFloor = lastMessage.message_id;
-      
+
       await this.processMemoryForgetting(currentFloor);
       await this.processCognitionDegradation(currentFloor);
-
     } catch (error) {
       console.error('[LifecycleService] Error during decay cycle:', error);
     } finally {
@@ -80,7 +80,7 @@ export class LifecycleService {
 
       const age = currentFloor - memory.created_at_message_id;
       if (age > MEMORY_FORGET_THRESHOLD_FLOORS) {
-        if(entry.name) memoriesToForget.push(entry.name);
+        if (entry.name) memoriesToForget.push(entry.name);
       }
     }
 
@@ -120,7 +120,9 @@ export class LifecycleService {
       let currentCognition: Cognition = [];
       try {
         currentCognition = CognitionSchema.parse(JSON.parse(entry.content));
-      } catch { continue; }
+      } catch {
+        continue;
+      }
 
       const originalCount = currentCognition.length;
       const youngerCognition = currentCognition.filter(statement => {
@@ -133,16 +135,16 @@ export class LifecycleService {
           const memoryFloor = memoryFloorMap.get(memName);
           // 如果找不到记忆或记忆没有楼层信息，我们保守地认为它不是旧的
           if (memoryFloor === undefined) return false;
-          return (currentFloor - memoryFloor) > COGNITION_DEGRADE_THRESHOLD_FLOORS;
+          return currentFloor - memoryFloor > COGNITION_DEGRADE_THRESHOLD_FLOORS;
         });
         // 如果所有支撑记忆都太旧，那么这个认知就应该被过滤掉
         return !allMemoriesAreOld;
       });
 
       if (youngerCognition.length < originalCount) {
-        degradedCount += (originalCount - youngerCognition.length);
+        degradedCount += originalCount - youngerCognition.length;
         // 更新世界书条目
-        await updateWorldbookWith(worldbookName, (entries) => {
+        await updateWorldbookWith(worldbookName, entries => {
           const entryToUpdate = entries.find(e => e.name === entry.name);
           if (entryToUpdate) {
             entryToUpdate.content = JSON.stringify(youngerCognition, null, 2);

@@ -26,11 +26,17 @@
       <div class="detail-section" v-if="props.node.id !== 'NATURE_CORE'">
         <div class="detail-header">
           <h5>详细阐述 / 内心独白</h5>
-          <button v-if="!editing.active" @click="startEdit('elaboration', props.node.data.elaboration || props.node.data.description || '')" class="edit-btn">
+          <button
+            v-if="!editing.active"
+            @click="startEdit('elaboration', props.node.data.elaboration || props.node.data.description || '')"
+            class="edit-btn"
+          >
             ✎
           </button>
         </div>
-        <p v-if="!editing.active || editing.field !== 'elaboration'">{{ props.node.data.elaboration || props.node.data.description || '暂无详细阐述' }}</p>
+        <p v-if="!editing.active || editing.field !== 'elaboration'">
+          {{ props.node.data.elaboration || props.node.data.description || '暂无详细阐述' }}
+        </p>
         <div v-if="editing.active && editing.field === 'elaboration'" class="edit-area">
           <textarea v-model="editing.text" class="wm-textarea"></textarea>
           <div class="edit-controls">
@@ -43,11 +49,17 @@
       <div class="detail-section" v-if="props.node.id !== 'NATURE_CORE'">
         <div class="detail-header">
           <h5>行为影响 / 绝对准则</h5>
-          <button v-if="!editing.active" @click="startEdit('behavioral_impact', props.node.data.behavioral_impact || '')" class="edit-btn">
+          <button
+            v-if="!editing.active"
+            @click="startEdit('behavioral_impact', props.node.data.behavioral_impact || '')"
+            class="edit-btn"
+          >
             ✎
           </button>
         </div>
-        <p v-if="!editing.active || editing.field !== 'behavioral_impact'">{{ props.node.data.behavioral_impact || '暂无行为影响' }}</p>
+        <p v-if="!editing.active || editing.field !== 'behavioral_impact'">
+          {{ props.node.data.behavioral_impact || '暂无行为影响' }}
+        </p>
         <div v-if="editing.active && editing.field === 'behavioral_impact'" class="edit-area">
           <textarea v-model="editing.text" class="wm-textarea"></textarea>
           <div class="edit-controls">
@@ -93,11 +105,17 @@
       <div class="detail-section">
         <div class="detail-header">
           <h5>详细阐述 / 内心独白</h5>
-          <button v-if="!editing.active" @click="startEdit('elaboration', props.node.data.elaboration || '')" class="edit-btn">
+          <button
+            v-if="!editing.active"
+            @click="startEdit('elaboration', props.node.data.elaboration || '')"
+            class="edit-btn"
+          >
             ✎
           </button>
         </div>
-        <p v-if="!editing.active || editing.field !== 'elaboration'">{{ props.node.data.elaboration || '暂无详细阐述' }}</p>
+        <p v-if="!editing.active || editing.field !== 'elaboration'">
+          {{ props.node.data.elaboration || '暂无详细阐述' }}
+        </p>
         <div v-if="editing.active && editing.field === 'elaboration'" class="edit-area">
           <textarea v-model="editing.text" class="wm-textarea"></textarea>
           <div class="edit-controls">
@@ -110,11 +128,17 @@
       <div class="detail-section">
         <div class="detail-header">
           <h5>行为影响 / 表现指南</h5>
-          <button v-if="!editing.active" @click="startEdit('behavioral_impact', props.node.data.behavioral_impact || '')" class="edit-btn">
+          <button
+            v-if="!editing.active"
+            @click="startEdit('behavioral_impact', props.node.data.behavioral_impact || '')"
+            class="edit-btn"
+          >
             ✎
           </button>
         </div>
-        <p v-if="!editing.active || editing.field !== 'behavioral_impact'">{{ props.node.data.behavioral_impact || '暂无行为影响' }}</p>
+        <p v-if="!editing.active || editing.field !== 'behavioral_impact'">
+          {{ props.node.data.behavioral_impact || '暂无行为影响' }}
+        </p>
         <div v-if="editing.active && editing.field === 'behavioral_impact'" class="edit-area">
           <textarea v-model="editing.text" class="wm-textarea"></textarea>
           <div class="edit-controls">
@@ -166,8 +190,16 @@
         <ul class="flashbulb-list">
           <li>
             <strong>视觉:</strong>
-            <span v-if="!editing.active || editing.field !== 'visual'">{{ props.node.data.flashbulb_fragments.visual }}</span>
-            <button v-if="!editing.active" @click="startEdit('visual', props.node.data.flashbulb_fragments.visual)" class="edit-btn small-edit">✎</button>
+            <span v-if="!editing.active || editing.field !== 'visual'">{{
+              props.node.data.flashbulb_fragments.visual
+            }}</span>
+            <button
+              v-if="!editing.active"
+              @click="startEdit('visual', props.node.data.flashbulb_fragments.visual)"
+              class="edit-btn small-edit"
+            >
+              ✎
+            </button>
             <div v-if="editing.active && editing.field === 'visual'" class="edit-area inline">
               <input type="text" v-model="editing.text" class="wm-input" />
               <button class="wm-save-btn small" @click="saveEdit">保存</button>
@@ -176,8 +208,16 @@
           </li>
           <li>
             <strong>听觉:</strong>
-            <span v-if="!editing.active || editing.field !== 'auditory'">{{ props.node.data.flashbulb_fragments.auditory }}</span>
-            <button v-if="!editing.active" @click="startEdit('auditory', props.node.data.flashbulb_fragments.auditory)" class="edit-btn small-edit">✎</button>
+            <span v-if="!editing.active || editing.field !== 'auditory'">{{
+              props.node.data.flashbulb_fragments.auditory
+            }}</span>
+            <button
+              v-if="!editing.active"
+              @click="startEdit('auditory', props.node.data.flashbulb_fragments.auditory)"
+              class="edit-btn small-edit"
+            >
+              ✎
+            </button>
             <div v-if="editing.active && editing.field === 'auditory'" class="edit-area inline">
               <input type="text" v-model="editing.text" class="wm-input" />
               <button class="wm-save-btn small" @click="saveEdit">保存</button>
@@ -186,8 +226,16 @@
           </li>
           <li>
             <strong>体感:</strong>
-            <span v-if="!editing.active || editing.field !== 'somatic'">{{ props.node.data.flashbulb_fragments.somatic }}</span>
-            <button v-if="!editing.active" @click="startEdit('somatic', props.node.data.flashbulb_fragments.somatic)" class="edit-btn small-edit">✎</button>
+            <span v-if="!editing.active || editing.field !== 'somatic'">{{
+              props.node.data.flashbulb_fragments.somatic
+            }}</span>
+            <button
+              v-if="!editing.active"
+              @click="startEdit('somatic', props.node.data.flashbulb_fragments.somatic)"
+              class="edit-btn small-edit"
+            >
+              ✎
+            </button>
             <div v-if="editing.active && editing.field === 'somatic'" class="edit-area inline">
               <input type="text" v-model="editing.text" class="wm-input" />
               <button class="wm-save-btn small" @click="saveEdit">保存</button>
@@ -199,10 +247,18 @@
       <div class="detail-section">
         <div class="detail-header">
           <h5>关键词</h5>
-          <button v-if="!editing.active" @click="startEdit('keywords', props.node.data.summary.keywords.join(', '))" class="edit-btn">✎</button>
+          <button
+            v-if="!editing.active"
+            @click="startEdit('keywords', props.node.data.summary.keywords.join(', '))"
+            class="edit-btn"
+          >
+            ✎
+          </button>
         </div>
         <div v-if="!editing.active || editing.field !== 'keywords'" class="wm-keywords">
-          <span v-for="keyword in props.node.data.summary.keywords" :key="keyword" class="wm-keyword">{{ keyword }}</span>
+          <span v-for="keyword in props.node.data.summary.keywords" :key="keyword" class="wm-keyword">{{
+            keyword
+          }}</span>
         </div>
         <div v-if="editing.active && editing.field === 'keywords'" class="edit-area">
           <input type="text" v-model="editing.text" class="wm-input" placeholder="用逗号分隔关键词" />
@@ -267,9 +323,12 @@ async function saveEdit() {
   if (!props.node?.id) return;
 
   let payload: any = {};
-  
+
   if (editing.value.field === 'keywords') {
-    payload.keywords = editing.value.text.split(',').map(k => k.trim()).filter(k => k);
+    payload.keywords = editing.value.text
+      .split(',')
+      .map(k => k.trim())
+      .filter(k => k);
   } else {
     payload[editing.value.field] = editing.value.text;
   }

@@ -40,21 +40,18 @@ const props = defineProps({
   locationName: {
     type: String,
     required: true,
-  },
+  }
 });
 
 const groupedCharacters = computed(() => {
-  return props.characters.reduce(
-    (acc, char) => {
-      const groupName = char.locationName || '未知地点';
-      if (!acc[groupName]) {
-        acc[groupName] = [];
-      }
-      acc[groupName].push(char);
-      return acc;
-    },
-    {} as Record<string, CharacterInfo[]>,
-  );
+    return props.characters.reduce((acc, char) => {
+        const groupName = char.locationName || '未知地点';
+        if (!acc[groupName]) {
+            acc[groupName] = [];
+        }
+        acc[groupName].push(char);
+        return acc;
+    }, {} as Record<string, CharacterInfo[]>);
 });
 
 const emit = defineEmits(['close']);

@@ -13,10 +13,10 @@
         <AppViewContainer v-else :title="getAppName(activeAppId)" @back="goHome">
           <template #header-actions>
             <button v-if="activeAppId === 'diary'" class="header-action-btn" @click="isDiaryNavOpen = !isDiaryNavOpen">
-              <i class="fas fa-bars"></i>
+               <i class="fas fa-bars"></i>
             </button>
           </template>
-          <component :is="activeApp" :is-diary-nav-open="isDiaryNavOpen" @close-diary-nav="isDiaryNavOpen = false" />
+          <component :is="activeApp" :is-diary-nav-open="isDiaryNavOpen" @close-diary-nav="isDiaryNavOpen = false"/>
         </AppViewContainer>
       </transition>
     </div>
@@ -88,7 +88,7 @@ export default defineComponent({
         activeApp.value = apps[appId];
         activeAppId.value = appId;
         if (appId !== 'diary') {
-          isDiaryNavOpen.value = false;
+           isDiaryNavOpen.value = false;
         }
       } else {
         console.warn(`App not found: ${appId}`);
@@ -113,37 +113,38 @@ export default defineComponent({
       setInterval(updateTime, 1000 * 60);
     });
 
-    const totalApPerDay = 21;
     const batteryLevel = computed(() => {
-      const ap = store.worldState?.世界状态?.行动点;
-      if (!ap) return 100;
+      const worldState = store.worldState?.世界状态;
+      if (!worldState?.行动点 || !worldState?.时间) return 100;
 
-      // This is a simplified logic. A more robust solution would track AP spent since morning.
-      // Assuming the '上限' resets each time segment, which isn't accurate for a daily total.
-      // For now, let's use a rough estimation.
-      // A better way is to calculate AP spent based on current time segment.
-      const segmentAPMap: Record<string, number> = {
-        早晨: 2,
-        上学路: 1,
-        午前: 2,
-        午休: 3,
-        午后: 2,
-        放学后: 5,
-        傍晚: 3,
-        夜: 3,
-      };
-      const segments = ['早晨', '上学路', '午前', '午休', '午后', '放学后', '傍晚', '夜'];
-      const currentSegment = store.worldState?.世界状态?.时间?.当前片段 || '早晨';
+      // 从神谕引擎获取权威的时间片段定义和AP预算
+      const segmentAPMap: Record<string, number> = { '清晨': 6, '上午前': 6, '上午': 6, '午休': 8, '下午': 6, '下午后': 10, '夜晚': 6 };
+      const segments = ['清晨', '上午前', '上午', '午休', '下午', '下午后', '夜晚'];
+      const totalApPerDay = Object.values(segmentAPMap).reduce((sum, ap) => sum + ap, 0);
+
+      const currentSegment = worldState.时间.当前片段;
       const currentSegmentIndex = segments.indexOf(currentSegment);
+      const currentAP = worldState.行动点.当前;
 
-      let apSpent = 0;
-      for (let i = 0; i < currentSegmentIndex; i++) {
-        apSpent += segmentAPMap[segments[i]];
+      if (currentSegmentIndex === -1) {
+        console.error(`未知的当前时间片段: ${currentSegment}`);
+        return 100; // 返回一个安全值
       }
-      apSpent += segmentAPMap[currentSegment] - ap.当前;
 
-      const percentage = 100 - Math.round((apSpent / totalApPerDay) * 100);
-      return Math.max(0, percentage);
+      // 计算当天到当前片段为止，已经消耗的总AP
+      let apSpentToday = 0;
+      for (let i = 0; i < currentSegmentIndex; i++) {
+        apSpentToday += segmentAPMap[segments[i]];
+      }
+
+      // 加上当前片段已经消耗的AP
+      const currentSegmentBudget = segmentAPMap[currentSegment];
+      apSpentToday += (currentSegmentBudget - currentAP);
+
+      if (totalApPerDay === 0) return 100;
+
+      const percentage = 100 - Math.round((apSpentToday / totalApPerDay) * 100);
+      return Math.max(0, Math.min(100, percentage));
     });
 
     const batteryIcon = computed(() => {
@@ -273,9 +274,7 @@ export default defineComponent({
   justify-content: center;
   align-items: center;
   opacity: 0.7;
-  transition:
-    opacity 0.2s ease,
-    background-color 0.2s ease;
+  transition: opacity 0.2s ease, background-color 0.2s ease;
 
   &:hover {
     opacity: 1;
@@ -298,9 +297,7 @@ export default defineComponent({
   }
   &::before {
     top: 16px;
-    box-shadow:
-      0 5px 0 white,
-      0 10px 0 white;
+    box-shadow: 0 5px 0 white, 0 10px 0 white;
   }
 }
 

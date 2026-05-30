@@ -13,7 +13,9 @@
         </div>
       </div>
     </div>
-    <div v-else class="no-promo">本周暂无特惠活动，敬请期待！</div>
+    <div v-else class="no-promo">
+      本周暂无特惠活动，敬请期待！
+    </div>
   </div>
 </template>
 

@@ -76,7 +76,7 @@ initializeServices().then(() => {
   setInterval(async () => {
     // 强制刷新缓存以获取最新内容
     const currentLogContent = await lorebookService.readFromLorebook('导演场记', true);
-    
+
     // 检查内容是否存在且发生了变化
     if (currentLogContent && currentLogContent !== lastDirectorLogContent) {
       console.log('[Auto-Memory Polling] Detected change in "导演场记", processing...');

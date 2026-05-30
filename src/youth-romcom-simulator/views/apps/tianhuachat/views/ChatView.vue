@@ -174,12 +174,12 @@ async function sendMessage() {
   });
 
   // 2. Directly write to the lorebook for persistence and immediate feedback
-  const receiverId = chatInfo.isGroup ? props.conversationId : (chatInfo.characterId || '');
+  const receiverId = chatInfo.isGroup ? props.conversationId : chatInfo.characterId || '';
   if (!receiverId) {
-      console.error("无法确定接收者ID，消息发送失败。");
-      return;
+    console.error('无法确定接收者ID，消息发送失败。');
+    return;
   }
-  
+
   const rawMessageParts = [
     chatInfo.isGroup ? '群聊' : '私聊',
     store.userId,
@@ -200,7 +200,6 @@ async function sendMessage() {
     console.error('Failed to send message and write to lorebook:', error);
     // Optionally: show an error toastr to the user
   }
-
 
   newMessage.value = '';
   nextTick(() => {

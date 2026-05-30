@@ -195,7 +195,7 @@
 * `src/综漫-春物/`: **世界观核心数据库 (The Bible)**。包含所有设定、规则、数据模板和 Prompt。
   * `[initvar].txt`: 世界初始状态定义。
   * `[mvu_update]变量更新规则.txt`: 指导 AI 如何通过 JSON Patch 更新变量。
-  * `[系统]*.txt`: 定义系统的运行逻辑（如 NPC 自动化、认知隔离、合理性审查）。
+  * `[系统]*.txt`: 定义系统的运行逻辑（如认知隔离、合理性审查）。
   * `[数据]*.json`: 静态资源库（剧情、服装、日历）。
 * `src/youth-romcom-simulator/`: **前端应用源码**。
   * `components/`: Vue 通用组件。

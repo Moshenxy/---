@@ -51,7 +51,7 @@ onMounted(() => {
   height: 100%;
   overflow-y: auto;
   @include custom-scrollbar;
-  
+
   ul {
     list-style: none;
     padding: 0;
@@ -86,7 +86,7 @@ onMounted(() => {
   height: 100%;
   display: flex;
   flex-direction: column;
-  
+
   .back-button {
     margin-bottom: $spacing-md;
     align-self: flex-start;

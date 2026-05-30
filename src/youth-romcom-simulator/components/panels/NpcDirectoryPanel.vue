@@ -78,20 +78,23 @@ function showLocationDetails(locationId: string) {
 }
 
 // Watch for changes in the total NPC list and pre-select the first one if none is selected.
-watch(displayedNpcs, (newNpcs) => {
-  if (newNpcs.length > 0 && !selectedNpc.value) {
-    // selectNpc(newNpcs[0]);
-  } else if (newNpcs.length === 0) {
-    selectedNpc.value = null;
-    selectedNpcId.value = null;
-  }
-}, { immediate: true });
+watch(
+  displayedNpcs,
+  newNpcs => {
+    if (newNpcs.length > 0 && !selectedNpc.value) {
+      // selectNpc(newNpcs[0]);
+    } else if (newNpcs.length === 0) {
+      selectedNpc.value = null;
+      selectedNpcId.value = null;
+    }
+  },
+  { immediate: true },
+);
 
 const goBackToList = () => {
   selectedNpc.value = null;
   selectedNpcId.value = null;
 };
-
 </script>
 
 <style lang="scss" scoped>
@@ -104,7 +107,8 @@ const goBackToList = () => {
   flex-direction: column;
 }
 
-.npc-list-view, .npc-detail-view {
+.npc-list-view,
+.npc-detail-view {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -170,7 +174,7 @@ const goBackToList = () => {
   color: $color-gold-pale;
   font-size: $font-size-base;
   cursor: pointer;
-  
+
   i {
     margin-right: $spacing-sm;
   }

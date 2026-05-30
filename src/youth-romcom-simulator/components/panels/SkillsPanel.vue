@@ -24,11 +24,13 @@
         <div v-if="skill.associatedSkills && skill.associatedSkills.length > 0" class="associated-skills">
           <button @click="toggleSkills(skill.id)" class="associated-skills-title">
             相关技能
-            <span :class="['arrow', { 'expanded': isExpanded(skill.id) }]"></span>
+            <span :class="['arrow', { expanded: isExpanded(skill.id) }]"></span>
           </button>
           <ul v-if="isExpanded(skill.id)" class="associated-skills-list">
             <li v-for="activeSkill in skill.associatedSkills" :key="activeSkill.ID" class="associated-skill-item">
-              <div class="skill-name"><strong>{{ activeSkill.名称 }}</strong> ({{ activeSkill.类型 }})</div>
+              <div class="skill-name">
+                <strong>{{ activeSkill.名称 }}</strong> ({{ activeSkill.类型 }})
+              </div>
               <div class="skill-detail skill-description-detail">{{ activeSkill.描述 }}</div>
               <div class="skill-detail"><strong>基础效果:</strong> {{ activeSkill.基础效果 }}</div>
               <div class="skill-detail"><strong>成长:</strong> {{ activeSkill.效果等级公式 }}</div>
@@ -66,14 +68,16 @@ const isExpanded = (skillId: string) => {
   box-sizing: border-box;
   overflow-y: auto;
   @include custom-scrollbar($color-gold-liu, transparent);
-  
+
   h2 {
     font-family: $font-family-title;
     font-size: $font-size-h1;
     color: lighten($color-gold-pale, 10%);
     text-align: center;
     margin-bottom: $spacing-xl;
-    text-shadow: 0 0 15px rgba($color-gold-liu, 0.7), 0 0 5px rgba($color-gold-liu, 0.5);
+    text-shadow:
+      0 0 15px rgba($color-gold-liu, 0.7),
+      0 0 5px rgba($color-gold-liu, 0.5);
   }
 
   .empty-state {
@@ -94,7 +98,7 @@ const isExpanded = (skillId: string) => {
     border: 1px solid rgba($color-gold-liu, 0.2);
     border-radius: $border-radius-md;
     padding: $spacing-md;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
     transition: all 0.3s ease;
 
     &:hover {
@@ -128,7 +132,7 @@ const isExpanded = (skillId: string) => {
       text-shadow: 0 0 5px rgba($color-cyan-tian, 0.5);
     }
   }
-  
+
   .skill-description {
     font-size: $font-size-base;
     color: $color-white-moon;
@@ -141,19 +145,19 @@ const isExpanded = (skillId: string) => {
       display: flex;
       align-items: center;
       gap: $spacing-md;
-      
+
       progress {
         flex-grow: 1;
         height: 10px;
         -webkit-appearance: none;
         appearance: none;
-        
+
         &::-webkit-progress-bar {
           background-color: rgba($color-black-void, 0.7);
           border-radius: 5px;
-          box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+          box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
         }
-        
+
         &::-webkit-progress-value {
           background-image: linear-gradient(to right, $color-cyan-tian, lighten($color-cyan-tian, 15%));
           border-radius: 5px;
@@ -161,7 +165,7 @@ const isExpanded = (skillId: string) => {
           transition: width 0.3s ease;
         }
       }
-      
+
       .progress-text {
         font-size: $font-size-small;
         color: lighten($color-grey-stone, 10%);
@@ -232,8 +236,8 @@ const isExpanded = (skillId: string) => {
     background-color: rgba($color-black-void, 0.5);
     border-radius: $border-radius-md;
     border: 1px solid rgba($color-black-void, 0.7);
-    box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
-    
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
+
     .skill-name {
       font-size: $font-size-base;
       color: $color-white-moon;
@@ -256,7 +260,7 @@ const isExpanded = (skillId: string) => {
         font-weight: normal;
       }
     }
-    
+
     .skill-description-detail {
       font-style: italic;
       color: darken($color-grey-stone, 10%);

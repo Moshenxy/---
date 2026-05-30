@@ -45,11 +45,15 @@ const selectCard = (card: Card) => {
   showDetailView.value = true;
 };
 
-watch(backpackCards, (newVal) => {
-  if (!selectedCard.value || !newVal.find(c => c.ID === selectedCard.value?.ID)) {
-    selectedCard.value = newVal[0] || null;
-  }
-}, { immediate: true });
+watch(
+  backpackCards,
+  newVal => {
+    if (!selectedCard.value || !newVal.find(c => c.ID === selectedCard.value?.ID)) {
+      selectedCard.value = newVal[0] || null;
+    }
+  },
+  { immediate: true },
+);
 </script>
 
 <style lang="scss" scoped>
@@ -62,17 +66,17 @@ watch(backpackCards, (newVal) => {
 }
 
 .list-view-container {
-    display: grid;
-    grid-template-columns: 300px 1fr;
-    height: 100%;
-    gap: 1em;
-    padding: 1em;
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  height: 100%;
+  gap: 1em;
+  padding: 1em;
 
-    @media (max-width: 600px) {
-        grid-template-columns: 1fr;
-        padding: 0;
-        gap: 0;
-    }
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+    padding: 0;
+    gap: 0;
+  }
 }
 
 .card-list-section {
@@ -160,9 +164,9 @@ watch(backpackCards, (newVal) => {
     position: absolute;
     top: 10px;
     left: 10px;
-    background: rgba(0,0,0,0.4);
+    background: rgba(0, 0, 0, 0.4);
     color: white;
-    border: 1px solid rgba(255,255,255,0.5);
+    border: 1px solid rgba(255, 255, 255, 0.5);
     border-radius: 20px;
     padding: 5px 12px;
     cursor: pointer;

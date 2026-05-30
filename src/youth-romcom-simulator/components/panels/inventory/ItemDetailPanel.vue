@@ -36,12 +36,12 @@ const props = defineProps<{
 }>();
 
 const typeColorMap: Record<string, { bg: string; text: string }> = {
-  '日常用品': { bg: 'rgba(108, 117, 125, 0.2)', text: '#6c757d' },
-  '书籍资料': { bg: 'rgba(58, 143, 157, 0.2)', text: '#3a8f9d' },
-  '个人物品': { bg: 'rgba(212, 175, 55, 0.2)', text: '#d4af37' },
-  '剧情道具': { bg: 'rgba(138, 93, 181, 0.2)', text: '#8a5db5' },
-  '赠礼': { bg: 'rgba(220, 53, 69, 0.2)', text: '#dc3545' },
-  '服装饰品': { bg: 'rgba(255, 193, 7, 0.2)', text: '#ffc107' },
+  日常用品: { bg: 'rgba(108, 117, 125, 0.2)', text: '#6c757d' },
+  书籍资料: { bg: 'rgba(58, 143, 157, 0.2)', text: '#3a8f9d' },
+  个人物品: { bg: 'rgba(212, 175, 55, 0.2)', text: '#d4af37' },
+  剧情道具: { bg: 'rgba(138, 93, 181, 0.2)', text: '#8a5db5' },
+  赠礼: { bg: 'rgba(220, 53, 69, 0.2)', text: '#dc3545' },
+  服装饰品: { bg: 'rgba(255, 193, 7, 0.2)', text: '#ffc107' },
 };
 
 const defaultColor = { bg: 'rgba(108, 117, 125, 0.2)', text: '#6c757d' };
@@ -50,7 +50,7 @@ const getTypeTagStyle = (item: Item) => {
   const colors = typeColorMap[item.类型] || defaultColor;
   return {
     backgroundColor: colors.bg,
-    color: colors.text
+    color: colors.text,
   };
 };
 
@@ -58,7 +58,6 @@ const getTypeStyle = (item: Item) => {
   const color = typeColorMap[item.类型]?.text || defaultColor.text;
   return { color };
 };
-
 </script>
 
 <style lang="scss" scoped>

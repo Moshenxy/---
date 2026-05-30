@@ -1,11 +1,6 @@
 <template>
   <div class="action-points-display">
-    <span
-      v-for="dot in dots"
-      :key="dot.id"
-      class="ap-dot"
-      :class="{ 'used': !dot.active }"
-    ></span>
+    <span v-for="dot in dots" :key="dot.id" class="ap-dot" :class="{ used: !dot.active }"></span>
   </div>
 </template>
 

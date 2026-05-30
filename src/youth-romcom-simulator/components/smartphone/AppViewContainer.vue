@@ -64,7 +64,7 @@ export default defineComponent({
     font-size: $font-size-h3;
     margin: 0;
   }
-  
+
   .header-actions {
     width: 24px; // to balance the back button
   }

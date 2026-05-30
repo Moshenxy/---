@@ -1,43 +1,41 @@
 <template>
   <div class="destiny-card-panel-layout">
-     <!-- Mobile Detail View -->
-     <div v-if="showDetailView" class="card-display-section-mobile">
-       <button class="back-to-list-btn" @click="showDetailView = false">< 返回列表</button>
-       <DestinyCard v-if="selectedCard" :card="selectedCard" />
-     </div>
-     
-     <!-- List View (Default on mobile, always visible on desktop) -->
-     <div v-else class="list-view-container">
-       <div class="card-list-section">
-         <div class="pool-stats">
-           <span v-for="(count, type) in stats" :key="type">
-             {{ type }}: {{ count }}
-           </span>
-         </div>
-         <div class="filters">
-           <input v-model="searchTerm" placeholder="搜索卡牌..." />
-           <select v-model="selectedType">
-             <option value="">所有类型</option>
-             <option v-for="type in cardTypes" :key="type" :value="type">{{ type }}</option>
-           </select>
-         </div>
-         <ul class="card-list">
-           <li
-             v-for="card in filteredWarehouse"
-             :key="card.ID"
-             @click="selectCard(card)"
-             :class="{ active: selectedCard?.ID === card.ID }"
-           >
-             <span class="card-list-name">{{ card.名称 }}</span>
-             <span class="card-list-level">[{{ card.等级 }}]</span>
-           </li>
-         </ul>
-       </div>
-       <div class="card-display-section-desktop">
-         <DestinyCard v-if="selectedCard" :card="selectedCard" />
-         <div v-else class="placeholder">请在左侧选择一张卡牌查看详情</div>
-       </div>
-     </div>
+    <!-- Mobile Detail View -->
+    <div v-if="showDetailView" class="card-display-section-mobile">
+      <button class="back-to-list-btn" @click="showDetailView = false">< 返回列表</button>
+      <DestinyCard v-if="selectedCard" :card="selectedCard" />
+    </div>
+
+    <!-- List View (Default on mobile, always visible on desktop) -->
+    <div v-else class="list-view-container">
+      <div class="card-list-section">
+        <div class="pool-stats">
+          <span v-for="(count, type) in stats" :key="type"> {{ type }}: {{ count }} </span>
+        </div>
+        <div class="filters">
+          <input v-model="searchTerm" placeholder="搜索卡牌..." />
+          <select v-model="selectedType">
+            <option value="">所有类型</option>
+            <option v-for="type in cardTypes" :key="type" :value="type">{{ type }}</option>
+          </select>
+        </div>
+        <ul class="card-list">
+          <li
+            v-for="card in filteredWarehouse"
+            :key="card.ID"
+            @click="selectCard(card)"
+            :class="{ active: selectedCard?.ID === card.ID }"
+          >
+            <span class="card-list-name">{{ card.名称 }}</span>
+            <span class="card-list-level">[{{ card.等级 }}]</span>
+          </li>
+        </ul>
+      </div>
+      <div class="card-display-section-desktop">
+        <DestinyCard v-if="selectedCard" :card="selectedCard" />
+        <div v-else class="placeholder">请在左侧选择一张卡牌查看详情</div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -53,13 +51,13 @@ const selectedCard = ref<Card | null>(null);
 const showDetailView = ref(false);
 
 const selectCard = (card: Card) => {
- selectedCard.value = card;
- showDetailView.value = true;
+  selectedCard.value = card;
+  showDetailView.value = true;
 };
 
 const stats = computed(() => {
   const allStats = destinyCardService.cardPoolStats.value;
-  const { '纪念卡': _, ...poolStats } = allStats;
+  const { 纪念卡: _, ...poolStats } = allStats;
   return poolStats;
 });
 
@@ -83,12 +81,15 @@ const filteredWarehouse = computed(() => {
   });
 });
 
-watch(filteredWarehouse, (newVal) => {
-  if (!selectedCard.value || !newVal.find(c => c.ID === selectedCard.value?.ID)) {
-    selectedCard.value = newVal[0] || null;
-  }
-}, { immediate: true });
-
+watch(
+  filteredWarehouse,
+  newVal => {
+    if (!selectedCard.value || !newVal.find(c => c.ID === selectedCard.value?.ID)) {
+      selectedCard.value = newVal[0] || null;
+    }
+  },
+  { immediate: true },
+);
 </script>
 
 <style lang="scss" scoped>
@@ -100,17 +101,17 @@ watch(filteredWarehouse, (newVal) => {
 }
 
 .list-view-container {
-    display: grid;
-    grid-template-columns: 300px 1fr;
-    height: 100%;
-    gap: 1em;
-    padding: 1em;
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  height: 100%;
+  gap: 1em;
+  padding: 1em;
 
-    @media (max-width: 600px) {
-        grid-template-columns: 1fr;
-        padding: 0;
-        gap: 0;
-    }
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+    padding: 0;
+    gap: 0;
+  }
 }
 
 .card-list-section {
@@ -148,8 +149,9 @@ watch(filteredWarehouse, (newVal) => {
   gap: 0.8em;
   background-color: #2c3e50;
   border-bottom: 1px solid #4a4a5e;
-  
-  input, select {
+
+  input,
+  select {
     width: 100%;
     padding: 0.5em;
     background-color: #2c3e50;
@@ -225,9 +227,9 @@ watch(filteredWarehouse, (newVal) => {
     position: absolute;
     top: 10px;
     left: 10px;
-    background: rgba(0,0,0,0.4);
+    background: rgba(0, 0, 0, 0.4);
     color: white;
-    border: 1px solid rgba(255,255,255,0.5);
+    border: 1px solid rgba(255, 255, 255, 0.5);
     border-radius: 20px;
     padding: 5px 12px;
     cursor: pointer;

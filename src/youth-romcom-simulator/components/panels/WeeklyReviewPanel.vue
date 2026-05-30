@@ -59,15 +59,15 @@ function parseReviewBlock(block: string): WeeklyReview {
 
   lines.forEach(line => {
     if (line.startsWith('---')) return;
-    
+
     if (line.startsWith('【') && line.endsWith('】')) {
-        currentSection = line.substring(1, line.length - 1);
-        data[currentSection] = '';
+      currentSection = line.substring(1, line.length - 1);
+      data[currentSection] = '';
     } else if (line.includes('|')) {
-        const [key, ...valueParts] = line.split('|');
-        data[key.trim()] = valueParts.join('|').trim();
+      const [key, ...valueParts] = line.split('|');
+      data[key.trim()] = valueParts.join('|').trim();
     } else if (currentSection) {
-        data[currentSection] += line + '\n';
+      data[currentSection] += line + '\n';
     }
   });
 
@@ -86,8 +86,6 @@ function parseReviewBlock(block: string): WeeklyReview {
     },
   };
 }
-
-
 </script>
 
 <style lang="scss" scoped>
@@ -109,7 +107,7 @@ h3 {
   margin-bottom: 1em;
 }
 h4 {
-    margin-top: 1em;
-    color: #add8e6;
+  margin-top: 1em;
+  color: #add8e6;
 }
 </style>

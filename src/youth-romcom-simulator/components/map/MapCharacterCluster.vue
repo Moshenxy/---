@@ -32,7 +32,7 @@ const { location } = toRefs(props);
 
 const clusterStyle = computed(() => {
   if (location.value.gridX === undefined || location.value.gridY === undefined) return {};
-  
+
   const centerX = (location.value.gridX || 0) + (location.value.gridWidth || 1) / 2;
   const centerY = (location.value.gridY || 0) + (location.value.gridHeight || 1) / 2;
 
@@ -41,7 +41,7 @@ const clusterStyle = computed(() => {
     // We use grid-column and grid-row directly on the style
     'grid-column': `${Math.floor(centerX) + 1}`,
     'grid-row': `${Math.floor(centerY) + 1}`,
-    'transform': `translate(-50%, -50%)`, // Center the icon itself
+    transform: `translate(-50%, -50%)`, // Center the icon itself
     'z-index': 15,
   };
 });
@@ -76,6 +76,6 @@ const handleClick = () => {
   color: white;
   font-size: 14px;
   font-weight: bold;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 </style>

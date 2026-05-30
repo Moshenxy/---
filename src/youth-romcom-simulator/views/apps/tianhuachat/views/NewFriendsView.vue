@@ -16,9 +16,7 @@
           <button @click="handleRequest(request.id, 'reject')" class="reject-btn">拒绝</button>
         </div>
       </div>
-      <div v-if="friendRequests.length === 0" class="no-requests">
-        没有新的朋友请求
-      </div>
+      <div v-if="friendRequests.length === 0" class="no-requests">没有新的朋友请求</div>
     </div>
   </div>
 </template>
@@ -34,15 +32,15 @@ defineEmits(['back']);
 const friendRequests = ref<any[]>([]);
 
 onMounted(async () => {
-    const groups = await getGroupedContacts();
-    const newFriendsGroup = groups.find(g => g.name === '新的朋友');
-    friendRequests.value = newFriendsGroup ? newFriendsGroup.contacts : [];
+  const groups = await getGroupedContacts();
+  const newFriendsGroup = groups.find(g => g.name === '新的朋友');
+  friendRequests.value = newFriendsGroup ? newFriendsGroup.contacts : [];
 });
 
 function handleRequest(characterId: string, type: 'accept' | 'reject') {
   const characterName = friendRequests.value.find(r => r.id === characterId)?.name || '该用户';
   const actionText = type === 'accept' ? `接受了 ${characterName} 的好友请求` : `拒绝了 ${characterName} 的好友请求`;
-  
+
   actions.addActionToQueue({
     action: 'handleFriendRequest',
     characterId,

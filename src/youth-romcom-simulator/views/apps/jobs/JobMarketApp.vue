@@ -46,7 +46,7 @@ const economicIndex = computed(() => getters.economicIndex.value);
 function calculateAdjustedSalary(baseSalary: string): string {
   const baseValue = parseInt(baseSalary.split('/')[0], 10);
   if (isNaN(baseValue)) return baseSalary;
-  
+
   const adjustedValue = Math.round(baseValue * (economicIndex.value / 100));
   return `${adjustedValue}/小时`;
 }

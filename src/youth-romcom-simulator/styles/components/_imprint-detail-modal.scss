@@ -4,14 +4,14 @@
 .imprint-detail-modal-content {
   @include frosted-glass(rgba($color-indigo-deep, 0.85), 15px);
   @include animated-border(1px, $color-gold-liu, 0.6);
-  
+
   border-radius: $border-radius-lg;
   padding: $spacing-xl;
   box-shadow: 0 12px 40px rgba($color-black-void, 0.6);
   width: 420px;
   max-width: 90vw;
   color: $color-white-moon;
-  
+
   .imprint-header {
     text-align: center;
     margin-bottom: $spacing-lg;
@@ -39,7 +39,7 @@
         border-radius: $border-radius-sm;
         font-weight: bold;
       }
-      
+
       .type-tag {
         background-color: rgba($color-cyan-tian, 0.2);
         color: $color-cyan-tian;
@@ -62,7 +62,7 @@
 
   .imprint-main-display {
     text-align: center;
-    
+
     .imprint-mandala {
       width: 120px;
       height: 120px;
@@ -73,7 +73,9 @@
       justify-content: center;
       background: radial-gradient(circle, rgba($color-indigo-dark, 0.5) 0%, rgba($color-black-void, 0.8) 70%);
       border: 2px solid $color-gold-liu;
-      box-shadow: 0 0 20px rgba($color-gold-liu, 0.5), inset 0 0 15px rgba($color-gold-pale, 0.3);
+      box-shadow:
+        0 0 20px rgba($color-gold-liu, 0.5),
+        inset 0 0 15px rgba($color-gold-pale, 0.3);
       transition: all 0.3s ease;
 
       .mandala-icon {
@@ -81,12 +83,13 @@
         color: $color-gold-pale;
         text-shadow: 0 0 15px $color-gold-pale;
       }
-      
+
       // Energy level glow
       @for $i from 1 through 10 {
         &[data-level='#{$i}'] {
-          box-shadow: 0 0 (10px + $i * 2) rgba($color-gold-liu, 0.3 + $i * 0.05),
-                      inset 0 0 (5px + $i) rgba($color-gold-pale, 0.2 + $i * 0.02);
+          box-shadow:
+            0 0 (10px + $i * 2) rgba($color-gold-liu, 0.3 + $i * 0.05),
+            inset 0 0 (5px + $i) rgba($color-gold-pale, 0.2 + $i * 0.02);
         }
       }
     }
@@ -120,14 +123,14 @@
     }
 
     .effect-item {
-      background: rgba(0,0,0, 0.2);
+      background: rgba(0, 0, 0, 0.2);
       padding: $spacing-md;
       border-radius: $border-radius-md;
       border-left: 3px solid $color-cyan-tian;
       transition: background 0.3s ease;
 
       &:hover {
-        background: rgba(0,0,0, 0.4);
+        background: rgba(0, 0, 0, 0.4);
       }
 
       .effect-type {
@@ -140,7 +143,7 @@
         font-weight: bold;
         color: $color-white;
       }
-      
+
       .effect-description {
         margin-top: $spacing-sm;
         font-size: $font-size-sm;

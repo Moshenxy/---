@@ -9,7 +9,13 @@
         <p>暂无重要关系事件</p>
       </div>
       <ul v-else class="timeline-list">
-        <li v-for="(event, index) in sortedEvents" :key="index" class="timeline-item" @mouseover="emit('event-hover', event)" @mouseleave="emit('event-hover', null)">
+        <li
+          v-for="(event, index) in sortedEvents"
+          :key="index"
+          class="timeline-item"
+          @mouseover="emit('event-hover', event)"
+          @mouseleave="emit('event-hover', null)"
+        >
           <div class="timeline-marker" :style="{ backgroundColor: getMarkerColor(event) }"></div>
           <div class="timeline-event-card">
             <p class="event-description">{{ event }}</p>
@@ -36,11 +42,10 @@ const sortedEvents = computed(() => {
 });
 
 function getMarkerColor(event: string) {
-    if (event.includes('提升') || event.includes('好感')) return '#28a745';
-    if (event.includes('下降') || event.includes('误会')) return '#dc3545';
-    return '#6c757d';
+  if (event.includes('提升') || event.includes('好感')) return '#28a745';
+  if (event.includes('下降') || event.includes('误会')) return '#dc3545';
+  return '#6c757d';
 }
-
 </script>
 
 <style lang="scss" scoped>
@@ -130,7 +135,7 @@ function getMarkerColor(event: string) {
   background-color: #fff;
   border-radius: 6px;
   padding: 8px 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   flex-grow: 1;
 
   .event-date {
@@ -147,8 +152,8 @@ function getMarkerColor(event: string) {
 }
 
 .no-events {
-    text-align: center;
-    color: #6c757d;
-    padding: 20px;
+  text-align: center;
+  color: #6c757d;
+  padding: 20px;
 }
 </style>

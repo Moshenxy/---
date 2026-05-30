@@ -34,7 +34,7 @@ class WorldMapDataService {
       console.warn(`WorldMapDataService: 在纪元 "${epoch.纪元名称}" 中没有找到 "空间实体" 数据。`);
       return null;
     }
-    
+
     // 使用 Object.keys 和 for...in 循环来替代 Object.values
     const entitiesArray: SpatialEntity[] = [];
     for (const key in spatialEntities) {
@@ -81,8 +81,8 @@ class WorldMapDataService {
 
     // 2. 构建层级关系并识别根节点
     for (const node of nodeMap.values()) {
-       // A node is a root node if it has no parentId, its parentId is 'WORLD_ORIGIN',
-       // or its parent is not found in the map (it's an orphan, treat as root).
+      // A node is a root node if it has no parentId, its parentId is 'WORLD_ORIGIN',
+      // or its parent is not found in the map (it's an orphan, treat as root).
       const parent = node.parentId ? nodeMap.get(node.parentId) : null;
       if (parent) {
         parent.children.push(node);

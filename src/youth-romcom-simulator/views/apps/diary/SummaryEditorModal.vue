@@ -28,12 +28,9 @@ const emit = defineEmits(['close', 'save']);
 
 const editableSummary = ref('');
 
-watch(
-  () => props.summary,
-  newVal => {
-    editableSummary.value = newVal || '';
-  },
-);
+watch(() => props.summary, (newVal) => {
+  editableSummary.value = newVal || '';
+});
 
 const saveChanges = () => {
   emit('save', editableSummary.value);
@@ -61,7 +58,7 @@ const saveChanges = () => {
   border-radius: 8px;
   width: 90%;
   max-width: 600px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
 
 .modal-header {

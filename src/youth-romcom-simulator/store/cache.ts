@@ -40,10 +40,10 @@ export function loadStateFromCache(): Partial<AppState> {
  * 清除所有与天华校园相关的缓存。
  */
 export function clearAllCache() {
-  try {
-    localStorage.removeItem(CACHE_KEY);
-    console.log('[Cache] 所有天华校园相关缓存已清除。');
-  } catch (error) {
-    console.error('[Cache] 清除缓存时出错:', error);
-  }
+    try {
+        localStorage.removeItem(CACHE_KEY);
+        console.log('[Cache] 所有天华校园相关缓存已清除。');
+    } catch (error) {
+        console.error('[Cache] 清除缓存时出错:', error);
+    }
 }

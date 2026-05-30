@@ -25,35 +25,20 @@ const notifications = computed(() => {
   const announcements = get(store.worldState, '世界状态.公告');
 
   if (Array.isArray(announcements)) {
-    const validAnnouncements = announcements.filter(
-      item => item && typeof item === 'object' && item.hasOwnProperty('标题'),
+    const validAnnouncements = announcements.filter(item =>
+      item && typeof item === 'object' && item.hasOwnProperty('标题')
     );
 
     if (validAnnouncements.length > 0) {
       return validAnnouncements.sort((a, b) => new Date(b.时间).getTime() - new Date(a.时间).getTime());
     }
   }
-
+  
   // Return default mock data if no real data is available
   return [
-    {
-      标题: '关于文化祭的通知',
-      内容: '一年一度的天华学园文化祭将于下月15日举行，请各班级和社团踊跃报名参加。',
-      发布者: '学生会',
-      时间: '2024-09-1',
-    },
-    {
-      标题: '图书馆闭馆通知',
-      内容: '因系统维护，图书馆将于下周五（9月12日）下午闭馆半天，请同学们提前安排好借阅事宜。',
-      发布者: '图书馆',
-      时间: '2024-09-01',
-    },
-    {
-      标题: '寻物启事',
-      内容: '本人于今日在体育馆丢失一个蓝色水壶，如有拾获者请联系2年D班的比企谷八幡，万分感谢。',
-      发布者: '比企谷八幡',
-      时间: '2024-09-01',
-    },
+      { "标题": "关于文化祭的通知", "内容": "一年一度的天华学园文化祭将于下月15日举行，请各班级和社团踊跃报名参加。", "发布者": "学生会", "时间": "2024-09-1" },
+      { "标题": "图书馆闭馆通知", "内容": "因系统维护，图书馆将于下周五（9月12日）下午闭馆半天，请同学们提前安排好借阅事宜。", "发布者": "图书馆", "时间": "2024-09-01" },
+      { "标题": "寻物启事", "内容": "本人于今日在体育馆丢失一个蓝色水壶，如有拾获者请联系2年D班的比企谷八幡，万分感谢。", "发布者": "比企谷八幡", "时间": "2024-09-01" }
   ].sort((a, b) => new Date(b.时间).getTime() - new Date(a.时间).getTime());
 });
 </script>
@@ -82,7 +67,7 @@ const notifications = computed(() => {
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 12px;
-
+  
   .title {
     font-size: 17px;
     font-weight: 600;

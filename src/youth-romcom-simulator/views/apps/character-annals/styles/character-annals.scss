@@ -192,7 +192,7 @@
     padding: 0 15px;
     border-bottom: 1px solid #e9ecef;
     flex-shrink: 0;
-
+    
     .tab-item {
       padding: 8px 0;
       margin: 0 10px;
@@ -315,8 +315,7 @@
     color: white;
   }
 
-  .talents-panel,
-  .secrets-panel {
+  .talents-panel, .secrets-panel {
     .info-card {
       margin-bottom: 1rem;
     }
@@ -342,13 +341,13 @@
       margin: 0.25rem 0 0;
     }
     .secret-item {
-      .secret-footer {
-        margin-top: 1rem;
-        font-size: 0.8rem;
-        color: #6c757d;
-        display: flex;
-        justify-content: space-between;
-      }
+       .secret-footer {
+            margin-top: 1rem;
+            font-size: 0.8rem;
+            color: #6c757d;
+            display: flex;
+            justify-content: space-between;
+       }
     }
   }
 }

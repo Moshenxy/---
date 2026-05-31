@@ -7,8 +7,6 @@ import { lorebookService } from './LorebookService';
 import { memoryRetrievalService } from './MemoryRetrievalService';
 import { storylineService } from './StorylineService';
 
-type TimeSegment = '早晨' | '上学路' | '午前' | '午休' | '午后' | '放学后' | '傍晚' | '夜';
-
 export interface UserIntent {
   actionType: 'combat' | 'social' | 'exploration' | 'inventory' | 'creation' | 'default';
   crossContextQuery?: { worldId: string; epochId?: string; items?: string[]; locations?: string[] };
@@ -402,35 +400,17 @@ class ContextService {
       console.error('[ContextService] Failed to process calendar data:', error);
     }
 
-    if (worldState.命运卡牌系统 && worldState.命运卡牌系统.下次抽卡时间) {
-      const cardDrawTime = worldState.命运卡牌系统.下次抽卡时间;
-      if (cardDrawTime && cardDrawTime.日期 && cardDrawTime.片段) {
-        if (
-          !this.lastProcessedCardDrawTime ||
-          this.lastProcessedCardDrawTime.日期 !== cardDrawTime.日期 ||
-          this.lastProcessedCardDrawTime.片段 !== cardDrawTime.片段
-        ) {
-          this.hasIssuedDrawCommandForTime = false;
-          this.lastProcessedCardDrawTime = { ...cardDrawTime };
-        }
-
-        const timeToDraw = storylineService.isTimeReached(
-          dayjs(worldState.世界状态.时间.日期),
-          worldState.世界状态.时间.当前片段 as TimeSegment,
-          {
-            trigger_time: cardDrawTime,
-          },
-        );
-
-        if (timeToDraw && !this.hasIssuedDrawCommandForTime) {
-          directiveContext.系统指令 = directiveContext.系统指令 || [];
-          directiveContext.系统指令.push({
-            指令类型: '触发抽卡',
-            描述: '命运的齿-轮再次转动，你感到似乎有什么新的可能性即将到来。是时候进行一次命运抽卡了。',
-          });
-          this.hasIssuedDrawCommandForTime = true;
-        }
-      }
+    // 新的抽卡触发逻辑
+    if (
+      worldState.命运卡牌系统 &&
+      worldState.世界状态.时间.当前片段 === '夜晚' &&
+      worldState.命运卡牌系统.当日卡牌已确认 === false
+    ) {
+      directiveContext.系统指令 = directiveContext.系统指令 || [];
+      directiveContext.系统指令.push({
+        指令类型: '触发抽卡',
+        描述: '夜幕降临，命运的启示在悄然浮现。你感到似乎有什么新的可能性等待揭晓，是时候进行一次命运抽卡了。',
+      });
     }
 
     const synthesisRequest = diarySynthesisService.getSynthesisRequest();

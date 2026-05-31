@@ -71,7 +71,7 @@ class NpcSimulationService {
       const postContent = this.generateNpcPost(npc);
       actions.addActionToQueue({
         action: 'social',
-        command: `[动态|${npc.id}|${new Date().toLocaleTimeString('it-IT')}|${postContent}|friends]`,
+        command: `[动态|${npc.id}|${new Date().toLocaleTimeString('it-IT')}|${postContent}|friends]`
       });
     }
   }
@@ -82,7 +82,7 @@ class NpcSimulationService {
       '最近的课程有点难啊...',
       '好想喝奶茶。',
       `不知道 ${get(store, 'character.名', '那家伙')} 在做什么呢？`,
-      '学生会的工作好忙...',
+      '学生会的工作好忙...'
     ];
     return thoughts[Math.floor(Math.random() * thoughts.length)];
   }

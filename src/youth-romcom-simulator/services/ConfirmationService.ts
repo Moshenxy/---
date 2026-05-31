@@ -24,7 +24,7 @@ export const confirmationService = {
   },
 
   show(title: string, message: string, onConfirm: () => void, hideCancel = false) {
-    return new Promise<boolean>(resolve => {
+    return new Promise<boolean>((resolve) => {
       state.title = title;
       state.message = message;
       state.onConfirm = () => {

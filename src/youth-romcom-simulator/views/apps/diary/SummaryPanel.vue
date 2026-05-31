@@ -29,10 +29,8 @@ const props = defineProps<{
 
 const { summaryType } = toRefs(props);
 
-const title = computed(() => (summaryType.value === 'small' ? '小总结 (近期提要)' : '大总结 (往事概览)'));
-const summaryText = computed(() =>
-  summaryType.value === 'small' ? getters.smallSummaryText.value : getters.largeSummaryText.value,
-);
+const title = computed(() => summaryType.value === 'small' ? '小总结 (近期提要)' : '大总结 (往事概览)');
+const summaryText = computed(() => summaryType.value === 'small' ? getters.smallSummaryText.value : getters.largeSummaryText.value);
 
 const isEditorVisible = ref(false);
 const editingSummary = ref('');
@@ -79,21 +77,21 @@ const handleSaveFromEditor = (newSummary: string) => {
     color: #333;
     border: 1px solid #e9ecef;
   }
-
+  
   .btn-edit {
-    margin-top: 0.5rem;
-    padding: 0.25rem 0.75rem;
-    font-size: 0.8rem;
-    border: 1px solid #0d6efd;
-    background-color: transparent;
-    color: #0d6efd;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s;
+      margin-top: 0.5rem;
+      padding: 0.25rem 0.75rem;
+      font-size: 0.8rem;
+      border: 1px solid #0d6efd;
+      background-color: transparent;
+      color: #0d6efd;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
 
-    &:hover {
-      background-color: #e7f0fe;
-    }
+      &:hover {
+        background-color: #e7f0fe;
+      }
   }
 }
 </style>

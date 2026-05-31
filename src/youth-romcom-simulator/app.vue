@@ -148,71 +148,67 @@ export default defineComponent({
     const dragStart = ref({ x: 0, y: 0 });
     const elementStart = ref({ x: 0, y: 0 });
 
-    watch(
-      inputModalState,
-      newState => {
+    watch(inputModalState, (newState) => {
         if (newState.isVisible) {
-          nextTick(() => {
-            const el = inputModalContentRef.value;
-            if (el && !el.style.transform) {
-              const container = document.querySelector('.guixu-root-container');
-              if (container) {
-                const containerRect = container.getBoundingClientRect();
-                const elRect = el.getBoundingClientRect();
+            nextTick(() => {
+                const el = inputModalContentRef.value;
+                if (el && !el.style.transform) {
+                    const container = document.querySelector('.guixu-root-container');
+                    if (container) {
+                        const containerRect = container.getBoundingClientRect();
+                        const elRect = el.getBoundingClientRect();
+                        
+                        // 设置在容器底部，并考虑5%的vh间距
+                        const initialY = containerRect.height - elRect.height - (window.innerHeight * 0.05);
+                        // 水平居中
+                        const initialX = (containerRect.width - elRect.width) / 2;
 
-                // 设置在容器底部，并考虑5%的vh间距
-                const initialY = containerRect.height - elRect.height - window.innerHeight * 0.05;
-                // 水平居中
-                const initialX = (containerRect.width - elRect.width) / 2;
-
-                position.value = { x: initialX, y: initialY };
-                el.style.transform = `translate(${initialX}px, ${initialY}px)`;
-              }
-            }
-          });
+                        position.value = { x: initialX, y: initialY };
+                        el.style.transform = `translate(${initialX}px, ${initialY}px)`;
+                    }
+                }
+            });
         }
-      },
-      { deep: true },
-    );
+    }, { deep: true });
 
     const onMousedown = (e: MouseEvent) => {
-      if ((e.target as HTMLElement).closest('input, button, textarea')) return;
+        if ((e.target as HTMLElement).closest('input, button, textarea')) return;
+        
+        isDragging.value = true;
+        dragStart.value = { x: e.clientX, y: e.clientY };
+        elementStart.value = { x: position.value.x, y: position.value.y };
+        
+        const el = inputModalContentRef.value;
+        if (el) el.style.transition = 'none';
 
-      isDragging.value = true;
-      dragStart.value = { x: e.clientX, y: e.clientY };
-      elementStart.value = { x: position.value.x, y: position.value.y };
-
-      const el = inputModalContentRef.value;
-      if (el) el.style.transition = 'none';
-
-      document.addEventListener('mousemove', onMousemove);
-      document.addEventListener('mouseup', onMouseup);
+        document.addEventListener('mousemove', onMousemove);
+        document.addEventListener('mouseup', onMouseup);
     };
 
     const onMousemove = (e: MouseEvent) => {
-      if (!isDragging.value) return;
-      e.preventDefault();
-
-      requestAnimationFrame(() => {
-        const dx = e.clientX - dragStart.value.x;
-        const dy = e.clientY - dragStart.value.y;
-
-        const newX = elementStart.value.x + dx;
-        const newY = elementStart.value.y + dy;
-
-        position.value = { x: newX, y: newY };
-
-        const el = inputModalContentRef.value;
-        if (el) el.style.transform = `translate(${newX}px, ${newY}px)`;
-      });
+        if (!isDragging.value) return;
+        e.preventDefault();
+        
+        requestAnimationFrame(() => {
+            const dx = e.clientX - dragStart.value.x;
+            const dy = e.clientY - dragStart.value.y;
+            
+            const newX = elementStart.value.x + dx;
+            const newY = elementStart.value.y + dy;
+            
+            position.value = { x: newX, y: newY };
+            
+            const el = inputModalContentRef.value;
+            if(el) el.style.transform = `translate(${newX}px, ${newY}px)`;
+        });
     };
 
     const onMouseup = () => {
-      isDragging.value = false;
-      const el = inputModalContentRef.value;
-      if (el) el.style.transition = ''; // 恢复动画
-      document.removeEventListener('mousemove', onMousemove);
-      document.removeEventListener('mouseup', onMouseup);
+        isDragging.value = false;
+        const el = inputModalContentRef.value;
+        if (el) el.style.transition = ''; // 恢复动画
+        document.removeEventListener('mousemove', onMousemove);
+        document.removeEventListener('mouseup', onMouseup);
     };
 
     const isSmartphoneOpen = ref(false);
@@ -473,7 +469,7 @@ export default defineComponent({
     border: 1px solid rgba($color-gold-liu, 0.4);
     padding: $spacing-lg;
   }
-
+  
   .confirmation-title {
     color: $color-gold-pale;
     font-family: $font-family-title;

@@ -4,7 +4,7 @@
       <h2>{{ userFullName }}</h2>
       <p>余额: ¥ {{ money }}</p>
     </div>
-    
+
     <div class="pending-orders">
       <h3 class="section-title">待收货的订单</h3>
       <div v-if="pendingOrders.length === 0" class="empty-state">

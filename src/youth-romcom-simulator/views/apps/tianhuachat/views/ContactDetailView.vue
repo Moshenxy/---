@@ -17,7 +17,7 @@
           <span class="label">班级</span>
           <span class="value">{{ contact.class }}</span>
         </div>
-         <div class="info-item">
+        <div class="info-item">
           <span class="label">ID</span>
           <span class="value">{{ contact.id }}</span>
         </div>
@@ -26,9 +26,7 @@
         <button @click="$emit('view-chat', contact.chatId)" class="chat-btn">发消息</button>
       </div>
     </div>
-     <div v-else class="loading">
-        加载中...
-    </div>
+    <div v-else class="loading">加载中...</div>
   </div>
 </template>
 
@@ -50,10 +48,10 @@ defineEmits(['back', 'view-chat']);
 
 const contact = computed(() => {
   if (!props.contactId || !store.worldState) return null;
-  
+
   const character = get(store.worldState, `角色.${props.contactId}`);
   if (!character) return null;
-  
+
   const userId = store.userId;
   const partnerId = props.contactId;
   const participants = [userId, partnerId].sort();
@@ -67,7 +65,6 @@ const contact = computed(() => {
     chatId: chatId,
   };
 });
-
 </script>
 
 <style lang="scss" scoped>
@@ -102,87 +99,87 @@ const contact = computed(() => {
 }
 
 .contact-content {
-    flex-grow: 1;
-    padding: 20px;
+  flex-grow: 1;
+  padding: 20px;
 }
 
 .profile-header {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .avatar {
-    width: 72px;
-    height: 72px;
-    border-radius: 50%;
-    overflow: hidden;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  overflow: hidden;
 }
 
 .name-section {
-    .name {
-        font-size: 22px;
-        font-weight: 600;
-        margin: 0 0 5px 0;
-    }
-    .signature {
-        font-size: 14px;
-        color: #6b7280;
-        margin: 0;
-    }
+  .name {
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 5px 0;
+  }
+  .signature {
+    font-size: 14px;
+    color: #6b7280;
+    margin: 0;
+  }
 }
 
 .info-list {
-    margin-top: 20px;
-    background: white;
-    border-radius: 8px;
-    padding: 0 15px;
-    border: 1px solid #e5e7eb;
+  margin-top: 20px;
+  background: white;
+  border-radius: 8px;
+  padding: 0 15px;
+  border: 1px solid #e5e7eb;
 }
 
 .info-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 15px 0;
-    font-size: 16px;
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 0;
+  font-size: 16px;
 
-    &:not(:last-child) {
-        border-bottom: 1px solid #f3f4f6;
-    }
+  &:not(:last-child) {
+    border-bottom: 1px solid #f3f4f6;
+  }
 
-    .label {
-        color: #6b7280;
-    }
-    .value {
-        color: #1f2937;
-    }
+  .label {
+    color: #6b7280;
+  }
+  .value {
+    color: #1f2937;
+  }
 }
 
 .actions {
-    margin-top: 30px;
-    .chat-btn {
-        width: 100%;
-        padding: 12px;
-        font-size: 16px;
-        font-weight: 500;
-        border-radius: 8px;
-        border: none;
-        background-color: #3b82f6;
-        color: white;
-        cursor: pointer;
-        transition: background-color 0.2s;
+  margin-top: 30px;
+  .chat-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    border-radius: 8px;
+    border: none;
+    background-color: #3b82f6;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.2s;
 
-        &:hover {
-            background-color: #2563eb;
-        }
+    &:hover {
+      background-color: #2563eb;
     }
+  }
 }
 
 .loading {
-    text-align: center;
-    padding: 40px;
-    color: #6b7280;
+  text-align: center;
+  padding: 40px;
+  color: #6b7280;
 }
 </style>

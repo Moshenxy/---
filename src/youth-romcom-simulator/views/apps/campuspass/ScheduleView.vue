@@ -5,39 +5,39 @@
       <p>事件进行中，课程已暂停。</p>
     </div>
     <div v-else>
-        <!-- Debug Info -->
-        <div class="debug-info">
-          <p>
-            Player Class: <code>{{ playerClass }}</code>
-          </p>
-          <p>
-            Total Courses Parsed: <code>{{ totalCoursesParsed }}</code>
-          </p>
-          <p>
-            Filtered Courses: <code>{{ courses.length }}</code>
-          </p>
-        </div>
-        <div class="timeline-grid">
-      <div class="time-axis">
-        <div v-for="time in timeSlots" :key="time" class="time-slot">{{ time }}</div>
+      <!-- Debug Info -->
+      <div class="debug-info">
+        <p>
+          Player Class: <code>{{ playerClass }}</code>
+        </p>
+        <p>
+          Total Courses Parsed: <code>{{ totalCoursesParsed }}</code>
+        </p>
+        <p>
+          Filtered Courses: <code>{{ courses.length }}</code>
+        </p>
       </div>
-      <div class="schedule-lanes">
-        <div v-for="day in weekDays" :key="day" class="day-lane" :class="{ today: day === today }">
-          <div class="day-header">{{ day }}</div>
-          <div class="courses-container">
-            <div
-              v-for="course in getCoursesForDay(day)"
-              :key="course.id"
-              class="course-item"
-              :style="getCourseStyle(course)"
-            >
-              <p class="course-name">{{ course.课程名称 }}</p>
-              <p class="course-details">@ {{ course.教室ID }}</p>
+      <div class="timeline-grid">
+        <div class="time-axis">
+          <div v-for="time in timeSlots" :key="time" class="time-slot">{{ time }}</div>
+        </div>
+        <div class="schedule-lanes">
+          <div v-for="day in weekDays" :key="day" class="day-lane" :class="{ today: day === today }">
+            <div class="day-header">{{ day }}</div>
+            <div class="courses-container">
+              <div
+                v-for="course in getCoursesForDay(day)"
+                :key="course.id"
+                class="course-item"
+                :style="getCourseStyle(course)"
+              >
+                <p class="course-name">{{ course.课程名称 }}</p>
+                <p class="course-details">@ {{ course.教室ID }}</p>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
     </div>
   </div>
 </template>
@@ -83,9 +83,7 @@ const totalCoursesParsed = computed(() => allCourses.value.length);
 
 const courses = computed(() => {
   if (!playerClass.value) return [];
-  return allCourses.value.filter(course =>
-    course && playerClass.value.startsWith(course.班级ID)
-  );
+  return allCourses.value.filter(course => course && playerClass.value.startsWith(course.班级ID));
 });
 
 const getCoursesForDay = (day: string) => {

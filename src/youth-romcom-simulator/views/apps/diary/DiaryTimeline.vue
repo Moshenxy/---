@@ -45,7 +45,7 @@ defineProps({
     line-height: 1.6;
     color: #555;
   }
-  
+
   .timeline-empty {
     text-align: center;
     color: #999;

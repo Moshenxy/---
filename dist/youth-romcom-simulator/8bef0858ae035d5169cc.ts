@@ -13,6 +13,7 @@ import { npcService } from './services/NpcService';
 import { saveLoadService } from './services/saveLoadService';
 import { serviceLocator } from './services/service-locator';
 import { tavernService } from './services/tavern';
+import { stateUpdateService } from './services/StateUpdateService';
 import { actions, store } from './store';
 import './styles/main.scss';
 // 初始化核心服务
@@ -39,6 +40,8 @@ async function initializeServices() {
     }
     await entityIndexService.buildIndex(store.worldState);
     diarySynthesisService.initialize();
+    // 初始化状态更新服务
+    stateUpdateService.init();
     // 其他需要异步初始化的服务可以放在这里
 }
 function handleRerollRestore() {

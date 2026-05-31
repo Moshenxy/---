@@ -14,7 +14,7 @@
         </div>
       </div>
       <div class="cart-summary">
-         <div class="summary-row">
+        <div class="summary-row">
           <span>商品小计</span>
           <span>¥ {{ total }}</span>
         </div>

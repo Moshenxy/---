@@ -119,7 +119,11 @@ class StateUpdateService {
    * @param {object | null} mainAiContext - 主AI使用的上下文。
    * @returns {Promise<string | null>} - 返回MVU字符串，如果失败则返回null。
    */
-  private async callAnalysisApi(storyText: string, rulesText: string, mainAiContext: object | null): Promise<string | null> {
+  private async callAnalysisApi(
+    storyText: string,
+    rulesText: string,
+    mainAiContext: object | null,
+  ): Promise<string | null> {
     const settingsStore = useSettingsStore();
     const { url, apiKey, model } = settingsStore.settings;
 

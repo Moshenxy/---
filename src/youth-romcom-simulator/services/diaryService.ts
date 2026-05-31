@@ -4,47 +4,55 @@ import type { DiaryEntry } from '../types';
 class DiaryService {
   private parseSingleDiaryEntry(block: string): DiaryEntry | null {
     try {
-      const lines = block.trim().split('\n').map(l => l.trim());
+      const lines = block
+        .trim()
+        .split('\n')
+        .map(l => l.trim());
       if (lines.length < 2) return null;
 
       const entry: DiaryEntry = {
-        日期: '', 标题: '', 天气: '',
-        心情随笔: '', 本日事件簿: [], 关系温度计: [], 明日备忘: [],
+        日期: '',
+        标题: '',
+        天气: '',
+        心情随笔: '',
+        本日事件簿: [],
+        关系温度计: [],
+        明日备忘: [],
       };
 
       let bodyStartIndex = 0;
-      
+
       // Flexible Header Parsing
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
         if (line.includes('日期|')) entry.日期 = line.split('|')[1]?.trim() || '';
         if (line.includes('标题|')) entry.标题 = line.split('|')[1]?.trim() || '';
         if (line.includes('天气|')) entry.天气 = line.split('|')[1]?.trim() || '';
-        
+
         if (line === '---') {
           bodyStartIndex = i + 1;
           break;
         }
       }
-      
-      if (!entry.日期) { // Fallback if format is slightly different
-          const dateMatch = block.match(/日期\|(.+)/);
-          if(dateMatch) entry.日期 = dateMatch[1].trim();
+
+      if (!entry.日期) {
+        // Fallback if format is slightly different
+        const dateMatch = block.match(/日期\|(.+)/);
+        if (dateMatch) entry.日期 = dateMatch[1].trim();
       }
-       if (!entry.标题) {
-          const titleMatch = block.match(/标题\|(.+)/);
-          if(titleMatch) entry.标题 = titleMatch[1].trim();
+      if (!entry.标题) {
+        const titleMatch = block.match(/标题\|(.+)/);
+        if (titleMatch) entry.标题 = titleMatch[1].trim();
       }
-       if (!entry.天气) {
-          const weatherMatch = block.match(/天气\|(.+)/);
-          if(weatherMatch) entry.天气 = weatherMatch[1].trim();
+      if (!entry.天气) {
+        const weatherMatch = block.match(/天气\|(.+)/);
+        if (weatherMatch) entry.天气 = weatherMatch[1].trim();
       }
 
-
-      if (!entry.日期 || !entry.标题) return null; 
+      if (!entry.日期 || !entry.标题) return null;
 
       let currentSection: '随笔' | '事件' | '关系' | '备忘' | null = null;
-      
+
       for (let i = bodyStartIndex; i < lines.length; i++) {
         const line = lines[i].trim();
         if (!line) continue;
@@ -92,7 +100,7 @@ class DiaryService {
       }
       return entry;
     } catch (e) {
-      console.error("Error parsing single diary entry:", e, block);
+      console.error('Error parsing single diary entry:', e, block);
       return null;
     }
   }
@@ -104,20 +112,20 @@ class DiaryService {
     let currentBlock = '';
 
     for (const block of potentialBlocks) {
-        if (block.trim().startsWith('日期|')) {
-            if (currentBlock) {
-                const entry = this.parseSingleDiaryEntry(currentBlock);
-                if (entry) entries.push(entry);
-            }
-            currentBlock = block;
-        } else {
-            currentBlock += '---' + block;
+      if (block.trim().startsWith('日期|')) {
+        if (currentBlock) {
+          const entry = this.parseSingleDiaryEntry(currentBlock);
+          if (entry) entries.push(entry);
         }
+        currentBlock = block;
+      } else {
+        currentBlock += '---' + block;
+      }
     }
     // last block
     if (currentBlock) {
-        const entry = this.parseSingleDiaryEntry(currentBlock);
-        if (entry) entries.push(entry);
+      const entry = this.parseSingleDiaryEntry(currentBlock);
+      if (entry) entries.push(entry);
     }
 
     return entries;

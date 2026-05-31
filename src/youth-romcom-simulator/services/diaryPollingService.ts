@@ -18,13 +18,17 @@ class DiaryPollingService {
   }
 
   private watchAutoUpdateFlag() {
-    watch(() => store.diary.isAutoUpdateEnabled, (newValue) => {
-      if (newValue) {
-        this.start();
-      } else {
-        this.stop();
-      }
-    }, { immediate: true });
+    watch(
+      () => store.diary.isAutoUpdateEnabled,
+      newValue => {
+        if (newValue) {
+          this.start();
+        } else {
+          this.stop();
+        }
+      },
+      { immediate: true },
+    );
   }
 
   private start() {

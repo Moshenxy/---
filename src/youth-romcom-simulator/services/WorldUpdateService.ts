@@ -168,58 +168,60 @@ function applyAdd(lines: string[], path: string, contentToAdd: string): string[]
 }
 
 function applyReplace(lines: string[], path: string, newContent: string): string[] {
-    const range = findPathRange(lines, path);
-    if (!range) {
-        console.error(`[WorldUpdateService] REPLACE: 无法在内容中找到路径: ${path}`);
-        return lines;
-    }
-    const { startIndex, endIndex, parentIndent } = range;
-    const contentIndent = parentIndent + 2;
-    
-    const contentLines = newContent.split('\n').map(line => ' '.repeat(contentIndent) + line);
-    
-    lines.splice(startIndex + 1, endIndex - (startIndex + 1), ...contentLines);
-    console.log(`[WorldUpdateService] 成功替换路径内容: ${path}`);
+  const range = findPathRange(lines, path);
+  if (!range) {
+    console.error(`[WorldUpdateService] REPLACE: 无法在内容中找到路径: ${path}`);
     return lines;
+  }
+  const { startIndex, endIndex, parentIndent } = range;
+  const contentIndent = parentIndent + 2;
+
+  const contentLines = newContent.split('\n').map(line => ' '.repeat(contentIndent) + line);
+
+  lines.splice(startIndex + 1, endIndex - (startIndex + 1), ...contentLines);
+  console.log(`[WorldUpdateService] 成功替换路径内容: ${path}`);
+  return lines;
 }
 
 function applyRemove(lines: string[], path: string, contentToRemove: string): string[] {
-    const range = findPathRange(lines, path);
-    if (!range) {
-        console.error(`[WorldUpdateService] REMOVE: 无法在内容中找到路径: ${path}`);
-        return lines;
-    }
-    const { startIndex, endIndex } = range;
-    
-    const contentToRemoveLines = contentToRemove.trim().split('\n').map(l => l.trim());
-    const blockToSearchIn = lines.slice(startIndex + 1, endIndex);
-
-    let foundIndexInBlock = -1;
-    
-    for (let i = 0; i <= blockToSearchIn.length - contentToRemoveLines.length; i++) {
-        let isMatch = true;
-        for (let j = 0; j < contentToRemoveLines.length; j++) {
-            if (blockToSearchIn[i + j].trim() !== contentToRemoveLines[j]) {
-                isMatch = false;
-                break;
-            }
-        }
-        if (isMatch) {
-            foundIndexInBlock = i;
-            break;
-        }
-    }
-
-    if (foundIndexInBlock !== -1) {
-        const removeStartIndex = startIndex + 1 + foundIndexInBlock;
-        lines.splice(removeStartIndex, contentToRemoveLines.length);
-        console.log(`[WorldUpdateService] 成功从路径中移除内容: ${path}`);
-    } else {
-        console.warn(`[WorldUpdateService] REMOVE: 在路径 "${path}" 下未找到要移除的内容。`);
-    }
+  const range = findPathRange(lines, path);
+  if (!range) {
+    console.error(`[WorldUpdateService] REMOVE: 无法在内容中找到路径: ${path}`);
     return lines;
-}
+  }
+  const { startIndex, endIndex } = range;
 
+  const contentToRemoveLines = contentToRemove
+    .trim()
+    .split('\n')
+    .map(l => l.trim());
+  const blockToSearchIn = lines.slice(startIndex + 1, endIndex);
+
+  let foundIndexInBlock = -1;
+
+  for (let i = 0; i <= blockToSearchIn.length - contentToRemoveLines.length; i++) {
+    let isMatch = true;
+    for (let j = 0; j < contentToRemoveLines.length; j++) {
+      if (blockToSearchIn[i + j].trim() !== contentToRemoveLines[j]) {
+        isMatch = false;
+        break;
+      }
+    }
+    if (isMatch) {
+      foundIndexInBlock = i;
+      break;
+    }
+  }
+
+  if (foundIndexInBlock !== -1) {
+    const removeStartIndex = startIndex + 1 + foundIndexInBlock;
+    lines.splice(removeStartIndex, contentToRemoveLines.length);
+    console.log(`[WorldUpdateService] 成功从路径中移除内容: ${path}`);
+  } else {
+    console.warn(`[WorldUpdateService] REMOVE: 在路径 "${path}" 下未找到要移除的内容。`);
+  }
+  return lines;
+}
 
 class WorldUpdateService {
   public async applyModifications(modificationBlock: string, targetEntryName: string): Promise<void> {
@@ -232,11 +234,13 @@ class WorldUpdateService {
       console.error(`[WorldUpdateService] 读取世界书条目失败: "${targetEntryName}"`);
       return;
     }
-    
+
     let lines = currentContent.split('\n');
     const originalContent = currentContent;
 
-    const instructions = modificationBlock.split(/(?=\n(?:替换 ')|(?=\n(?:添加 到 '))|(?=\n(?:从 '))|^替换 '|^添加 到 '|^从 ')/g).filter(s => s.trim());
+    const instructions = modificationBlock
+      .split(/(?=\n(?:替换 ')|(?=\n(?:添加 到 '))|(?=\n(?:从 '))|^替换 '|^添加 到 '|^从 ')/g)
+      .filter(s => s.trim());
 
     for (const instruction of instructions) {
       const trimmedInstruction = instruction.trim();
@@ -256,17 +260,15 @@ class WorldUpdateService {
           }
         }
         lines = applyAdd(lines, path, content);
-
       } else if (replaceMatch) {
         const [, path, content] = replaceMatch;
         lines = applyReplace(lines, path, content);
-
       } else if (removeMatch) {
         const [, path, content] = removeMatch;
         lines = applyRemove(lines, path, content);
       }
     }
-    
+
     const updatedContent = lines.join('\n');
 
     if (updatedContent.trim() !== originalContent.trim()) {

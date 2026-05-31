@@ -28,3 +28,4 @@ const initialState: AppState = {
 export const store = reactive<AppState>({
   ...initialState,
 });
+

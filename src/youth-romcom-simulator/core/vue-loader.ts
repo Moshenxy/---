@@ -1,4 +1,5 @@
 import { createApp } from 'vue';
+import { createPinia } from 'pinia';
 import { createMemoryHistory, createRouter, RouteRecordRaw } from 'vue-router';
 import App from '../app.vue';
 import CharacterView from '../views/CharacterView.vue';
@@ -25,5 +26,6 @@ const router = createRouter({
 router.replace('/');
 
 $(() => {
-  createApp(App).use(router).mount('#app');
+  const pinia = createPinia();
+  createApp(App).use(router).use(pinia).mount('#app');
 });

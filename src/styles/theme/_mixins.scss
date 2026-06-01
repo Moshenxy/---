@@ -1,0 +1,111 @@
+// [Theme] Reincarnation Simulator - Visual Recast
+// Phase 1: Style Foundation
+// File: _mixins.scss
+// Desc: Contains reusable style mixins for the theme.
+
+@use 'variables' as *;
+
+// ==========================================================================
+// 1. Effects
+// ==========================================================================
+
+// 磨砂玻璃效果
+@mixin frosted-glass($color: $color-black-void, $blur: 0px) {
+  // background-color: $color; // Effect disabled as per user request
+}
+
+// 鎏金边框光效
+@mixin gold-border-glow($color: $color-gold-liu) {
+  border: $panel-border-width solid transparent;
+  border-image: linear-gradient(to right, $color, lighten($color, 20%), $color) 1;
+  box-shadow: 0 0 5px rgba($color, 0.5), 0 0 10px rgba($color, 0.3);
+}
+
+// ==========================================================================
+// 2. Custom Scrollbar
+// ==========================================================================
+
+@mixin custom-scrollbar($thumb-color: $color-gold-liu, $track-color: transparent) {
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: $track-color;
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $thumb-color;
+    border-radius: 3px;
+    transition: background 0.3s ease;
+
+    &:hover {
+      background: lighten($thumb-color, 10%);
+    }
+  }
+}
+
+// ==========================================================================
+// 3. Typography & Text
+// ==========================================================================
+
+// 文本超出省略
+@mixin text-ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// ==========================================================================
+// 4. Layout & Positioning
+// ==========================================================================
+
+// 快速 Flex 居中
+@mixin flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+// ==========================================================================
+// 5. Buttons
+// ==========================================================================
+
+@mixin button-primary {
+  background-color: $color-gold-liu;
+  color: $color-black-void;
+  border: 1px solid $color-gold-liu;
+  border-radius: $border-radius-md;
+  font-family: $font-family-main;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background-color: lighten($color-gold-liu, 10%);
+    box-shadow: 0 0 10px rgba($color-gold-liu, 0.5);
+  }
+}
+
+@mixin button-disabled {
+  background-color: $color-grey-stone;
+  color: rgba($color-black-void, 0.7);
+  border-color: $color-grey-stone;
+  cursor: not-allowed;
+}
+
+@mixin button-secondary {
+  background-color: transparent;
+  color: $color-gold-pale;
+  border: 1px solid $color-gold-liu;
+  border-radius: $border-radius-md;
+  font-family: $font-family-main;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background-color: rgba($color-gold-liu, 0.1);
+    border-color: lighten($color-gold-liu, 10%);
+  }
+}

@@ -1,0 +1,46 @@
+.dock-manager-style .dock-container {
+    background-color: transparent;
+    border: 1px solid transparent;
+    color: white;
+}
+
+.dock-manager-style .panel-titlebar {
+    background-color: #222;
+    padding: 4px;
+    border-bottom: 1px solid #444;
+}
+
+.dock-manager-style .panel-titlebar-button {
+    padding: 2px 4px;
+    margin-left: 2px;
+    border: 1px solid #555;
+    background-color: #333;
+}
+
+.dock-manager-style .panel-titlebar-button:hover {
+    background-color: #444;
+}
+
+.dock-manager-style .panel-tab-header {
+    background-color: #222;
+}
+
+.dock-manager-style .tab-handle {
+    background-color: #333;
+    border: 1px solid #444;
+    padding: 4px 8px;
+    margin-right: 2px;
+}
+
+.dock-manager-style .tab-handle-selected {
+    background-color: #444;
+}
+
+.dock-manager-style .dialog-floating {
+    border: 1px solid #555;
+}
+
+.dock-manager-style .dialog-floating-header {
+    background-color: #222;
+    padding: 4px;
+}

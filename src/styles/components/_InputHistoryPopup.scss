@@ -1,0 +1,90 @@
+@use '../theme/variables' as *;
+@use '../theme/mixins' as *;
+
+.input-history-popup {
+  background-color: rgba(10, 15, 30, 0.95);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba($color-gold-liu, 0.5);
+  border-radius: $border-radius-md; // Corrected from lg to md
+  padding: $spacing-lg;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  width: 450px;
+  max-width: 90vw;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-lg;
+  position: absolute;
+  bottom: calc(100% + #{$spacing-md});
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+
+  .history-section {
+    h4 {
+      font-family: $font-family-title;
+      color: $color-gold-pale;
+      font-size: $font-size-large; // Corrected from lg
+      margin-bottom: $spacing-md;
+      border-bottom: 1px solid rgba($color-gold-liu, 0.2);
+      padding-bottom: $spacing-sm;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      max-height: 150px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: $spacing-sm;
+    }
+
+    li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: $spacing-sm;
+      border-radius: $border-radius-sm;
+      background-color: rgba($color-black-void, 0.2);
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: rgba($color-gold-pale, 0.1);
+      }
+    }
+
+    .entry-text {
+      color: $color-white-moon;
+      cursor: pointer;
+      flex-grow: 1;
+      margin-right: $spacing-md;
+      @include text-ellipsis;
+    }
+
+    .actions {
+      display: flex;
+      gap: $spacing-sm;
+      flex-shrink: 0;
+
+      button {
+        font-size: $font-size-small; // Corrected from sm
+        padding: $spacing-xs $spacing-sm;
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      }
+    }
+
+    .empty-text {
+      color: $color-grey-stone;
+      font-style: italic;
+    }
+  }
+
+  .close-button-popup {
+    align-self: flex-end;
+    margin-top: $spacing-md;
+  }
+}

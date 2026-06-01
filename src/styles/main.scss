@@ -1,0 +1,124 @@
+// [Theme] Reincarnation Simulator - Visual Recast
+// File: main.scss
+// Desc: Main stylesheet entry point. Imports all theme and component styles
+//       in the correct order of precedence.
+
+// ==========================================================================
+// 1. New Theme Foundation
+//    - Imports variables, mixins, and base styles.
+// ==========================================================================
+@use './theme/variables' as *;
+@use './theme/mixins' as *;
+@use './theme/base';
+
+// ==========================================================================
+// 2. Dock Manager Theme
+//    - Applies the "Guixu Dao Mirror" theme to dock-spawn-ts panels.
+// ==========================================================================
+@use './theme/dock-theme'; // Corrected from _dock-theme.scss
+
+// ==========================================================================
+// 3. Legacy Styles
+//    - Contains styles from the old theme for compatibility.
+//    - These are overridden by the new theme where selectors match.
+// ==========================================================================
+@import './theme/legacy'; // Corrected from _legacy.scss
+
+// ==========================================================================
+// 4. Component-Specific Styles
+//    - Import styles for individual components or apps as needed.
+// ==========================================================================
+@import './apps/mall.scss';
+@import './apps/character-annals.scss';
+@import './components/EnhancedInputBox.scss';
+@import './components/InputHistoryPopup';
+
+@import './components/world-detail-modal';
+@import './components/settlement-view';
+
+// ==========================================================================
+// 5. Mobile View Overrides
+//    - Adapts the layout for mobile devices when .mobile-view is active.
+// ==========================================================================
+@import './mobile';
+
+// Text parsing styles
+.text-dialogue {
+  color: $color-gold-pale;
+}
+// Enhanced Input Box Layout Overrides
+.enhanced-input-box-container {
+  .input-wrapper {
+    display: flex;
+    align-items: stretch;
+    gap: $spacing-sm;
+  }
+
+  .button-group {
+    display: flex;
+    gap: $spacing-sm;
+  }
+
+  .side-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+
+    .action-button {
+      flex-grow: 1; // Allows buttons to fill the column height
+    }
+  }
+  
+  // Override golden-layout styles to remove missing image references
+  .lm_header .lm_tab .lm_close_tab,
+  .lm_controls .lm_popout,
+  .lm_controls .lm_maximise,
+  .lm_controls .lm_close {
+    background-image: none !important;
+  }
+
+}
+
+.text-psychology {
+  color: $color-purple-mystery;
+  font-style: italic;
+}
+
+.text-scenery {
+  color: $color-cyan-tian;
+}
+
+.text-system-highlight {
+  color: $color-gold-liu;
+  font-weight: bold;
+}
+
+
+// Override golden-layout tab height
+.lm_header {
+  height: 32px !important;
+}
+
+.lm_tab {
+  height: 30px !important;
+  line-height: 30px !important;
+  padding-bottom: 0 !important;
+}
+
+// Enlarge the close button on tabs for better usability
+.lm_tab .lm_close_tab {
+  width: 20px !important;
+  height: 20px !important;
+  right: 6px !important;
+  top: 5px !important;
+  background-size: 16px 16px;
+  background-repeat: no-repeat;
+  background-position: center;
+
+  // Use a more visible and styled 'X' as a background image (SVG)
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23a0a0a0"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>') !important;
+
+  &:hover {
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ffffff"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>') !important;
+  }
+}

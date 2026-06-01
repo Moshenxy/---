@@ -1,0 +1,149 @@
+@use '../theme/variables' as *;
+@use '../theme/mixins' as *;
+
+@keyframes orbit {
+  from { transform: rotate(0deg) translateX(150px) rotate(0deg); }
+  to { transform: rotate(360deg) translateX(150px) rotate(-360deg); }
+}
+
+.world-detail-modal-content {
+  width: 500px;
+  max-width: 90vw;
+  color: $color-white-moon;
+  background: radial-gradient(ellipse at top, lighten($color-indigo-deep, 5%), $color-black-void 80%);
+  padding: $spacing-lg;
+  border: 1px solid rgba($color-gold-liu, 0.2);
+
+  .scroll-container {
+    max-height: 70vh;
+    overflow-y: auto;
+    padding-right: $spacing-sm;
+    @include custom-scrollbar;
+  }
+
+  .world-section {
+    margin-bottom: $spacing-xl;
+    position: relative;
+  }
+  
+  .section-title {
+    font-family: $font-family-title;
+    font-size: $font-size-h2;
+    color: $color-gold-pale;
+    padding-bottom: $spacing-md;
+    margin-bottom: $spacing-lg;
+    text-align: center;
+    letter-spacing: 2px;
+    border-bottom: 1px solid rgba($color-gold-liu, 0.3);
+  }
+
+  // --- 宏观规则 ---
+  .rules-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: $spacing-lg;
+    text-align: center;
+    padding: $spacing-md;
+    border-radius: $border-radius-md;
+    background: rgba($color-black-void, 0.3);
+  }
+
+  .rule-item {
+    .rule-name {
+      font-size: $font-size-small;
+      color: $color-grey-stone;
+      margin-bottom: $spacing-sm;
+    }
+    .rule-value {
+      font-size: $font-size-h3;
+      font-weight: bold;
+      color: $color-white-moon;
+    }
+  }
+
+  // --- 力量体系 ---
+  .system-overview {
+    font-style: italic;
+    color: $color-grey-stone;
+    text-align: center;
+    margin-bottom: $spacing-xl;
+    padding: 0 $spacing-lg;
+  }
+
+  .ladder-container {
+    position: relative;
+    height: 350px;
+    margin: $spacing-xl 0;
+    
+    // Central Axis
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2px;
+      background: linear-gradient(to bottom, transparent, $color-gold-liu 50%, transparent 100%);
+      opacity: 0.7;
+    }
+  }
+
+  .境界-ladder {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1px;
+    height: 1px;
+  }
+
+  .ladder-step {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $spacing-xs;
+    
+    // --- Orbital positioning ---
+    @for $i from 1 through 5 {
+      &:nth-child(#{$i}) {
+        $angle: ($i - 1) * 72deg; // 360 / 5
+        $radius: 80px + ($i * 15px);
+        transform: rotate(#{$angle}) translateX(#{$radius}) rotate(-#{$angle});
+        animation: orbit 20s + ($i * 5s) linear infinite;
+        animation-direction: if($i % 2 == 0, reverse, normal);
+      }
+    }
+
+    // --- Glowing Pedestal (道台) ---
+    &::before {
+      content: '';
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: $color-gold-pale;
+      box-shadow: 0 0 8px $color-gold-pale, 0 0 15px $color-gold-liu;
+    }
+
+    .level-name, .level-energy {
+      position: absolute;
+      top: -30px;
+      white-space: nowrap;
+      background: rgba($color-charcoal-glass, 0.8);
+      padding: 2px 6px;
+      border-radius: $border-radius-sm;
+    }
+
+    .level-name {
+      font-weight: bold;
+      color: $color-gold-pale;
+      font-size: $font-size-base;
+    }
+    .level-energy {
+      display:none; // Hide for cleaner look, can be added back
+    }
+  }
+}

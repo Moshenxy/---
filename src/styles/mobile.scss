@@ -1,0 +1,83 @@
+@use './theme/variables' as *;
+@use './theme/mixins' as *;
+
+// ==========================================================================
+// Mobile View Overrides
+//
+// When the .mobile-view class is applied to the root container,
+// these styles will adapt the layout for smaller screens.
+// ==========================================================================
+
+.guixu-root-container.mobile-view {
+  .main-layout {
+    // Force to a single column layout
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  // Adjust top overlays padding for smaller screens
+  .top-overlays {
+    padding: $spacing-xs $spacing-sm;
+  }
+
+  // --- Mobile Overlay Panels ---
+
+  // The host element (.is-mobile-overlay) is for positioning and transition.
+  .side-panel.is-mobile-overlay,
+  .right-side-panel.is-mobile-overlay {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: 280px;
+    max-width: 75%;
+    z-index: 800;
+    // The host element itself should not scroll or have visual styles.
+    overflow: hidden;
+  }
+
+  .side-panel.is-mobile-overlay {
+    left: 0;
+  }
+  .right-side-panel.is-mobile-overlay {
+    right: 0;
+  }
+
+  // Force override the side panel's inner container style
+  .is-mobile-overlay .side-panel-container {
+    // Manually expand the mixin to apply !important to each property
+    background-color: rgba($color-charcoal-glass, 0.95) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+
+    border: 1px solid rgba($color-gold-liu, 0.3) !important;
+    box-shadow: 0 5px 50px rgba(0, 0, 0, 0.7) !important;
+    height: 100% !important;
+    padding-top: $spacing-lg !important;
+  }
+
+  // Style for the time display when it's inside the mobile panel
+  .mobile-time-display {
+    padding: $spacing-sm $spacing-md;
+    margin-bottom: $spacing-md;
+    border-bottom: 1px solid rgba($color-gold-liu, 0.2);
+  }
+
+  // --- Slide Transitions for Panels ---
+
+  .slide-left-enter-active,
+  .slide-left-leave-active,
+  .slide-right-enter-active,
+  .slide-right-leave-active {
+    transition: transform 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  .slide-left-enter-from,
+  .slide-left-leave-to {
+    transform: translateX(-100%);
+  }
+
+  .slide-right-enter-from,
+  .slide-right-leave-to {
+    transform: translateX(100%);
+  }
+}

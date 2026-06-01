@@ -1,0 +1,83 @@
+@use '../theme/variables' as *;
+@use '../theme/mixins' as *;
+
+.settlement-choice-card {
+  background-color: rgba($color-indigo-deep, 0.6);
+  border: 1px solid rgba($color-gold-liu, 0.3);
+  border-radius: $border-radius-md;
+  padding: $spacing-md;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 240px;
+
+  &:hover {
+    border-color: rgba($color-gold-pale, 0.7);
+    background-color: rgba($color-indigo-deep, 0.8);
+    box-shadow: 0 5px 25px rgba($color-black-void, 0.6);
+    transform: translateY(-5px);
+  }
+
+  &.is-selected {
+    border-color: $color-gold-pale;
+    box-shadow: 0 0 20px rgba($color-gold-pale, 0.4);
+    background: rgba($color-indigo-deep, 0.9);
+  }
+
+  .card-header {
+    text-align: center;
+    padding-bottom: $spacing-sm;
+    border-bottom: 1px solid rgba($color-gold-liu, 0.2);
+    margin-bottom: $spacing-md;
+    .choice-type {
+      font-family: $font-family-title;
+      color: $color-gold-pale;
+      font-size: $font-size-h2;
+      text-shadow: 0 0 8px rgba($color-gold-pale, 0.7);
+    }
+  }
+
+  .card-body {
+    flex-grow: 1;
+    .description {
+      color: $color-white-moon;
+      font-size: $font-size-base;
+      line-height: $line-height-base;
+      margin-bottom: $spacing-md;
+    }
+    .data-details {
+      background-color: rgba($color-black-void, 0.4);
+      padding: $spacing-md;
+      border-radius: $border-radius-sm;
+      border-left: 3px solid $color-cyan-tian;
+      .data-name {
+        color: $color-cyan-tian;
+        font-weight: bold;
+        font-size: $font-size-large;
+        margin-bottom: $spacing-sm;
+        display: block;
+      }
+      .data-description {
+        color: lighten($color-grey-stone, 15%);
+        font-size: $font-size-base;
+        line-height: 1.6;
+      }
+    }
+  }
+
+  .card-footer {
+    text-align: right;
+    padding-top: $spacing-md;
+    margin-top: $spacing-md;
+    border-top: 1px solid rgba($color-gold-liu, 0.1);
+    .cost {
+      color: $color-red-chi;
+      font-size: $font-size-base;
+      font-weight: bold;
+      text-shadow: 0 0 5px rgba($color-red-chi, 0.5);
+    }
+  }
+}

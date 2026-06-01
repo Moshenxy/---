@@ -1,0 +1,162 @@
+// [Theme] Reincarnation Simulator - Visual Recast
+// File: _dock-theme.scss
+// Desc: Theme overrides for the dock-spawn-ts library.
+
+@use 'variables' as *;
+@use 'mixins' as *;
+
+// ==========================================================================
+// Dock Manager & Panels
+// ==========================================================================
+
+@keyframes border-flow {
+  0% {
+    border-image-source: linear-gradient(to right, $color-gold-liu, lighten($color-gold-liu, 20%), $color-gold-liu);
+  }
+  25% {
+    border-image-source: linear-gradient(to bottom, $color-gold-liu, lighten($color-gold-liu, 20%), $color-gold-liu);
+  }
+  50% {
+    border-image-source: linear-gradient(to left, $color-gold-liu, lighten($color-gold-liu, 20%), $color-gold-liu);
+  }
+  75% {
+    border-image-source: linear-gradient(to top, $color-gold-liu, lighten($color-gold-liu, 20%), $color-gold-liu);
+  }
+  100% {
+    border-image-source: linear-gradient(to right, $color-gold-liu, lighten($color-gold-liu, 20%), $color-gold-liu);
+  }
+}
+
+// General Panel Styling
+.panel-base {
+  border-radius: $border-radius-md;
+  box-shadow: 0 8px 35px rgba($color-black-void, 0.5);
+  color: #000000;
+  border-style: solid;
+  border-width: 2px;
+  border-image-slice: 1;
+  animation: border-flow 8s infinite linear;
+}
+
+// Panel Title Bar
+.panel-titlebar {
+  background-color: rgba($color-black-void, 0.5);
+  border-bottom: 1px solid rgba($color-gold-liu, 0.3);
+  height: $panel-title-height;
+  font-family: $font-family-title;
+  display: flex;
+  align-items: center;
+  padding: 0 $spacing-md;
+}
+
+.panel-titlebar-text {
+  color: $color-gold-pale;
+  font-size: $font-size-h3;
+  font-weight: normal;
+  padding: 0;
+  @include text-ellipsis;
+}
+
+.panel-titlebar-button-close {
+  color: $color-grey-stone;
+  font-size: $font-size-large;
+
+  &::after {
+    content: '×'; // Use a proper multiplication sign for 'close'
+    padding: 0;
+  }
+
+  &:hover {
+    color: $color-red-chi;
+    transform: scale(1.2);
+  }
+}
+
+.panel-titlebar-button-pin {
+  color: $color-grey-stone;
+  font-size: $font-size-base;
+  cursor: pointer;
+  margin-right: $spacing-md;
+  transition: all 0.3s ease;
+
+  &.locked {
+    color: $color-cyan-tian;
+    transform: rotate(45deg);
+  }
+
+  &:hover {
+    color: $color-cyan-tian;
+    transform: scale(1.2);
+  }
+}
+
+// Panel Content Area
+.panel-content {
+  background-color: transparent;
+  // Apply custom scrollbar to the content area
+  @include custom-scrollbar($color-gold-liu, transparent);
+}
+
+// ==========================================================================
+// Tab Host
+// ==========================================================================
+
+.dockspan-tab-host {
+  background-color: transparent;
+}
+
+// Tab Handle List (the bar containing the tabs)
+.dockspan-tab-handle-list-container {
+  background-color: rgba($color-black-void, 0.3);
+  border-bottom: 1px solid rgba($color-gold-liu, 0.2);
+}
+
+// Individual Tab Handle
+.dockspan-tab-handle {
+  background-color: transparent;
+  color: $color-grey-stone;
+  border-right: 1px solid rgba($color-gold-liu, 0.2);
+  padding: $spacing-md;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background-color: rgba($color-cyan-tian, 0.2);
+    color: $color-cyan-tian;
+  }
+}
+
+// Selected Tab
+.dockspan-tab-handle-selected {
+  background-color: rgba($color-gold-liu, 0.2);
+  color: $color-gold-pale;
+  border-bottom: 2px solid $color-gold-liu;
+}
+
+.dockspan-tab-handle-close-button {
+  color: $color-grey-stone;
+  &:hover {
+    color: $color-red-chi;
+  }
+}
+
+// ==========================================================================
+// Splitter Bars
+// ==========================================================================
+
+.splitbar-horizontal,
+.splitbar-vertical {
+  background-color: rgba($color-gold-liu, 0.3);
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: $color-gold-liu;
+  }
+}
+
+// ==========================================================================
+// Overlays & Previews - Make them invisible as per user request
+// ==========================================================================
+.dock-wheel-panel-preview,
+.panel-grayout {
+  display: none !important;
+}

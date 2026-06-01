@@ -1,0 +1,152 @@
+@use '../theme/variables' as *;
+@use '../theme/mixins' as *;
+
+.imprint-detail-modal-content {
+  @include frosted-glass(rgba($color-indigo-deep, 0.85), 15px);
+  @include animated-border(1px, $color-gold-liu, 0.6);
+  
+  border-radius: $border-radius-lg;
+  padding: $spacing-xl;
+  box-shadow: 0 12px 40px rgba($color-black-void, 0.6);
+  width: 420px;
+  max-width: 90vw;
+  color: $color-white-moon;
+  
+  .imprint-header {
+    text-align: center;
+    margin-bottom: $spacing-lg;
+    border-bottom: 1px solid rgba($color-gold-liu, 0.2);
+    padding-bottom: $spacing-lg;
+
+    .imprint-name {
+      font-family: $font-family-title;
+      font-size: $font-size-h1;
+      color: $color-gold-pale;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-shadow: 0 0 10px rgba($color-gold-pale, 0.5);
+    }
+
+    .imprint-tags {
+      display: flex;
+      justify-content: center;
+      gap: $spacing-sm;
+      margin-top: $spacing-md;
+
+      .tag {
+        font-size: $font-size-sm;
+        padding: 4px 10px;
+        border-radius: $border-radius-sm;
+        font-weight: bold;
+      }
+      
+      .type-tag {
+        background-color: rgba($color-cyan-tian, 0.2);
+        color: $color-cyan-tian;
+        border: 1px solid $color-cyan-tian;
+      }
+
+      .level-tag {
+        background-color: rgba($color-gold-liu, 0.2);
+        color: $color-gold-pale;
+        border: 1px solid $color-gold-liu;
+      }
+    }
+  }
+
+  .imprint-body {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xl;
+  }
+
+  .imprint-main-display {
+    text-align: center;
+    
+    .imprint-mandala {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto $spacing-md;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle, rgba($color-indigo-dark, 0.5) 0%, rgba($color-black-void, 0.8) 70%);
+      border: 2px solid $color-gold-liu;
+      box-shadow: 0 0 20px rgba($color-gold-liu, 0.5), inset 0 0 15px rgba($color-gold-pale, 0.3);
+      transition: all 0.3s ease;
+
+      .mandala-icon {
+        font-size: 48px;
+        color: $color-gold-pale;
+        text-shadow: 0 0 15px $color-gold-pale;
+      }
+      
+      // Energy level glow
+      @for $i from 1 through 10 {
+        &[data-level='#{$i}'] {
+          box-shadow: 0 0 (10px + $i * 2) rgba($color-gold-liu, 0.3 + $i * 0.05),
+                      inset 0 0 (5px + $i) rgba($color-gold-pale, 0.2 + $i * 0.02);
+        }
+      }
+    }
+
+    .imprint-description {
+      font-size: $font-size-base;
+      line-height: $line-height-base;
+      color: $color-grey-light;
+      font-style: italic;
+    }
+  }
+
+  .imprint-effects {
+    .effects-title {
+      font-family: $font-family-title;
+      font-size: $font-size-h3;
+      color: $color-gold-pale;
+      text-align: center;
+      margin-bottom: $spacing-md;
+      padding-bottom: $spacing-sm;
+      border-bottom: 1px solid rgba($color-gold-liu, 0.15);
+    }
+
+    .effects-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: $spacing-md;
+    }
+
+    .effect-item {
+      background: rgba(0,0,0, 0.2);
+      padding: $spacing-md;
+      border-radius: $border-radius-md;
+      border-left: 3px solid $color-cyan-tian;
+      transition: background 0.3s ease;
+
+      &:hover {
+        background: rgba(0,0,0, 0.4);
+      }
+
+      .effect-type {
+        color: $color-cyan-tian;
+        font-weight: bold;
+      }
+
+      .effect-value {
+        margin-left: $spacing-sm;
+        font-weight: bold;
+        color: $color-white;
+      }
+      
+      .effect-description {
+        margin-top: $spacing-sm;
+        font-size: $font-size-sm;
+        color: $color-grey-light;
+        line-height: 1.5;
+      }
+    }
+  }
+}

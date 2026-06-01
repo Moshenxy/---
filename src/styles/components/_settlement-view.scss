@@ -1,0 +1,51 @@
+@use '../theme/variables' as *;
+@use '../theme/mixins' as *;
+@use './settlement-choice-card' as *;
+
+.settlement-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: $spacing-lg;
+
+  .choices-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: $spacing-lg;
+    overflow-y: auto;
+    padding-bottom: $spacing-lg;
+    @include custom-scrollbar;
+  }
+
+  .no-choices {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    height: 100%;
+    color: $color-grey-stone;
+    font-size: $font-size-large;
+    p {
+      margin: $spacing-sm 0;
+    }
+  }
+
+  .actions-footer {
+    padding-top: $spacing-lg;
+    margin-top: auto;
+    display: flex;
+    justify-content: flex-end;
+    border-top: 1px solid rgba($color-cyan-tian, 0.2);
+
+    .confirm-button {
+      @include button-primary;
+      padding: $spacing-md $spacing-xl;
+      font-size: $font-size-large;
+
+      &:disabled {
+        @include button-disabled;
+      }
+    }
+  }
+}

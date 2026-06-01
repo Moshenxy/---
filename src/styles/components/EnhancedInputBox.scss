@@ -1,0 +1,131 @@
+@use '../theme/variables' as *;
+@use '../theme/mixins' as *;
+
+.enhanced-input-box-container {
+  width: 100%;
+  position: relative;
+}
+
+.input-wrapper {
+  display: flex;
+  width: 100%;
+  align-items: center; // Vertically center the items
+  position: relative;
+  padding: $spacing-sm;
+  background-color: rgba($color-black-void, 0.8);
+  border: 1px solid rgba($color-gold-liu, 0.3);
+  border-radius: 30px; // Rounded corners for the container
+  @include frosted-glass(rgba($color-charcoal-glass, 0.6), 8px);
+  box-shadow: 0 0 15px rgba($color-black-void, 0.5), inset 0 0 5px rgba($color-black-void, 0.5);
+  padding-left: 55px; // Increased padding for better spacing
+  padding-right: 55px; // Increased padding for better spacing
+}
+
+textarea {
+  flex-grow: 1;
+  resize: none;
+  padding: 0.5rem 1rem;
+  border: none;
+  background-color: transparent; // Make textarea transparent
+  font-size: 1rem;
+  line-height: 1.5;
+  color: $color-white-moon;
+  min-height: 40px;
+  font-family: $font-family-main;
+  outline: none; // Remove focus outline
+
+  &::placeholder {
+    color: rgba($color-white-moon, 0.4);
+  }
+}
+
+.button-group {
+  display: flex;
+  gap: $spacing-sm;
+  padding-left: $spacing-sm;
+}
+
+.action-button {
+  padding: 0.5rem 1.2rem;
+  font-size: 0.9rem;
+  border-radius: 20px;
+  font-family: $font-family-title;
+  min-width: 90px;
+  text-align: center;
+
+  &.primary {
+    @include button-primary;
+    background-color: $color-gold-liu;
+    color: $color-black-void;
+    &:hover {
+      background-color: lighten($color-gold-liu, 10%);
+      box-shadow: 0 0 12px rgba($color-gold-liu, 0.7);
+    }
+  }
+
+  &:not(.primary) {
+    @include button-secondary;
+    background-color: rgba($color-indigo-deep, 0.7);
+    border-color: rgba($color-gold-liu, 0.4);
+    color: $color-gold-pale;
+    &:hover {
+      background-color: rgba($color-indigo-deep, 1);
+      border-color: $color-gold-liu;
+    }
+  }
+}
+
+// Command Queue Popup Styles
+.command-queue-popup {
+  position: absolute;
+  bottom: 100%;
+  right: 1rem;
+  width: 300px;
+  margin-bottom: 0.5rem;
+  z-index: 10;
+  @include frosted-glass(rgba($color-indigo-deep, 0.9), 10px);
+  border: 1px solid rgba($color-gold-liu, 0.4);
+  border-radius: $border-radius-md;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+  padding: $spacing-md;
+}
+
+.command-list {
+  max-height: 150px;
+  overflow-y: auto;
+  margin-bottom: $spacing-md;
+}
+
+.command-item {
+  padding: $spacing-sm;
+  border-bottom: 1px solid rgba($color-gold-liu, 0.2);
+  font-size: 0.9rem;
+  color: $color-white-moon;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.empty-queue {
+  color: rgba($color-white-moon, 0.6);
+  font-style: italic;
+  text-align: center;
+  padding: $spacing-lg 0;
+}
+
+.clear-button {
+  width: 100%;
+  padding: $spacing-sm;
+  background-color: rgba($color-red-chi, 0.6);
+  color: $color-white-moon;
+  border: 1px solid rgba($color-red-chi, 0.8);
+  border-radius: $border-radius-sm;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: $color-red-chi;
+    box-shadow: 0 0 10px rgba($color-red-chi, 0.5);
+  }
+}

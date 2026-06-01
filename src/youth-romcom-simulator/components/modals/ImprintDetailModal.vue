@@ -16,7 +16,7 @@
         </div>
         <p class="imprint-description">{{ imprint.描述 }}</p>
       </div>
-
+      
       <div class="imprint-effects">
         <h3 class="effects-title">效果</h3>
         <ul class="effects-list" v-if="imprint.effects">

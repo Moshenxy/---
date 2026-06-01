@@ -62,7 +62,7 @@ defineEmits(['close']);
 }
 
 .modal-backdrop.is-visible .modal-content {
-    transform: scale(1);
+  transform: scale(1);
 }
 
 .modal-header {

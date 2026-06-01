@@ -20,9 +20,15 @@ const props = defineProps<{
 }>();
 
 const 属性等级定义 = [
-  { 等级: 'F', 修正值: -5, 升级经验: 100 }, { 等级: 'E', 修正值: -3, 升级经验: 200 }, { 等级: 'D', 修正值: -1, 升级经验: 300 },
-  { 等级: 'C', 修正值: 0, 升级经验: 400 }, { 等级: 'B', 修正值: 2, 升级经验: 500 }, { 等级: 'A', 修正值: 5, 升级经验: 600 },
-  { 等级: 'S', 修正值: 10, 升级经验: 800 }, { 等级: 'SS', 修正值: 15, 升级经验: 1000 }, { 等级: 'SSS', 修正值: 20, 升级经验: Infinity },
+  { 等级: 'F', 修正值: -5, 升级经验: 100 },
+  { 等级: 'E', 修正值: -3, 升级经验: 200 },
+  { 等级: 'D', 修正值: -1, 升级经验: 300 },
+  { 等级: 'C', 修正值: 0, 升级经验: 400 },
+  { 等级: 'B', 修正值: 2, 升级经验: 500 },
+  { 等级: 'A', 修正值: 5, 升级经验: 600 },
+  { 等级: 'S', 修正值: 10, 升级经验: 800 },
+  { 等级: 'SS', 修正值: 15, 升级经验: 1000 },
+  { 等级: 'SSS', 修正值: 20, 升级经验: Infinity },
 ] as const;
 
 const filteredAttributes = computed(() => {
@@ -32,18 +38,18 @@ const filteredAttributes = computed(() => {
 });
 
 function isAttribute(value: any): value is Attribute {
-    return typeof value === 'object' && value !== null && '等级' in value && '经验值' in value;
+  return typeof value === 'object' && value !== null && '等级' in value && '经验值' in value;
 }
 
 function getAttributeLevelInfo(level: string) {
-    return 属性等级定义.find(l => l.等级 === level);
+  return 属性等级定义.find(l => l.等级 === level);
 }
 
 function calculateProgress(value: Attribute) {
-    const levelInfo = getAttributeLevelInfo(value.等级);
-    if (!levelInfo || levelInfo.升级经验 === Infinity) return '0%';
-    const progress = (value.经验值 / levelInfo.升级经验) * 100;
-    return `${Math.min(progress, 100)}%`;
+  const levelInfo = getAttributeLevelInfo(value.等级);
+  if (!levelInfo || levelInfo.升级经验 === Infinity) return '0%';
+  const progress = (value.经验值 / levelInfo.升级经验) * 100;
+  return `${Math.min(progress, 100)}%`;
 }
 
 function formatValue(value: any): string {
@@ -92,12 +98,7 @@ function formatValue(value: any): string {
     left: -80%;
     width: 60%;
     height: 100%;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba($color-gold-pale, 0.08),
-      transparent
-    );
+    background: linear-gradient(90deg, transparent, rgba($color-gold-pale, 0.08), transparent);
     transform: skewX(-25deg);
     transition: left 0.6s ease;
   }
@@ -129,32 +130,32 @@ function formatValue(value: any): string {
 }
 
 .progress-bar-container {
-    width: 100%;
-    height: 18px;
-    background-color: rgba($color-black-void, 0.5);
-    border-radius: $border-radius-sm;
-    border: 1px solid rgba($color-gold-liu, 0.1);
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  width: 100%;
+  height: 18px;
+  background-color: rgba($color-black-void, 0.5);
+  border-radius: $border-radius-sm;
+  border: 1px solid rgba($color-gold-liu, 0.1);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .progress-bar {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    background: linear-gradient(90deg, $color-cyan-tian, darken($color-cyan-tian, 15%));
-    border-radius: $border-radius-sm;
-    transition: width 0.5s ease-in-out;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: linear-gradient(90deg, $color-cyan-tian, darken($color-cyan-tian, 15%));
+  border-radius: $border-radius-sm;
+  transition: width 0.5s ease-in-out;
 }
 
 .progress-text {
-    position: relative;
-    z-index: 1;
-    font-size: 10px;
-    color: $color-white-moon;
-    text-shadow: 0 0 2px $color-black-void;
+  position: relative;
+  z-index: 1;
+  font-size: 10px;
+  color: $color-white-moon;
+  text-shadow: 0 0 2px $color-black-void;
 }
 </style>

@@ -60,12 +60,13 @@ export default defineComponent({
       border-bottom: 1px solid rgba($color-gold-liu, 0.3);
     }
 
-    p, span {
+    p,
+    span {
       color: $color-white-moon;
       line-height: $line-height-base;
       margin: 0;
     }
-    
+
     .key-points-list {
       list-style-type: disc;
       padding-left: $spacing-lg;

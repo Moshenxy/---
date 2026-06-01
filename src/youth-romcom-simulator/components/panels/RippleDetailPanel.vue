@@ -6,9 +6,7 @@
         <span class="detail-value">{{ value }}</span>
       </div>
     </div>
-    <div v-else class="loading-message">
-      正在加载往世涟漪数据...
-    </div>
+    <div v-else class="loading-message">正在加载往世涟漪数据...</div>
   </div>
 </template>
 

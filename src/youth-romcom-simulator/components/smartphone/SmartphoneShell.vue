@@ -13,10 +13,10 @@
         <AppViewContainer v-else :title="getAppName(activeAppId)" @back="goHome">
           <template #header-actions>
             <button v-if="activeAppId === 'diary'" class="header-action-btn" @click="isDiaryNavOpen = !isDiaryNavOpen">
-               <i class="fas fa-bars"></i>
+              <i class="fas fa-bars"></i>
             </button>
           </template>
-          <component :is="activeApp" :is-diary-nav-open="isDiaryNavOpen" @close-diary-nav="isDiaryNavOpen = false"/>
+          <component :is="activeApp" :is-diary-nav-open="isDiaryNavOpen" @close-diary-nav="isDiaryNavOpen = false" />
         </AppViewContainer>
       </transition>
     </div>
@@ -88,7 +88,7 @@ export default defineComponent({
         activeApp.value = apps[appId];
         activeAppId.value = appId;
         if (appId !== 'diary') {
-           isDiaryNavOpen.value = false;
+          isDiaryNavOpen.value = false;
         }
       } else {
         console.warn(`App not found: ${appId}`);
@@ -118,7 +118,15 @@ export default defineComponent({
       if (!worldState?.行动点 || !worldState?.时间) return 100;
 
       // 从神谕引擎获取权威的时间片段定义和AP预算
-      const segmentAPMap: Record<string, number> = { '清晨': 6, '上午前': 6, '上午': 6, '午休': 8, '下午': 6, '下午后': 10, '夜晚': 6 };
+      const segmentAPMap: Record<string, number> = {
+        清晨: 6,
+        上午前: 6,
+        上午: 6,
+        午休: 8,
+        下午: 6,
+        下午后: 10,
+        夜晚: 6,
+      };
       const segments = ['清晨', '上午前', '上午', '午休', '下午', '下午后', '夜晚'];
       const totalApPerDay = Object.values(segmentAPMap).reduce((sum, ap) => sum + ap, 0);
 
@@ -139,7 +147,7 @@ export default defineComponent({
 
       // 加上当前片段已经消耗的AP
       const currentSegmentBudget = segmentAPMap[currentSegment];
-      apSpentToday += (currentSegmentBudget - currentAP);
+      apSpentToday += currentSegmentBudget - currentAP;
 
       if (totalApPerDay === 0) return 100;
 
@@ -274,7 +282,9 @@ export default defineComponent({
   justify-content: center;
   align-items: center;
   opacity: 0.7;
-  transition: opacity 0.2s ease, background-color 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    background-color 0.2s ease;
 
   &:hover {
     opacity: 1;
@@ -297,7 +307,9 @@ export default defineComponent({
   }
   &::before {
     top: 16px;
-    box-shadow: 0 5px 0 white, 0 10px 0 white;
+    box-shadow:
+      0 5px 0 white,
+      0 10px 0 white;
   }
 }
 

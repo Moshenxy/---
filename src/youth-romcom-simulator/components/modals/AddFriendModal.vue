@@ -2,7 +2,7 @@
   <Modal :show="show" @close="$emit('close')" title="添加好友">
     <div class="add-friend-modal-content">
       <div class="add-friend-search-bar">
-        <input type="text" v-model="searchTerm" placeholder="输入姓名搜索全校学生..." @keypress.enter="search">
+        <input type="text" v-model="searchTerm" placeholder="输入姓名搜索全校学生..." @keypress.enter="search" />
         <button @click="search" class="interaction-btn">搜索</button>
       </div>
       <div class="search-results-list">
@@ -34,36 +34,35 @@ const searchResults = ref<any[]>([]);
 const searched = ref(false);
 
 function parseRoster(rosterText: string): any {
-    const characters: { [id: string]: any } = {};
-    if (!rosterText) return characters;
-    const lines = rosterText.split('\n');
-    let currentClass = '';
+  const characters: { [id: string]: any } = {};
+  if (!rosterText) return characters;
+  const lines = rosterText.split('\n');
+  let currentClass = '';
 
-    for (const line of lines) {
-        const classMatch = line.match(/(\d年[A-E]班)/);
-        if (classMatch) {
-            currentClass = classMatch[1];
-            continue;
-        }
-
-        const charMatch = line.match(/\d+\.\s*(.+?)\s*([♂♀])/);
-        if (charMatch && currentClass) {
-            const fullName = charMatch[1].trim();
-            const lastName = fullName.length > 2 ? fullName.substring(0, 2) : fullName.substring(0, 1);
-            const firstName = fullName.length > 2 ? fullName.substring(2) : fullName.substring(1);
-            const id = `${lastName}_${firstName}`.toLowerCase();
-
-            characters[id] = {
-                id,
-                姓: [lastName],
-                名: [firstName],
-                班级: [currentClass],
-            };
-        }
+  for (const line of lines) {
+    const classMatch = line.match(/(\d年[A-E]班)/);
+    if (classMatch) {
+      currentClass = classMatch[1];
+      continue;
     }
-    return characters;
-}
 
+    const charMatch = line.match(/\d+\.\s*(.+?)\s*([♂♀])/);
+    if (charMatch && currentClass) {
+      const fullName = charMatch[1].trim();
+      const lastName = fullName.length > 2 ? fullName.substring(0, 2) : fullName.substring(0, 1);
+      const firstName = fullName.length > 2 ? fullName.substring(2) : fullName.substring(1);
+      const id = `${lastName}_${firstName}`.toLowerCase();
+
+      characters[id] = {
+        id,
+        姓: [lastName],
+        名: [firstName],
+        班级: [currentClass],
+      };
+    }
+  }
+  return characters;
+}
 
 async function search() {
   searched.value = true;
@@ -75,38 +74,43 @@ async function search() {
 
   let allCharacters = get(store.worldState, '角色', {});
   try {
-      const allEntries = await TavernHelper.getLorebookEntries('天华校园');
-      const rosterEntry = allEntries.find((entry: any) => entry.comment === '[世界观]全校名册');
-      if (rosterEntry && rosterEntry.content) {
-          const parsedRoster = parseRoster(rosterEntry.content);
-          // 合并数据，优先使用 `角色` 对象中的数据
-          allCharacters = { ...parsedRoster, ...allCharacters };
-      }
-  } catch(e) {
-      console.error("无法加载或解析全校名册:", e);
+    const allEntries = await TavernHelper.getLorebookEntries('天华校园');
+    const rosterEntry = allEntries.find((entry: any) => entry.comment === '[世界观]全校名册');
+    if (rosterEntry && rosterEntry.content) {
+      const parsedRoster = parseRoster(rosterEntry.content);
+      // 合并数据，优先使用 `角色` 对象中的数据
+      allCharacters = { ...parsedRoster, ...allCharacters };
+    }
+  } catch (e) {
+    console.error('无法加载或解析全校名册:', e);
   }
 
   const userId = store.userId;
 
-  searchResults.value = Object.values(allCharacters).filter((char: any) => {
-    if (!char.名 || char.id === userId || char.id === '$meta' || char.id === 'template') return false;
-    const name = `${get(char, '姓[0]', '')}${get(char, '名[0]', '')}`.toLowerCase();
-    const isFriend = get(char, '聊天状态[0]') === '好友';
-    return name.includes(term) && !isFriend;
-  }).map((char: any) => ({
+  searchResults.value = Object.values(allCharacters)
+    .filter((char: any) => {
+      if (!char.名 || char.id === userId || char.id === '$meta' || char.id === 'template') return false;
+      const name = `${get(char, '姓[0]', '')}${get(char, '名[0]', '')}`.toLowerCase();
+      const isFriend = get(char, '聊天状态[0]') === '好友';
+      return name.includes(term) && !isFriend;
+    })
+    .map((char: any) => ({
       id: char.id,
       name: `${get(char, '姓[0]', '')}${get(char, '名[0]', '')}`,
-      班级: get(char, '班级', ['未知'])
-  }));
+      班级: get(char, '班级', ['未知']),
+    }));
 }
 
 function addFriend(character: any) {
-  const message = prompt(`请输入对 ${character.name} 的好友请求消息（20字以内）：`, `你好，我是${getters.userFullName.value}，可以加个好友吗？`);
+  const message = prompt(
+    `请输入对 ${character.name} 的好友请求消息（20字以内）：`,
+    `你好，我是${getters.userFullName.value}，可以加个好友吗？`,
+  );
   if (message === null) return; // User cancelled
 
   if (message.length > 20) {
-      alert('消息过长，请不要超过20个字。');
-      return;
+    alert('消息过长，请不要超过20个字。');
+    return;
   }
 
   actions.addActionToQueue({
@@ -115,7 +119,7 @@ function addFriend(character: any) {
     characterName: character.name,
     message: message || '你好，可以加个好友吗？',
   });
-  
+
   // For now, we can just close the modal. A better UX would be to show a success message.
   emit('close');
 }
@@ -123,35 +127,35 @@ function addFriend(character: any) {
 
 <style lang="scss" scoped>
 .add-friend-search-bar {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
 
-    input {
-        flex-grow: 1;
-        padding: 8px 12px;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-    }
+  input {
+    flex-grow: 1;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
 }
 
 .search-results-list {
-    min-height: 200px;
-    max-height: 40vh;
-    overflow-y: auto;
+  min-height: 200px;
+  max-height: 40vh;
+  overflow-y: auto;
 }
 
 .search-prompt {
-    color: #6c757d;
-    text-align: center;
-    padding-top: 20px;
+  color: #6c757d;
+  text-align: center;
+  padding-top: 20px;
 }
 
 .search-result-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 5px;
-    border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 5px;
+  border-bottom: 1px solid #f0f0f0;
 }
 </style>

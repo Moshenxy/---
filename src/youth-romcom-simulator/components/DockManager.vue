@@ -25,7 +25,7 @@ onMounted(() => {
 
     // Register the main view separately
     dockManagerService.registerComponent('main-view', MainView);
-    
+
     // Load layout (now that all components are registered)
     dockManagerService.loadSavedLayout();
   }
@@ -47,7 +47,7 @@ onBeforeUnmount(() => {
   .lm_goldenlayout {
     background: transparent;
   }
-  
+
   .lm_root {
     position: absolute !important;
   }
@@ -76,8 +76,8 @@ onBeforeUnmount(() => {
     font-weight: bold;
     color: #ff6b6b;
     &:hover {
-        background: #ff6b6b;
-        color: #111;
+      background: #ff6b6b;
+      color: #111;
     }
   }
 }

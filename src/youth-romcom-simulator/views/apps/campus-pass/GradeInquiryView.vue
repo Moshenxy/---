@@ -21,12 +21,8 @@
         <div v-for="(subject, name) in grades.subjects" :key="name" class="subject-item">
           <span class="subject-name">{{ name }}</span>
           <div class="subject-details">
-            <span class="score"
-              >分数: <strong>{{ subject.最近一次分数 }}</strong></span
-            >
-            <span class="rank"
-              >排名: <strong>{{ subject.年级排名 }}</strong></span
-            >
+            <span class="score">分数: <strong>{{ subject.最近一次分数 }}</strong></span>
+            <span class="rank">排名: <strong>{{ subject.年级排名 }}</strong></span>
           </div>
         </div>
       </div>
@@ -44,26 +40,19 @@ const grades = computed(() => {
 
   const subjects = Object.entries(academicData)
     .filter(([key]) => key !== '综合排名')
-    .reduce(
-      (acc, [key, value]) => {
-        const subjectDetail = Array.isArray(value) ? value[0] : value;
-        if (subjectDetail && typeof subjectDetail === 'object') {
-          acc[key] = subjectDetail;
-        }
-        return acc;
-      },
-      {} as { [key: string]: any },
-    );
+    .reduce((acc, [key, value]) => {
+      const subjectDetail = Array.isArray(value) ? value[0] : value;
+      if (subjectDetail && typeof subjectDetail === 'object') {
+        acc[key] = subjectDetail;
+      }
+      return acc;
+    }, {} as { [key: string]: any });
 
   const totalScore = Object.values(subjects).reduce((sum, subject) => sum + (subject.最近一次分数 || 0), 0);
 
   return {
     totalScore,
-    overallRank: academicData.综合排名
-      ? Array.isArray(academicData.综合排名)
-        ? academicData.综合排名[0]
-        : academicData.综合排名
-      : 'N/A',
+    overallRank: academicData.综合排名 ? (Array.isArray(academicData.综合排名) ? academicData.综合排名[0] : academicData.综合排名) : 'N/A',
     subjects,
   };
 });
@@ -76,8 +65,7 @@ const grades = computed(() => {
   height: 100%;
   overflow-y: auto;
 
-  .loading,
-  .no-data {
+  .loading, .no-data {
     text-align: center;
     color: #6c757d;
     padding-top: 2rem;
@@ -88,7 +76,7 @@ const grades = computed(() => {
     border-radius: 8px;
     padding: 1.2rem;
     margin-bottom: 1.5rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 
     h2 {
       margin-top: 0;
@@ -123,11 +111,11 @@ const grades = computed(() => {
   }
 
   .subjects-list {
-    background-color: #fff;
+     background-color: #fff;
     border-radius: 8px;
     padding: 1.2rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    
     h3 {
       margin-top: 0;
       margin-bottom: 1rem;
@@ -154,8 +142,7 @@ const grades = computed(() => {
         display: flex;
         gap: 1rem;
 
-        .score,
-        .rank {
+        .score, .rank {
           font-size: 0.9rem;
           color: #6c757d;
           strong {

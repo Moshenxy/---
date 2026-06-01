@@ -27,21 +27,21 @@
         </div>
       </div>
     </div>
-    <div v-if="selectedEvents.length > 0" class="selected-day-details">
-      <h4>{{ selectedDateFormatted }}</h4>
-      <ul>
-        <li v-for="event in selectedEvents" :key="event.id" :class="`event-type-${event.type}`" class="event-list-item">
-          <div>
-            <span class="list-dot"></span>
-            <span>{{ event.name }}</span>
-            <span v-if="event.time" class="event-time">{{ event.time }}</span>
-          </div>
-          <div v-if="event.type === 'personal'" class="event-actions">
-            <button @click="selectedDate && openAddScheduleModal(selectedDate, event)" class="action-btn">✏️</button>
-            <button @click="deleteSchedule(event.id)" class="action-btn">🗑️</button>
-          </div>
-        </li>
-      </ul>
+     <div v-if="selectedEvents.length > 0" class="selected-day-details">
+        <h4>{{ selectedDateFormatted }}</h4>
+        <ul>
+            <li v-for="event in selectedEvents" :key="event.id" :class="`event-type-${event.type}`" class="event-list-item">
+                <div>
+                    <span class="list-dot"></span>
+                    <span>{{ event.name }}</span>
+                    <span v-if="event.time" class="event-time">{{ event.time }}</span>
+                </div>
+                <div v-if="event.type === 'personal'" class="event-actions">
+                    <button @click="selectedDate && openAddScheduleModal(selectedDate, event)" class="action-btn">✏️</button>
+                    <button @click="deleteSchedule(event.id)" class="action-btn">🗑️</button>
+                </div>
+            </li>
+        </ul>
     </div>
   </div>
   <AddScheduleModal :show="isModalVisible" :schedule-to-edit="scheduleForModal" @close="isModalVisible = false" />
@@ -72,73 +72,61 @@ const isModalVisible = ref(false);
 const scheduleForModal = ref<ScheduleItem | null>(null);
 
 const isReady = computed(() => {
-  const time = getters.worldTime.value;
-  return time && time.年 && time.月 && time.日;
+    const time = getters.worldTime.value;
+    return time && time.年 && time.月 && time.日;
 });
 
 async function loadEventsForMonth(year: number, month: number) {
-  const personalAndWorldEvents = getters.monthlyCalendarEvents.value(year, month);
-  const upcomingEvents = await getUpcomingEvents(year, month);
-  const personalSchedules = calendarService.schedules;
+    const personalAndWorldEvents = getters.monthlyCalendarEvents.value(year, month);
+    const upcomingEvents = await getUpcomingEvents(year, month);
+    const personalSchedules = calendarService.schedules;
+    
+    const allEvents: { [key: string]: any[] } = { ...personalAndWorldEvents };
 
-  const allEvents: { [key: string]: any[] } = { ...personalAndWorldEvents };
+    // Merge personal schedules
+    personalSchedules.forEach(schedule => {
+        const dateStr = schedule.日期;
+        const scheduleDate = new Date(dateStr);
+        // Fix timezone issue by comparing date parts
+        if (scheduleDate.getMonth() === month && scheduleDate.getFullYear() === year) {
+            if (!allEvents[dateStr]) allEvents[dateStr] = [];
+            allEvents[dateStr].push({ ...schedule, name: schedule.标题, type: 'personal' });
+        }
+    });
 
-  // Merge personal schedules
-  personalSchedules.forEach(schedule => {
-    const dateStr = schedule.日期;
-    const scheduleDate = new Date(dateStr);
-    // Fix timezone issue by comparing date parts
-    if (scheduleDate.getMonth() === month && scheduleDate.getFullYear() === year) {
-      if (!allEvents[dateStr]) allEvents[dateStr] = [];
-      allEvents[dateStr].push({ ...schedule, name: schedule.标题, type: 'personal' });
+    for (const dateStr in upcomingEvents) {
+        if (!allEvents[dateStr]) {
+            allEvents[dateStr] = [];
+        }
+        allEvents[dateStr].push(...upcomingEvents[dateStr]);
     }
-  });
-
-  for (const dateStr in upcomingEvents) {
-    if (!allEvents[dateStr]) {
-      allEvents[dateStr] = [];
-    }
-    allEvents[dateStr].push(...upcomingEvents[dateStr]);
-  }
-  monthlyEvents.value = allEvents;
+    monthlyEvents.value = allEvents;
 }
 
-watch(
-  currentDate,
-  newDate => {
+watch(currentDate, (newDate) => {
     if (isReady.value) {
-      loadEventsForMonth(newDate.getFullYear(), newDate.getMonth());
+        loadEventsForMonth(newDate.getFullYear(), newDate.getMonth());
     }
-  },
-  { immediate: true },
-);
+}, { immediate: true });
 
-watch(
-  isReady,
-  ready => {
+watch(isReady, (ready) => {
     if (ready) {
-      const time = getters.worldTime.value;
-      const newDate = new Date(time.年, time.月 - 1, time.日);
-      today.value = newDate;
-      currentDate.value = newDate;
-      actions.setSelectedDate(newDate); // Set global selected date
-      loadEventsForMonth(newDate.getFullYear(), newDate.getMonth());
+        const time = getters.worldTime.value;
+        const newDate = new Date(time.年, time.月 - 1, time.日);
+        today.value = newDate;
+        currentDate.value = newDate;
+        actions.setSelectedDate(newDate); // Set global selected date
+        loadEventsForMonth(newDate.getFullYear(), newDate.getMonth());
     }
-  },
-  { immediate: true },
-);
+}, { immediate: true });
 
-watch(
-  () => calendarService.schedules,
-  () => {
+watch(() => calendarService.schedules, () => {
     loadEventsForMonth(currentDate.value.getFullYear(), currentDate.value.getMonth());
-  },
-  { deep: true },
-);
+}, { deep: true });
 
 const currentMonthStr = computed(() => {
-  if (!isReady.value) return '加载中...';
-  return `${currentDate.value.getFullYear()}年 ${currentDate.value.getMonth() + 1}月`;
+    if (!isReady.value) return '加载中...';
+    return `${currentDate.value.getFullYear()}年 ${currentDate.value.getMonth() + 1}月`;
 });
 
 const days = computed(() => {
@@ -166,7 +154,7 @@ const days = computed(() => {
       date,
       isToday: date.toDateString() === today.value.toDateString(),
       isCurrentMonth: true,
-      events: monthlyEvents.value[dateStr] || [],
+      events: monthlyEvents.value[dateStr] || []
     });
   }
 
@@ -182,14 +170,14 @@ const days = computed(() => {
 });
 
 const selectedDateFormatted = computed(() => {
-  if (!selectedDate.value) return '';
-  return selectedDate.value.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
+    if (!selectedDate.value) return '';
+    return selectedDate.value.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
 });
 
 const selectedEvents = computed(() => {
-  if (!selectedDate.value) return [];
-  const dateStr = selectedDate.value.toISOString().split('T')[0];
-  return monthlyEvents.value[dateStr] || [];
+    if (!selectedDate.value) return [];
+    const dateStr = selectedDate.value.toISOString().split('T')[0];
+    return monthlyEvents.value[dateStr] || [];
 });
 
 const prevMonth = () => {
@@ -201,30 +189,31 @@ const nextMonth = () => {
 };
 
 const openAddScheduleModal = (date?: Date, schedule?: ScheduleItem) => {
-  const targetDate = date || new Date();
-  if (schedule) {
-    scheduleForModal.value = { ...schedule };
-  } else {
-    scheduleForModal.value = {
-      ID: '', // ID will be generated by the service
-      标题: '',
-      日期: targetDate.toISOString().split('T')[0],
-      时间: new Date().toTimeString().slice(0, 5),
-      地点ID: '',
-      参与者: [],
-      类型: '个人',
-      描述: '',
-    };
-  }
-  isModalVisible.value = true;
+    const targetDate = date || new Date();
+    if (schedule) {
+        scheduleForModal.value = { ...schedule };
+    } else {
+        scheduleForModal.value = {
+            ID: '', // ID will be generated by the service
+            标题: '',
+            日期: targetDate.toISOString().split('T')[0],
+            时间: new Date().toTimeString().slice(0, 5),
+            地点ID: '',
+            参与者: [],
+            类型: '个人',
+            描述: '',
+        };
+    }
+    isModalVisible.value = true;
 };
 
 const deleteSchedule = async (id: string) => {
-  if (confirm('确定要删除这个日程吗？')) {
-    await calendarService.deleteSchedule(id);
-    // The UI will update via the watcher
-  }
+    if (confirm('确定要删除这个日程吗？')) {
+        await calendarService.deleteSchedule(id);
+        // The UI will update via the watcher
+    }
 };
+
 </script>
 
 <style lang="scss" scoped>
@@ -244,21 +233,20 @@ const deleteSchedule = async (id: string) => {
     margin: 0;
     font-size: 18px;
   }
-  .nav-btn,
-  .add-btn {
+  .nav-btn, .add-btn {
     background: #f3f4f6;
     border: 1px solid #e5e7eb;
     border-radius: 6px;
     padding: 4px 10px;
     cursor: pointer;
     &:hover {
-      background: #e5e7eb;
+        background: #e5e7eb;
     }
   }
   .add-btn {
-    font-size: 18px;
-    font-weight: bold;
-    padding: 2px 10px;
+      font-size: 18px;
+      font-weight: bold;
+      padding: 2px 10px;
   }
 }
 .calendar-grid {
@@ -291,7 +279,7 @@ const deleteSchedule = async (id: string) => {
     border-radius: 50%;
   }
   &:hover {
-    background-color: #eff6ff;
+      background-color: #eff6ff;
   }
 }
 .day-number {
@@ -303,83 +291,83 @@ const deleteSchedule = async (id: string) => {
   justify-content: center;
 }
 .events-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px;
-  margin-top: 4px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    margin-top: 4px;
 }
 .event-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  &.event-type-world {
-    background-color: #ef4444; // Red for world events
-  }
-  &.event-type-personal {
-    background-color: #3b82f6; // Blue for personal events
-  }
-  &.event-type-upcoming {
-    background-color: #f59e0b; // Amber for upcoming events
-  }
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    &.event-type-world {
+        background-color: #ef4444; // Red for world events
+    }
+    &.event-type-personal {
+        background-color: #3b82f6; // Blue for personal events
+    }
+    &.event-type-upcoming {
+        background-color: #f59e0b; // Amber for upcoming events
+    }
 }
 .selected-day-details {
-  padding: 10px;
-  border-top: 1px solid #e5e7eb;
-  margin-top: 10px;
-  h4 {
-    margin: 0 0 8px 0;
-  }
-  ul {
-    margin: 0;
-    padding-left: 0;
-    font-size: 14px;
-    list-style-type: none;
-    .event-list-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 4px;
-      .list-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        margin-right: 8px;
-        display: inline-block;
-      }
-      .event-time {
-        font-size: 0.8em;
-        color: #6b7280;
-        margin-left: 8px;
-      }
-      .event-actions {
-        display: flex;
-        gap: 4px;
-        .action-btn {
-          background: none;
-          border: none;
-          cursor: pointer;
-          padding: 2px 4px;
-          font-size: 12px;
-        }
-      }
-      &.event-type-world .list-dot {
-        background-color: #ef4444;
-      }
-      &.event-type-personal .list-dot {
-        background-color: #3b82f6;
-      }
-      &.event-type-upcoming .list-dot {
-        background-color: #f59e0b;
-      }
+    padding: 10px;
+    border-top: 1px solid #e5e7eb;
+    margin-top: 10px;
+    h4 {
+        margin: 0 0 8px 0;
     }
-  }
+    ul {
+        margin: 0;
+        padding-left: 0;
+        font-size: 14px;
+        list-style-type: none;
+        .event-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+            .list-dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                margin-right: 8px;
+                display: inline-block;
+            }
+            .event-time {
+                font-size: 0.8em;
+                color: #6b7280;
+                margin-left: 8px;
+            }
+            .event-actions {
+                display: flex;
+                gap: 4px;
+                .action-btn {
+                    background: none;
+                    border: none;
+                    cursor: pointer;
+                    padding: 2px 4px;
+                    font-size: 12px;
+                }
+            }
+            &.event-type-world .list-dot {
+                background-color: #ef4444;
+            }
+            &.event-type-personal .list-dot {
+                background-color: #3b82f6;
+            }
+            &.event-type-upcoming .list-dot {
+                background-color: #f59e0b;
+            }
+        }
+    }
 }
 .loading-pane {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  font-size: 16px;
-  color: #6b7280;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    font-size: 16px;
+    color: #6b7280;
 }
 </style>

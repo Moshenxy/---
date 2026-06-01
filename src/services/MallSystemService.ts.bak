@@ -1,0 +1,124 @@
+import { get } from 'lodash';
+import { store } from '../store';
+import { getProducts, Product } from './ProductService';
+import { actions } from '../store';
+import { applyMvuUpdateFallback } from './mvu-parser';
+import { lorebookService } from './LorebookService';
+
+class MallSystemService {
+  private intervalId: number | null = null;
+  private lastCheckedDay: number = -1;
+
+  start() {
+    if (this.intervalId !== null) return;
+    console.log('[MallService] Starting service...');
+    this.intervalId = window.setInterval(() => {
+      const worldTime = this.getWorldTime();
+      if (!worldTime) return;
+      
+      const currentDay = worldTime.日;
+      if (currentDay !== this.lastCheckedDay) {
+        this.checkPromotions(worldTime);
+        this.checkRestocks(worldTime);
+        this.lastCheckedDay = currentDay;
+      }
+      this.checkDeliveries(worldTime);
+      this.checkPendingRestocks(worldTime);
+    }, 10 * 1000); // 10秒检查一次
+  }
+
+  stop() {
+    if (this.intervalId !== null) {
+      clearInterval(this.intervalId);
+      this.intervalId = null;
+      console.log('[MallService] Service stopped.');
+    }
+  }
+
+  private getWorldTime() {
+    if (!store.worldState?.世界) return null;
+    const worlds = store.worldState.世界;
+    for (const worldId in worlds) {
+      if (get(worlds[worldId], '状态.定位[0]') === '当前化身世界') {
+        return get(worlds[worldId], '状态.当前时间');
+      }
+    }
+    return null;
+  }
+
+  private async checkPromotions(worldTime: any) {
+    if (worldTime?.星期 === '周日') {
+      console.log('[MallService] Sunday! Updating promotions.');
+      const allProducts = await getProducts();
+      const availableProducts = allProducts.filter(p => p.库存 > 0);
+      
+      const promotions = [];
+      for (let i = 0; i < 3 && availableProducts.length > 0; i++) {
+        const randomIndex = Math.floor(Math.random() * availableProducts.length);
+        const product = availableProducts.splice(randomIndex, 1)[0];
+        const discount = Math.floor(Math.random() * 3 + 7) / 10; // 0.7 to 0.9
+        promotions.push({ ...product, discount });
+      }
+      store.promotions = promotions;
+    }
+  }
+
+  private async checkRestocks(worldTime: any) {
+    console.log('[MallService] Checking for out-of-stock items...');
+    const allProducts = await getProducts();
+    const restockPlan = get(store.worldState, '世界状态.补货计划[0]', []);
+
+    allProducts.forEach(product => {
+      if (product.库存 === 0 && !restockPlan.some((p: any) => p.ID === product.ID)) {
+        const restockDays = product.补货周期 || 7;
+        const restockTime = new Date(
+          worldTime.年,
+          worldTime.月 - 1,
+          worldTime.日 + restockDays,
+          worldTime.时,
+          worldTime.分
+        ).toISOString();
+        
+        const command = `_.assign('世界状态.补货计划[0]', ${JSON.stringify({ ID: product.ID, 名称: product.名称, 补货时间: restockTime, 最大库存: product.最大库存 })})`;
+        applyMvuUpdateFallback(command, store.worldState);
+        console.log(`[MallService] ${product.名称} is out of stock. Scheduled for restock on ${restockTime}.`);
+      }
+    });
+  }
+
+  private async checkPendingRestocks(worldTime: any) {
+    if (!worldTime) return;
+    const currentTime = new Date(`${worldTime.年}-${worldTime.月}-${worldTime.日}T${worldTime.时}:${worldTime.分}`);
+    const restockPlan = get(store.worldState, '世界状态.补货计划[0]', []);
+
+    for (let i = restockPlan.length - 1; i >= 0; i--) {
+        const item = restockPlan[i];
+        const restockTime = new Date(item.补货时间);
+        if (currentTime >= restockTime) {
+            console.log(`[MallService] Restocking ${item.名称} now.`);
+            await lorebookService.updateStock(item.ID, item.最大库存);
+            
+            const command = `_.remove('世界状态.补货计划[0]', ${i})`;
+            await applyMvuUpdateFallback(command, store.worldState);
+        }
+    }
+  }
+
+  private checkDeliveries(worldTime: any) {
+    if (!worldTime) return;
+    const currentTime = new Date(`${worldTime.年}-${worldTime.月}-${worldTime.日}T${worldTime.时}:${worldTime.分}`);
+    
+    for (let i = store.pendingOrders.length - 1; i >= 0; i--) {
+        const order = store.pendingOrders[i];
+        const deliveryTime = new Date(order.deliveryTime);
+        if (currentTime >= deliveryTime) {
+            console.log(`[MallService] Order for ${order.名称} has arrived.`);
+            const command = `[到货] ${order.名称}x${order.quantity} 已送达`;
+            actions.addActionToQueue({ action: 'custom', command });
+            store.pendingOrders.splice(i, 1);
+        }
+    }
+  }
+}
+
+export const mallSystemService = new MallSystemService();

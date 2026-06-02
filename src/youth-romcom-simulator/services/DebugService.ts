@@ -46,38 +46,25 @@ class DebugService {
     // 1. 读取所有主线剧情卷宗
     try {
       const storyEntryKeys = [
-        '[数据]主线剧情_第一卷',
-        '[数据]主线剧情_第二卷',
-        '[数据]主线剧情_第三卷',
-        '[数据]主线剧情_第四卷',
-        '[数据]主线剧情_第五卷',
-        '[数据]主线剧情_第六卷',
-        '[数据]主线剧情_第六点五卷',
-        '[数据]主线剧情_第七卷',
-        '[数据]主线剧情_第七点五卷',
-        '[数据]主线剧情_第八卷',
-        '[数据]主线剧情_第九卷',
-        '[数据]主线剧情_第十卷',
-        '[数据]主线剧情_第十点五卷',
-        '[数据]主线剧情_第十一卷',
-        '[数据]主线剧情_第十二卷',
-        '[数据]主线剧情_第十三卷',
-        '[数据]主线剧情_第十四卷',
-        '[数据]主线剧情_第十四点五卷',
+        '[数据]主线剧情_第一卷', '[数据]主线剧情_第二卷', '[数据]主线剧情_第三卷',
+        '[数据]主线剧情_第四卷', '[数据]主线剧情_第五卷', '[数据]主线剧情_第六卷',
+        '[数据]主线剧情_第六点五卷', '[数据]主线剧情_第七卷', '[数据]主线剧情_第七点五卷',
+        '[数据]主线剧情_第八卷', '[数据]主线剧情_第九卷', '[数据]主线剧情_第十卷',
+        '[数据]主线剧情_第十点五卷', '[数据]主线剧情_第十一卷', '[数据]主线剧情_第十二卷',
+        '[数据]主线剧情_第十三卷', '[数据]主线剧情_第十四卷', '[数据]主线剧情_第十四点五卷'
       ];
 
-      const storyContents = await Promise.all(storyEntryKeys.map(key => lorebookService.readFromLorebook(key)));
+      const storyContents = await Promise.all(
+        storyEntryKeys.map(key => lorebookService.readFromLorebook(key))
+      );
 
-      const loadedStories = storyContents
-        .filter(c => c)
-        .map(c => {
-          try {
-            return JSON.parse(this._cleanJsonString(c!));
-          } catch {
-            return null;
-          }
-        })
-        .filter(Boolean);
+      const loadedStories = storyContents.filter(c => c).map(c => {
+        try {
+          return JSON.parse(this._cleanJsonString(c!));
+        } catch {
+          return null;
+        }
+      }).filter(Boolean);
 
       if (loadedStories.length > 0) {
         this.state.mainStoryContent = loadedStories;

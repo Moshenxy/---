@@ -24,38 +24,31 @@ class DiarySummaryService {
   }
 
   private watchTimeChanges() {
-    watch(
-      () => store.worldState?.当前时间,
-      (newTime, oldTime) => {
-        if (!newTime || !store.worldState) return;
+    watch(() => store.worldState?.当前时间, (newTime, oldTime) => {
+      if (!newTime || !store.worldState) return;
 
-        const currentDate = `${newTime.年}-${newTime.月}-${newTime.日}`;
-        const currentMonth = newTime.月;
+      const currentDate = `${newTime.年}-${newTime.月}-${newTime.日}`;
+      const currentMonth = newTime.月;
 
-        if (this.lastCheckedDate === null) {
-          this.lastCheckedDate = currentDate;
-          this.lastCheckedMonth = currentMonth;
-          return;
-        }
+      if (this.lastCheckedDate === null) {
+        this.lastCheckedDate = currentDate;
+        this.lastCheckedMonth = currentMonth;
+        return;
+      }
 
-        if (currentDate !== this.lastCheckedDate) {
-          console.log(
-            `[DiarySummaryService] Date changed from ${this.lastCheckedDate} to ${currentDate}. Triggering daily summary.`,
-          );
-          this.triggerDailySummary(oldTime);
-          this.lastCheckedDate = currentDate;
-        }
+      if (currentDate !== this.lastCheckedDate) {
+        console.log(`[DiarySummaryService] Date changed from ${this.lastCheckedDate} to ${currentDate}. Triggering daily summary.`);
+        this.triggerDailySummary(oldTime);
+        this.lastCheckedDate = currentDate;
+      }
+      
+      if (currentMonth !== this.lastCheckedMonth) {
+        console.log(`[DiarySummaryService] Month changed from ${this.lastCheckedMonth} to ${currentMonth}. Triggering monthly summary.`);
+        this.triggerMonthlySummary(oldTime);
+        this.lastCheckedMonth = currentMonth;
+      }
 
-        if (currentMonth !== this.lastCheckedMonth) {
-          console.log(
-            `[DiarySummaryService] Month changed from ${this.lastCheckedMonth} to ${currentMonth}. Triggering monthly summary.`,
-          );
-          this.triggerMonthlySummary(oldTime);
-          this.lastCheckedMonth = currentMonth;
-        }
-      },
-      { deep: true },
-    );
+    }, { deep: true });
   }
 
   private async triggerDailySummary(dateToSummarize: any) {
@@ -89,16 +82,17 @@ class DiarySummaryService {
   }
 
   private async generateSummary(content: string, type: 'small' | 'large', date: any): Promise<string | null> {
-    const dateString = type === 'small' ? `${date.年}年${date.月}月${date.日}日` : `${date.年}年${date.月}月`;
+    const dateString = type === 'small'
+      ? `${date.年}年${date.月}月${date.日}日`
+      : `${date.年}年${date.月}月`;
 
     const prompt = `
       # 任务：生成日记${type === 'small' ? '小' : '大'}总结
       请根据我提供的格式，为以下内容生成一份总结。
       
       ## 格式要求
-      ${
-        type === 'small'
-          ? `<日记总结-小>
+      ${type === 'small'
+        ? `<日记总结-小>
 日期|${dateString}
 标题|${'${对当天所有事件的高度概括，10个字以内}'}
 概述|${'${对当天所有事件的概括性描述，100-150字}'}
@@ -106,7 +100,7 @@ class DiarySummaryService {
 - ${'${事件1简述}'}
 关键人物|${'${当天与主角互动最频繁或最重要的1-3名NPC}'}
 </日记总结-小>`
-          : `<日记总结-大>
+        : `<日记总结-大>
 日期|${dateString}
 标题|${'${对当月所有事件的高度概括，15个字以内}'}
 概述|${'${对当月整体情况的总结，200-300字}'}

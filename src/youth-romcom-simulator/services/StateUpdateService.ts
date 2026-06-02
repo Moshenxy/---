@@ -153,8 +153,6 @@ This is the response from the main AI.
 ${storyText}
 \`\`\`
 
-## Your Output
-You must only output a valid MVU string (e.g., "<[HP|ADD|-10]><[MP|SET|50]>"). Do not include any explanations, markdown formatting, or any other text outside of the MVU string.
     `;
 
     try {

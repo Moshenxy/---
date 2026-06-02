@@ -12,11 +12,11 @@
       <strong class="detail-key">因果足迹</strong>
       <div v-if="Object.keys(groupedMemories).length > 0" class="memory-timeline">
         <div v-for="(memories, year) in groupedMemories" :key="year" class="year-group">
-          <h5 @click="toggleYear(year)" :class="{ collapsed: !yearExpansion[year] }">{{ year }}年</h5>
+          <h5 :class="{ collapsed: !yearExpansion[year] }" @click="toggleYear(year)">{{ year }}年</h5>
           <div v-if="yearExpansion[year]" class="memory-list">
             <div v-for="(memory, index) in memories" :key="index" class="memory-item">
               <div class="memory-header">
-                <span class="memory-date">{{ new Date(memory.时间).toLocaleDateString() }}</span>
+                <span class="memory-date">{{ new Date(memory.时间.日期).toLocaleDateString() }}</span>
               </div>
               <p class="memory-event">
                 <span :class="['tag', getEmotionClass(memory.情感标签)]">{{ memory.情感标签 }}</span>
@@ -34,15 +34,14 @@
 
 <script setup lang="ts">
 import { computed, reactive } from 'vue';
-import { get } from 'lodash';
-import { 角色 as Character } from '../../../types';
 import { store } from '../../../store';
-import RelationsDisplay from '../RelationsDisplay.vue';
+import { Npc } from '../../../types';
 import InventoryGrid from '../InventoryGrid.vue';
+import RelationsDisplay from '../RelationsDisplay.vue';
 
 const props = defineProps<{
-  npc: Character,
-  npcId: string | null
+  npc: Npc;
+  npcId: string | null;
 }>();
 
 const yearExpansion = reactive<Record<string, boolean>>({});
@@ -52,8 +51,7 @@ const toggleYear = (year: string | number) => {
 };
 
 const inventoryItems = computed(() => {
-  // TODO: 修正物品数据库的路径
-  const database = (store.worldState as any)?.数据库 || {}; 
+  const database = (store.worldState as any)?.物品数据库 || {};
   if (!props.npc || !props.npc.物品栏) return [];
 
   const backpack = props.npc.物品栏;
@@ -63,15 +61,8 @@ const inventoryItems = computed(() => {
     const quantity = (backpack as any)[itemId]?.数量 || 0;
     if (quantity <= 0) continue;
 
-    let itemDetails = null;
-    for (const category in database) {
-      const categoryStore = (database as any)[category];
-      if (categoryStore && categoryStore[itemId]) {
-        itemDetails = categoryStore[itemId];
-        break;
-      }
-    }
-    
+    const itemDetails = database[itemId];
+
     if (itemDetails) {
       items.push({
         ...itemDetails,
@@ -85,16 +76,19 @@ const inventoryItems = computed(() => {
 
 const groupedMemories = computed(() => {
   if (!props.npc.记忆) return {};
-  const sorted = [...props.npc.记忆].sort((a, b) => new Date(b.时间).getTime() - new Date(a.时间).getTime());
-  
-  return sorted.reduce((acc, memory) => {
-    const year = new Date(memory.时间).getFullYear();
-    if (!acc[year]) {
-      acc[year] = [];
-    }
-    acc[year].push(memory);
-    return acc;
-  }, {} as Record<string, typeof props.npc.记忆>);
+  const sorted = [...props.npc.记忆].sort((a, b) => new Date(b.时间.日期).getTime() - new Date(a.时间.日期).getTime());
+
+  return sorted.reduce(
+    (acc, memory) => {
+      const year = new Date(memory.时间.日期).getFullYear();
+      if (!acc[year]) {
+        acc[year] = [];
+      }
+      acc[year].push(memory);
+      return acc;
+    },
+    {} as Record<string, typeof props.npc.记忆>,
+  );
 });
 
 // Initially expand the most recent year
@@ -104,13 +98,20 @@ Object.keys(groupedMemories.value).forEach((year, index) => {
 
 function getEmotionClass(emotion: string): string {
   switch (emotion) {
-    case '愤怒': return 'emotion-tag-anger';
-    case '悲伤': return 'emotion-tag-sadness';
-    case '恐惧': return 'emotion-tag-fear';
-    case '屈辱': return 'emotion-tag-humiliation';
-    case '满足': return 'emotion-tag-satisfaction';
-    case '喜悦': return 'emotion-tag-joy';
-    default: return '';
+    case '愤怒':
+      return 'emotion-tag-anger';
+    case '悲伤':
+      return 'emotion-tag-sadness';
+    case '恐惧':
+      return 'emotion-tag-fear';
+    case '屈辱':
+      return 'emotion-tag-humiliation';
+    case '满足':
+      return 'emotion-tag-satisfaction';
+    case '喜悦':
+      return 'emotion-tag-joy';
+    default:
+      return '';
   }
 }
 </script>
@@ -204,14 +205,33 @@ function getEmotionClass(emotion: string): string {
   padding: 2px 6px;
 }
 
-.emotion-tag-anger { background-color: rgba(211, 47, 47, 0.2); color: #f44336; }
-.emotion-tag-sadness { background-color: rgba(33, 150, 243, 0.2); color: #2196F3; }
-.emotion-tag-fear { background-color: rgba(156, 39, 176, 0.2); color: #9C27B0; }
-.emotion-tag-humiliation { background-color: rgba(130, 119, 23, 0.2); color: #afad70; }
-.emotion-tag-satisfaction { background-color: rgba(76, 175, 80, 0.2); color: #4CAF50; }
-.emotion-tag-joy { background-color: rgba(255, 193, 7, 0.2); color: #FFC107; }
+.emotion-tag-anger {
+  background-color: rgba(211, 47, 47, 0.2);
+  color: #f44336;
+}
+.emotion-tag-sadness {
+  background-color: rgba(33, 150, 243, 0.2);
+  color: #2196f3;
+}
+.emotion-tag-fear {
+  background-color: rgba(156, 39, 176, 0.2);
+  color: #9c27b0;
+}
+.emotion-tag-humiliation {
+  background-color: rgba(130, 119, 23, 0.2);
+  color: #afad70;
+}
+.emotion-tag-satisfaction {
+  background-color: rgba(76, 175, 80, 0.2);
+  color: #4caf50;
+}
+.emotion-tag-joy {
+  background-color: rgba(255, 193, 7, 0.2);
+  color: #ffc107;
+}
 
-.memory-event, .memory-influence {
+.memory-event,
+.memory-influence {
   margin: 0;
   padding: 2px 0;
   color: $color-grey-stone;

@@ -370,7 +370,10 @@ export const NpcSchema = 角色基础Schema.extend({
   记忆: z
     .array(
       z.object({
-        时间: z.coerce.date(),
+        时间: z.object({
+          日期: z.string(),
+          片段: z.string(),
+        }),
         事件摘要: z.string(),
         情感标签: z.enum(['喜悦', '悲伤', '愤怒', '恐惧', '屈辱', '满足']),
         影响: z.string(),

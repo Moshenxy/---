@@ -1,7 +1,6 @@
 import { get } from 'lodash';
 import { computed, ComputedRef } from 'vue';
-import { lorebookService } from '../services/LorebookService';
-import { 角色 as Character, 游戏世界状态 } from '../types';
+import { 角色 as Character } from '../types';
 import { store, USER_ID } from './state';
 
 // --- 核心 Getters (已适配综漫-春物世界观) ---
@@ -58,14 +57,8 @@ export const worldTimeStr = computed(() => {
   if (!store.worldState?.世界状态?.时间) {
     return '未知时间';
   }
-  return new Date(store.worldState.世界状态.时间).toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  });
+  const time = store.worldState.世界状态.时间;
+  return `${time.日期} ${time.当前片段}`;
 });
 
 /**

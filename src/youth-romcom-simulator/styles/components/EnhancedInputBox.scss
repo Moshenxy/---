@@ -16,9 +16,7 @@
   border: 1px solid rgba($color-gold-liu, 0.3);
   border-radius: 30px; // Rounded corners for the container
   @include frosted-glass(rgba($color-charcoal-glass, 0.6), 8px);
-  box-shadow:
-    0 0 15px rgba($color-black-void, 0.5),
-    inset 0 0 5px rgba($color-black-void, 0.5);
+  box-shadow: 0 0 15px rgba($color-black-void, 0.5), inset 0 0 5px rgba($color-black-void, 0.5);
   padding-left: 55px; // Increased padding for better spacing
   padding-right: 55px; // Increased padding for better spacing
 }

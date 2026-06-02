@@ -1,3 +1,4 @@
+
 import { defineStore } from 'pinia';
 import { ref, watch } from 'vue';
 import { z } from 'zod';
@@ -44,14 +45,14 @@ export const useSettingsStore = defineStore('apiSettings', () => {
   // 3. 监听 settings 的变化，并将其保存到 localStorage
   watch(
     settings,
-    newSettings => {
+    (newSettings) => {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(newSettings));
       } catch (error) {
         console.error('Failed to save API settings to localStorage:', error);
       }
     },
-    { deep: true }, // 使用 deep watch 来监听对象内部属性的变化
+    { deep: true } // 使用 deep watch 来监听对象内部属性的变化
   );
 
   return {
